@@ -3,7 +3,7 @@ WORKDIR /src/app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN npm run build
+RUN npm run build datasync
 
 FROM node:alpine as production
 ARG NODE_ENV=production

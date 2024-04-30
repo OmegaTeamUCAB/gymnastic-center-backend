@@ -13,5 +13,5 @@ WORKDIR /src/app
 COPY package*.json ./
 RUN npm install --only=production
 COPY . .
-COPY --from=build /app/dist ./dist
+COPY --from=build /src/app/dist ./dist
 CMD ["node", "dist/apps/api/main"]

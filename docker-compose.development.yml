@@ -1,0 +1,48 @@
+version: '3'
+services:
+  rabbitmq:
+    image: rabbitmq:3.13.1-management
+    container_name: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:15672" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  datasync:
+    container_name: datasync
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/datasync/Dockerfile
+      target: build
+    command: npm run start:dev datasync
+    env_file:
+      - ./apps/datasync/.env
+    depends_on:
+      - rabbitmq
+    volumes:
+      - .:/src/app
+      - /src/app/node_modules
+
+  api:
+    container_name: api
+    restart: always
+    build:
+      context: .
+      dockerfile: ./apps/api/Dockerfile
+      target: build
+    command: npm run start:dev
+    env_file:
+      - ./apps/api/.env
+    depends_on:
+      - rabbitmq
+      - datasync
+    volumes:
+      - .:/src/app
+      - /src/app/node_modules
+    ports:
+      - 3000:3000

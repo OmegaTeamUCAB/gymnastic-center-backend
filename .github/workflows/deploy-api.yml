@@ -25,11 +25,5 @@ jobs:
     - name: Build API image
       run: docker build . --file ./apps/api/Dockerfile -t fornari/gymnastic-center-api
 
-    - name: Build Datasync image
-      run: docker build . --file ./apps/datasync/Dockerfile -t fornari/gymnastic-center-ds
-
     - name: Push API image
       run: docker push fornari/gymnastic-center-api
-
-    - name: Push Datasync image
-      run: docker push fornari/gymnastic-center-ds

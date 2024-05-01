@@ -20,7 +20,7 @@ import {
   UpdateCategoryCommand,
 } from '../../application/commands';
 import { CategoryResponse } from './responses';
-import { CreateCategoryDto } from './dtos';
+import { CreateCategoryDto, UpdateCategoryDto } from './dtos';
 
 @Controller('categories')
 @ApiTags('Categories')
@@ -83,10 +83,10 @@ export class CategoryController {
   })
   async updateCategory(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() createCategoryDto: CreateCategoryDto,
+    @Body() updateCategoryDto: UpdateCategoryDto,
   ) {
     const service = new UpdateCategoryCommand(this.categoryRepository);
-    const result = await service.execute({ id, ...createCategoryDto });
+    const result = await service.execute({ id, ...updateCategoryDto });
     return result.unwrap();
   }
 }

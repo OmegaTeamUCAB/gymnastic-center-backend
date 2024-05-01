@@ -5,6 +5,7 @@ import * as Joi from 'joi';
 import { RabbitMQModule } from '@app/core';
 import { ApiController } from './api.controller';
 import { AuthModule } from './auth/infrastructure/auth.module';
+import { CategoryModule } from './category/infrastructure';
 import { InstructorsModule } from './instructors/infraestructure/instructors.module';
 
 @Module({
@@ -23,7 +24,8 @@ import { InstructorsModule } from './instructors/infraestructure/instructors.mod
     }),
     MongooseModule.forRoot(process.env.MONGODB_CNN),
     AuthModule,
-    InstructorsModule
+    CategoryModule,
+    InstructorsModule,
   ],
   controllers: [ApiController],
   providers: [],

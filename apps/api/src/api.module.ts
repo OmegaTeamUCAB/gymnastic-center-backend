@@ -6,6 +6,7 @@ import { RabbitMQModule } from '@app/core';
 import { ApiController } from './api.controller';
 import { AuthModule } from './auth/infrastructure/auth.module';
 import { CategoryModule } from './category/infrastructure';
+import { InstructorsModule } from './instructors/infraestructure/instructors.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { CategoryModule } from './category/infrastructure';
     MongooseModule.forRoot(process.env.MONGODB_CNN),
     AuthModule,
     CategoryModule,
+    InstructorsModule,
   ],
   controllers: [ApiController],
   providers: [],

@@ -8,14 +8,13 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { IdResponse, UUIDGENERATOR } from '@app/core';
+import { IdResponse, UUIDGENERATOR, IdGenerator } from '@app/core';
 import { CATEGORY_REPOSITORY } from '../constants';
 import { CategoryRepository } from '../../domain';
 import {
   GetCategoriesQuery,
   GetCategoryByIdQuery,
 } from '../../application/queries';
-import { IdGenerator } from '@app/core/application/id/id-generator.interface';
 import {
   CreateCategoryCommand,
   UpdateCategoryCommand,

@@ -6,7 +6,7 @@ Incluye un resumen de los cambios y el problema relacionado (en caso de que hubi
 
 Marque con una x dentro de los `[]` los que apliquen
 
-- [x] feat: Este PR agrega nueva funcionalidad.
+- [] feat: Este PR agrega nueva funcionalidad.
 - [] fix: Este PR corrige un error (bug).
 - [] docs: Este PR agrega o mejora la documentación.
 - [] test: Este PR agrega pruebas automáticas.
@@ -20,11 +20,11 @@ Marque con una x dentro de los `[]` los que apliquen
 
 - [] He agregado las nuevas dependencias en la descripción.
 - [] He agregado las nuevas variables de entorno (solo los nombres y rutas) a la descripción.
-- [x] Mi código sigue las pautas de estilo de este proyecto.
-- [x] He probado manualmente mi código.
+- [] Mi código sigue las pautas de estilo de este proyecto.
+- [] He probado manualmente mi código.
 - [] Cambié el status de la HU en ClickUp.
 - [] He comentado mi código, particularmente en áreas difíciles de comprender.
 - [] He realizado los cambios correspondientes a la documentación.
-- [x] Mis cambios no generan nuevos warnings.
+- [] Mis cambios no generan nuevos warnings.
 - [] He agregado pruebas automáticas de las funcionalidades añadidas.
 - [] Las pruebas automáticas nuevas y existentes pasan localmente con mis cambios.

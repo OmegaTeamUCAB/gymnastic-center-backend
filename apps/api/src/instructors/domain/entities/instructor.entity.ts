@@ -4,9 +4,9 @@ export type Gender = {
 }
 
 export class Instructor {
-    name: string;
-    lastName: string;
-    birthDate: Date;
-    email: string;
-    gender: Gender;
+    public name: string;
+    public lastName: string;
+    public birthDate: Date;
+    public email: string;
+    public gender: Gender;
 }

@@ -1,10 +1,8 @@
-import { IdGenerator } from '@app/core/application/id/id-generator.interface';
 import { Injectable } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
-export class UUIDService implements IdGenerator<string>{
-  generateId(): string {
+export class UUIDService {
+  generateUUID(): string {
     return uuidv4();
   }
 

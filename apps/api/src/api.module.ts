@@ -5,7 +5,6 @@ import * as Joi from 'joi';
 import { RabbitMQModule } from '@app/core';
 import { ApiController } from './api.controller';
 import { AuthModule } from './auth/infrastructure/auth.module';
-import { UserModule } from './user/infrastructure/user.module';
 
 @Module({
   imports: [
@@ -22,8 +21,7 @@ import { UserModule } from './user/infrastructure/user.module';
       queue: 'EVENTS',
     }),
     MongooseModule.forRoot(process.env.MONGODB_CNN),
-    AuthModule,
-    UserModule
+    AuthModule
   ],
   controllers: [ApiController],
   providers: [],

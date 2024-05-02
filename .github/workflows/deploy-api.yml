@@ -1,0 +1,29 @@
+name: Deploy API
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Docker Auth
+      env:
+        DOCKER_USER: ${{ secrets.DOCKER_USER }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      run: docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+      
+    - name: Build API image
+      run: docker build . --file ./apps/api/Dockerfile -t fornari/gymnastic-center-api
+
+    - name: Push API image
+      run: docker push fornari/gymnastic-center-api

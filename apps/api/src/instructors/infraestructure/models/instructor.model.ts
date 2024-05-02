@@ -12,7 +12,7 @@ export class Instructor {
         required: true,
         unique: true,
     })
-    aggregateId: string;
+    id: string;
 
     @Prop({ required: true, minlength: 1 })
     name: string;

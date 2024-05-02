@@ -1,7 +1,6 @@
 import { ApplicationService, Result } from "@app/core";
 import { GetAllUsersResponse } from "./types";
 import { UserRepository } from "../../../domain/repositories";
-import { UsersListEmpty } from "../../exceptions/users-list-empty";
 
 export class GetAllUsersQuery implements ApplicationService<void, GetAllUsersResponse> {
 
@@ -9,12 +8,23 @@ export class GetAllUsersQuery implements ApplicationService<void, GetAllUsersRes
         public readonly userRepository: UserRepository,
     ) { }
 
-    async execute(): Promise<Result<GetAllUsersResponse>>{
-        
+    async execute(): Promise<Result<GetAllUsersResponse>> {
+
         const users = await this.userRepository.findAllUsers();
-        if (users.length === 0) return Result.failure(new UsersListEmpty());
-        return Result.success<GetAllUsersResponse>({ users })
-        
+        if (users.length === 0) return Result.success<GetAllUsersResponse>([])
+        return Result.success<GetAllUsersResponse>(
+            users.map(({ id, name, lastName, email, password, birthDate, gender, stats }) => ({
+                id,
+                name,
+                lastName,
+                email,
+                password,
+                birthDate,
+                gender,
+                stats
+            }))
+        )
+
     }
 
 }

@@ -5,14 +5,14 @@ export type Gender = 'Male'|'Female'
 export class User {
 
     constructor(
-        private id: string,
-        private name: string,
-        private lastName: string,
-        private email: string,
-        private password: string,
-        private birthDate: Date,
-        private gender: Gender,
-        private stats: Stat[]
+        public id: string,
+        public name: string,
+        public lastName: string,
+        public email: string,
+        public password: string,
+        public birthDate: Date,
+        public gender: Gender,
+        public stats: Stat[]
     ) {
 
     }

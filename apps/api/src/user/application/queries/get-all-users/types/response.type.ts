@@ -1,5 +1,12 @@
-import { User } from "apps/api/src/user/domain/entities";
+import { Gender, Stat, User } from "apps/api/src/user/domain/entities";
 
 export type GetAllUsersResponse = {
-    users: User[];
-}
+    id: string,
+    name: string,
+    lastName: string,
+    email: string,
+    password: string,
+    birthDate: Date,
+    gender: Gender,
+    stats: Stat[]
+}[]

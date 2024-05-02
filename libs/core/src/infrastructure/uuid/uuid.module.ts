@@ -11,5 +11,6 @@ import { UUIDService } from './providers/uuid.service';
       useClass: UUIDService,
     },
   ],
+  exports: [UUIDGENERATOR]
 })
 export class UUIDModule {}

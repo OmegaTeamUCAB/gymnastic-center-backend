@@ -1,5 +1,10 @@
-import { Instructor } from 'apps/api/src/instructors/domain/entities/instructor.entity'
+import { Gender } from 'apps/api/src/instructors/domain/entities/instructor.entity'
 
 export type GetAllInstructorsResponse = {
-    instructors: Instructor[];
-}
+    id: string;
+    name: string;
+    lastName: string;
+    birthDate: Date;
+    email: string;
+    gender: Gender;
+}[];

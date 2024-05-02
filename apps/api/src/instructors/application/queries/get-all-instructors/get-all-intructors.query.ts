@@ -11,6 +11,15 @@ export class GetAllInstructors implements ApplicationService<void, GetAllInstruc
 
         if (instructors.length === 0) return Result.failure(new InstructorsListEmpty());
 
-        return Result.success<GetAllInstructorsResponse>({ instructors });
+        return Result.success<GetAllInstructorsResponse>(
+            instructors.map(({ id, name, lastName, birthDate, email, gender}) => ({ 
+                id,
+                name,
+                lastName,
+                birthDate,
+                email,
+                gender,
+             }))
+        )
     }
 }

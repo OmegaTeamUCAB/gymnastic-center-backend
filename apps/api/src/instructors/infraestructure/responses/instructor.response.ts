@@ -2,11 +2,9 @@ import { Gender } from "../../domain/entities/instructor.entity";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class InstructorResponse {
-    @ApiProperty()
-    _id: string;
 
     @ApiProperty()
-    aggregateId: string;
+    id: string;
 
     @ApiProperty()
     name: string;

@@ -6,7 +6,7 @@ import { ApplicationService, Result } from '@app/core';
 export class GetAllInstructors implements ApplicationService<void, GetAllInstructorsResponse> {
     constructor(private readonly instructorRepository: InstructorRepository) { }
 
-    async execute(data: void): Promise<Result<GetAllInstructorsResponse>> {
+    async execute(): Promise<Result<GetAllInstructorsResponse>> {
         const instructors = await this.instructorRepository.findAllInstructors();
 
         if (instructors.length === 0) return Result.failure(new InstructorsListEmpty());

@@ -7,10 +7,16 @@ import { Blog } from "../../domain/blog";
 export class MongoBlogRepository implements BlogRepository {
     constructor( @InjectModel(MongoBlog.name) private readonly datasource: Model<Blog> ) {}
     
+    async findAllBlogs(): Promise<Blog[]> {
+        const blogs = await this.datasource.find();
+        if (!blogs) return [];
+
+        return blogs;
+    }
+    
     async createBlog(data: Blog): Promise<void> {
         console.log("Data: ",data)
 
-        await this.datasource.create(data)
 
         await this.datasource.updateOne({
             aggregateId: data.id

@@ -13,6 +13,15 @@ export class MongoBlogRepository implements BlogRepository {
 
         return blogs;
     }
+
+    async getBlogById(id: string): Promise<Blog> {
+
+        const blog = await this.datasource.findOne({aggregateId: id});
+
+        if(!blog) return null;
+
+        return blog;
+    }
     
     async createBlog(data: Blog): Promise<void> {
         console.log("Data: ",data)

@@ -2,6 +2,8 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
 @Schema({ collection: 'blogs', timestamps: true, versionKey: false })
 export class MongoBlog {
+
+    @Prop({ minlength: 20 })
     readonly _id: string;
 
     @Prop({

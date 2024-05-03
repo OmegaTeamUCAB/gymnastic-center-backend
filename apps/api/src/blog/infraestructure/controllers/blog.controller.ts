@@ -10,6 +10,8 @@ import { ApiResponse } from '@nestjs/swagger';
 import { BlogResponse } from '../response/blog.response';
 import { CreateBlogDto } from './dtos/create-blog.dto';
 import { GetAllBlogsQuery } from '../../application/queries/get-all-blogs/get-all-blogs.query';
+import { GetBlogByIdQuery } from '../../application/queries/get-blog-by-id/get-blog-by-id.query';
+import { GetBlogByIdDto } from '../../application/queries/get-blog-by-id/types/get-blog-by-id.dto';
 
 @Controller('blog')
 export class BlogController {
@@ -29,9 +31,21 @@ export class BlogController {
   @Get()
   getAllBlogs() {
     const repository = new MongoBlogRepository(this.blogModel);
-    const findAllBlogs = new GetAllBlogsQuery(repository);
+    const service = new GetAllBlogsQuery(repository);
 
-    return findAllBlogs.execute()
+    return service.execute()
+  }
+
+  @ApiResponse({
+    
+  })
+  @Get(':id')
+  getBlogById(@Param('id') id: string) {
+    const data: GetBlogByIdDto = { id };
+    const repository = new MongoBlogRepository(this.blogModel);
+    const service = new GetBlogByIdQuery(repository);
+
+    return service.execute(data);
   }
 
   @ApiResponse({
@@ -45,9 +59,9 @@ export class BlogController {
 
     const repository = new MongoBlogRepository(this.blogModel);
 
-    const createBlogCommand = new CreateBlogCommand(repository, this.uuidGenerator);
+    const service = new CreateBlogCommand(repository, this.uuidGenerator);
 
-    createBlogCommand.execute(createBlogDto);
+    service.execute(createBlogDto);
   }
 
 }

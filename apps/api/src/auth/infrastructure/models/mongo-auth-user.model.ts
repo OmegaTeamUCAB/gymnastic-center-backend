@@ -1,11 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import { UUIDService } from '@app/core/infrastructure/uuid/providers/uuid.service';
 
-export type AuthUserDocument = HydratedDocument<AuthUser>;
+export type AuthUserDocument = HydratedDocument<MongoAuthUser>;
 
 @Schema({ timestamps: true, versionKey: false })
-export class AuthUser {
+export class MongoAuthUser {
   readonly _id: string;
 
   @Prop({
@@ -25,4 +24,4 @@ export class AuthUser {
   readonly updatedAt: Date;
 }
 
-export const AuthUserSchema = SchemaFactory.createForClass(AuthUser);
+export const AuthUserSchema = SchemaFactory.createForClass(MongoAuthUser);

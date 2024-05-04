@@ -1,10 +1,8 @@
-import { User } from "../entities";
+import { User } from '../entities';
 
 export interface UserRepository {
-    
-    findAllUsers(): Promise<User[]>;
-    findUserById(id: string): Promise<User>;
-    createUser(user: User): Promise<void>;
-    updateUserById(user: User): Promise<void>;
-
+  findAllUsers(): Promise<User[]>;
+  findUserById(id: string): Promise<User>;
+  saveUser(user: User): Promise<void>;
+  deleteUserById(id: string): Promise<void>;
 }

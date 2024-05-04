@@ -18,6 +18,7 @@ export class GetUserByIdQuery implements ApplicationService<GetUserByIdDto, GetU
             name: user.getName(),
             lastName: user.getLastName(),
             email: user.getEmail(),
+            phoneNumber: user.getPhoneNumber(),
             password: user.getPassword(),
             birthDate: user.getBirthDate(),
             gender: user.getGender(),

@@ -12,6 +12,7 @@ import { UpdateUserCommand } from '../../application/commands/update-user-by-id/
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { IdResponse } from '@app/core';
+import { DeleteUserCommand } from '../../application/commands/delete-user-by-id';
 
 @Controller('users')
 @ApiTags('Users')
@@ -72,10 +73,22 @@ export class UserController {
         description: 'User updated',
         type: IdResponse
     })
-    async update(@Param('id', ParseUUIDPipe) id: string, @Body() updateUserDto: UpdateUserDto) {
+    async updateUserById(@Param('id', ParseUUIDPipe) id: string, @Body() updateUserDto: UpdateUserDto) {
         const service = new UpdateUserCommand(this.userRepository);
         const result = await service.execute({ id, ...updateUserDto });
         return result.unwrap()
+    }
+
+    @Delete(':id')
+    @ApiResponse({
+        status: 200,
+        description: 'User deleted',
+        type: IdResponse
+    })
+    async deleteUserById(@Param('id', ParseUUIDPipe) id: string) {
+        const service = new DeleteUserCommand(this.userRepository);
+        const result = await service.execute({ id });
+        return result.unwrap();
     }
 
 }

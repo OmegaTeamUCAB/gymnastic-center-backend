@@ -29,7 +29,12 @@ export class MongoUser{
     })
     email: string;
 
-        
+    @Prop({
+        required: true,
+        unique: true
+    })
+    phoneNumber: string;
+
     @Prop({
         required: true
     })

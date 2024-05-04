@@ -1,3 +1,3 @@
 export type UpdateUserResponse = {
-    id: string
+  id: string;
 };

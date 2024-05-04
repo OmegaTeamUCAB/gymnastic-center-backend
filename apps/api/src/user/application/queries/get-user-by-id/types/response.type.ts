@@ -5,6 +5,7 @@ export type GetUserByIdResponse = {
     name: string,
     lastName: string,
     email: string,
+    phoneNumber: string,
     password: string,
     birthDate: Date,
     gender: Gender,

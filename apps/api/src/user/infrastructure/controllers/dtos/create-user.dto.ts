@@ -22,6 +22,11 @@ export class CreateUserDto{
     @IsString()
     @IsNotEmpty()
     @ApiProperty()
+    phoneNumber: string
+
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty()
     password: string
 
     @IsDateString()

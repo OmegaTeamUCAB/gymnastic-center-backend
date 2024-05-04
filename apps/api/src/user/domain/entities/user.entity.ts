@@ -9,6 +9,7 @@ export class User {
         public name: string,
         public lastName: string,
         public email: string,
+        public phoneNumber: string,
         public password: string,
         public birthDate: Date,
         public gender: Gender,
@@ -31,6 +32,10 @@ export class User {
 
     public getEmail(): string {
         return this.email;
+    }
+
+    public getPhoneNumber(): string {
+        return this.phoneNumber;
     }
 
     public getPassword(): string {
@@ -59,6 +64,10 @@ export class User {
 
     public setEmail(email: string): void {
         this.email = email;
+    }
+
+    public setPhoneNumber(phoneNumber: string): void {
+        this.phoneNumber = phoneNumber;
     }
 
     public setPassword(password: string): void {

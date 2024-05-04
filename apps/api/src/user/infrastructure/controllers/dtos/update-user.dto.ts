@@ -30,6 +30,13 @@ export class UpdateUserDto{
     @ApiProperty({
         nullable: true
     })
+    phoneNumber: string
+
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty({
+        nullable: true
+    })
     password: string
 
     @IsDateString()

@@ -15,6 +15,9 @@ export class UserResponse{
     email: string
 
     @ApiProperty()
+    phoneNumber: string
+
+    @ApiProperty()
     password: string
 
     @ApiProperty()

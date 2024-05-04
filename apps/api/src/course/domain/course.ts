@@ -1,4 +1,8 @@
 import { Lesson } from './lessons/lesson';
+import {
+  InvalidLessonQuantityException,
+  InvalidVideoQuantityException,
+} from './exceptions';
 
 export class Course {
   constructor(
@@ -15,5 +19,9 @@ export class Course {
     public lessons: Lesson[],
     public createdAt: Date,
     public updatedAt: Date,
-  ) {}
+  ) {
+    if (this.lessons.length === 0) throw new InvalidLessonQuantityException();
+    if (!this.lessons.some((lesson) => lesson.videoUrl))
+      throw new InvalidVideoQuantityException();
+  }
 }

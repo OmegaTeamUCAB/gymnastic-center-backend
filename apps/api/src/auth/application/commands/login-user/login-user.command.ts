@@ -5,8 +5,10 @@ import {
   Result,
 } from '@app/core';
 import { LoginDto, LoginResponse } from './types';
-import { UserNotFound } from '../../exceptions/user-not-found.exception';
-import { InvalidPass } from '../../exceptions/invalid-pass-exception';
+import {
+  UserNotFoundException,
+  InvalidPasswordException,
+} from '../../exceptions';
 import { IAuthRepository } from '../../repositories/auth.repository';
 
 export class LoginUserCommand
@@ -21,10 +23,10 @@ export class LoginUserCommand
   public async execute(data: LoginDto): Promise<Result<LoginResponse>> {
     const user = await this.authRepository.findByEmail(data.email);
     if (!user) {
-      return Result.failure<LoginResponse>(new UserNotFound());
+      return Result.failure<LoginResponse>(new UserNotFoundException());
     }
     if (!(await this.bcrypt.compare(data.password, user.password))) {
-      return Result.failure<LoginResponse>(new InvalidPass());
+      return Result.failure<LoginResponse>(new InvalidPasswordException());
     }
     const payload = { id: user.id };
     return Result.success<LoginResponse>({

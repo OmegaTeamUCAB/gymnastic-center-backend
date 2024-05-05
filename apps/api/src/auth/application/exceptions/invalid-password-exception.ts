@@ -1,6 +1,6 @@
 import { ApplicationException } from '@app/core';
 
-export class InvalidPass extends ApplicationException {
+export class InvalidPasswordException extends ApplicationException {
   constructor() {
     super(`Invalid password`);
   }

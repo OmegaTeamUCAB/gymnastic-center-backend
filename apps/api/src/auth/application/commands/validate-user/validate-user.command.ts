@@ -5,8 +5,7 @@ import {
   Result,
 } from '@app/core';
 import { ValidateUserDto, ValidateUserResponse } from './types';
-import { UserNotFound } from '../../exceptions/user-not-found.exception';
-import { InvalidPass } from '../../exceptions/invalid-pass-exception';
+import { InvalidPasswordException, UserNotFoundException } from '../../exceptions';
 import { IAuthRepository } from '../../repositories/auth.repository';
 
 export class ValidateUser
@@ -23,10 +22,10 @@ export class ValidateUser
   ): Promise<Result<ValidateUserResponse>> {
     const user = await this.authRepository.findByEmail(data.email);
     if (!user) {
-      return Result.failure<ValidateUserResponse>(new UserNotFound());
+      return Result.failure<ValidateUserResponse>(new UserNotFoundException());
     }
     if (!(await this.bcrypt.compare(data.password, user.password))) {
-      return Result.failure<ValidateUserResponse>(new InvalidPass());
+      return Result.failure<ValidateUserResponse>(new InvalidPasswordException());
     }
     const payload = { id: user.id };
     return Result.success<ValidateUserResponse>({

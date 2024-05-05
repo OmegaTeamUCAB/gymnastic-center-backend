@@ -17,6 +17,7 @@ import { CategoryModule } from './category/infrastructure';
         RABBITMQ_URI: Joi.string().required(),
         RABBITMQ_EVENTS_QUEUE: Joi.string().required(),
         MONGODB_CNN: Joi.string().required(),
+        JWT_SECRET: Joi.string().required(),
       }),
       envFilePath: './apps/api/.env',
     }),

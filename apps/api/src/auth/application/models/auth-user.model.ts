@@ -3,5 +3,7 @@ export class AuthUser {
     public id: string,
     public email: string,
     public password: string,
+    public verificationCode?: string,
+    public codeExpirationDate?: Date,
   ) {}
 }

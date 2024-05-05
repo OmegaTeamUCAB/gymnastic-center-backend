@@ -1,23 +1,19 @@
-import {
-  ITokenGenerator,
-  ICrypto,
-  ApplicationService,
-  Result,
-} from '@app/core';
+import { CryptoService, ApplicationService, Result } from '@app/core';
 import { LoginDto, LoginResponse } from './types';
 import {
   UserNotFoundException,
   InvalidPasswordException,
 } from '../../exceptions';
 import { IAuthRepository } from '../../repositories/auth.repository';
+import { TokenGenerator } from '../../token/token-generator.interface';
 
-export class LoginUserCommand
+export class LoginCommand
   implements ApplicationService<LoginDto, LoginResponse>
 {
   constructor(
     private readonly authRepository: IAuthRepository,
-    private readonly jwtService: ITokenGenerator<{ id: string }>,
-    private readonly bcrypt: ICrypto,
+    private readonly jwtService: TokenGenerator<string, { id: string }>,
+    private readonly bcrypt: CryptoService,
   ) {}
 
   public async execute(data: LoginDto): Promise<Result<LoginResponse>> {
@@ -30,7 +26,8 @@ export class LoginUserCommand
     }
     const payload = { id: user.id };
     return Result.success<LoginResponse>({
-      id: this.jwtService.generateToken(payload),
+      token: this.jwtService.generateToken(payload),
+      id: user.id,
     });
   }
 }

@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { ICrypto } from '@app/core/application/crypto/crypto.interface';
 import * as bcrypt from 'bcrypt';
+import { CryptoService } from '@app/core/application';
 
 @Injectable()
-export class BcryptService implements ICrypto{
-  async hash(password: string, saltOrRounds: string | number): Promise<string> {
-    return bcrypt.hash(password, saltOrRounds);
+export class BcryptService implements CryptoService {
+  async hash(text: string): Promise<string> {
+    return bcrypt.hash(text, 10);
   }
 
-  async compare(password: string, hashPassword: string): Promise<boolean> {
-    return bcrypt.compare(password, hashPassword);
+  async compare(text: string, hashedText: string): Promise<boolean> {
+    return bcrypt.compare(text, hashedText);
   }
 }

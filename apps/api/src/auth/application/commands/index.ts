@@ -1,2 +1,2 @@
-export { LoginUserCommand } from './login-user/login-user.command';
-export { RegisterUserCommand } from './register-user/register-user.command';
+export { LoginCommand } from './login/login.command';
+export { SignUpCommand } from './signup/signup.command';

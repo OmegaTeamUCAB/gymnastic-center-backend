@@ -6,28 +6,20 @@ export class User {
 
     constructor(
         public id: string,
-        public name: string,
-        public lastName: string,
+        public fullName: string,
         public email: string,
         public phoneNumber: string,
-        public password: string,
-        public birthDate: Date,
-        public gender: Gender,
-        public stats: Stat[]
-    ) {
-
-    }
+        public birthDate?: Date,
+        public gender?: Gender,
+        public stats?: Stat[]
+    ) { }
 
     public getId(): string {
         return this.id;
     }
 
     public getName(): string {
-        return this.name;
-    }
-
-    public getLastName(): string {
-        return this.lastName;
+        return this.fullName;
     }
 
     public getEmail(): string {
@@ -38,9 +30,6 @@ export class User {
         return this.phoneNumber;
     }
 
-    public getPassword(): string {
-        return this.password;
-    }
 
     public getBirthDate(): Date {
         return this.birthDate;
@@ -55,23 +44,15 @@ export class User {
     }
 
     public setName(name: string): void {
-        this.name = name;
+        this.fullName = name;
     }
-
-    public setLastName(lastName: string): void {
-        this.lastName = lastName;
-    }
-
+    
     public setEmail(email: string): void {
         this.email = email;
     }
 
     public setPhoneNumber(phoneNumber: string): void {
         this.phoneNumber = phoneNumber;
-    }
-
-    public setPassword(password: string): void {
-        this.password = password;
     }
 
     public setBirthDate(birthDate: Date): void {

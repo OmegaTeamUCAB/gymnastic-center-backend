@@ -19,11 +19,9 @@ export class MongoUserRepository implements UserRepository {
       },
       {
         $set: {
-          name: user.getName(),
-          lastName: user.getLastName(),
+          fullName: user.getName(),
           email: user.getEmail(),
           phoneNumber: user.getPhoneNumber(),
-          password: user.getPassword(),
           birthDate: user.getBirthDate(),
           gender: user.getGender(),
           stats: user.getStats(),
@@ -41,11 +39,9 @@ export class MongoUserRepository implements UserRepository {
     });
 
     const {
-      name,
-      lastName,
+      fullName,
       email,
       phoneNumber,
-      password,
       birthDate,
       gender,
       stats,
@@ -54,11 +50,9 @@ export class MongoUserRepository implements UserRepository {
     return user
       ? new User(
           id,
-          name,
-          lastName,
+          fullName,
           email,
           phoneNumber,
-          password,
           birthDate,
           gender,
           stats,
@@ -70,22 +64,18 @@ export class MongoUserRepository implements UserRepository {
     return (await this.userModel.find()).map(
       ({
         id,
-        name,
-        lastName,
+        fullName,
         email,
         phoneNumber,
-        password,
         birthDate,
         gender,
         stats,
       }) =>
         new User(
           id,
-          name,
-          lastName,
+          fullName,
           email,
           phoneNumber,
-          password,
           birthDate,
           gender,
           stats,

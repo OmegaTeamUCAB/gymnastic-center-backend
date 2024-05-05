@@ -12,11 +12,9 @@ export class UpdateUserCommand
     const user = await this.userRepository.findUserById(data.id);
     if (!user)
       return Result.failure<UpdateUserResponse>(new UserNotFoundException());
-    if (data.name) user.setName(data.name);
-    if (data.lastName) user.setLastName(data.lastName);
+    if (data.fullName) user.setName(data.fullName);
     if (data.email) user.setEmail(data.email);
     if (data.phoneNumber) user.setPhoneNumber(data.phoneNumber);
-    if (data.password) user.setPassword(data.password);
     if (data.birthDate) user.setBirthDate(data.birthDate);
     if (data.gender) user.setGender(data.gender);
     if (data.stats) user.setStats(data.stats);

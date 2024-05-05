@@ -16,11 +16,9 @@ export class CreateUserCommand
     const id = this.idGenerator.generateId();
     const user = new User(
       id,
-      data.name,
-      data.lastName,
+      data.fullName,
       data.email,
       data.phoneNumber,
-      data.password,
       data.birthDate,
       data.gender,
       data.stats,

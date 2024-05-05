@@ -1,4 +1,4 @@
-import { IsArray, IsDateString, IsNotEmpty, IsString } from "class-validator"
+import { IsArray, IsDateString, IsNotEmpty, IsOptional, IsString } from "class-validator"
 import { Gender, Stat } from "../../../domain/entities"
 import { ApiProperty } from "@nestjs/swagger"
 
@@ -7,12 +7,7 @@ export class CreateUserDto{
     @IsString()
     @IsNotEmpty()
     @ApiProperty()
-    name: string
-
-    @IsString()
-    @IsNotEmpty()
-    @ApiProperty()
-    lastName: string
+    fullName: string
 
     @IsString()
     @IsNotEmpty()
@@ -20,26 +15,22 @@ export class CreateUserDto{
     email: string
 
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     @ApiProperty()
     phoneNumber: string
 
-    @IsString()
-    @IsNotEmpty()
-    @ApiProperty()
-    password: string
-
     @IsDateString()
-    @IsNotEmpty()
+    @IsOptional()
     @ApiProperty()
     birthDate: Date
 
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     @ApiProperty()
     gender: Gender
 
     @IsArray()
+    @IsOptional()
     @ApiProperty()
     stats: Stat[]
 }

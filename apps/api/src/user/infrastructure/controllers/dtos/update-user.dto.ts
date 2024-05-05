@@ -1,59 +1,53 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { IsArray, IsDateString, IsNotEmpty, IsString } from "class-validator"
+import { IsArray, IsDateString, IsOptional, IsString } from "class-validator"
 import { Gender, Stat } from "../../../domain/entities"
 
 export class UpdateUserDto{
 
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     @ApiProperty({
         nullable: true
     })
     name: string
 
     @IsString()
-    @IsNotEmpty()
-    @ApiProperty({
-        nullable: true
-    })
-    lastName: string
-
-    @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     @ApiProperty({
         nullable: true
     })
     email: string
 
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     @ApiProperty({
         nullable: true
     })
     phoneNumber: string
 
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     @ApiProperty({
         nullable: true
     })
     password: string
 
     @IsDateString()
-    @IsNotEmpty()
+    @IsOptional()
     @ApiProperty({
         nullable: true
     })
     birthDate: Date
 
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     @ApiProperty({
         nullable: true
     })
     gender: Gender
 
     @IsArray()
+    @IsOptional()
     @ApiProperty({
         nullable: true
     })

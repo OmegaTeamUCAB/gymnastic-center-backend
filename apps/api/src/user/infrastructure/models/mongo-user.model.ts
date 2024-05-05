@@ -16,12 +16,7 @@ export class MongoUser{
     @Prop({
         required: true
     })
-    name: string;
-
-    @Prop({
-        required: true
-    })
-    lastName: string;
+    fullName: string;
 
     @Prop({
         required: true,
@@ -36,23 +31,18 @@ export class MongoUser{
     phoneNumber: string;
 
     @Prop({
-        required: true
-    })
-    password: string;
-
-    @Prop({
-        required: true
+        required: false
     })
     birthDate: Date;
 
     @Prop({
-        required: true,
+        required: false,
         type: String
     })
     gender: Gender;
 
     @Prop({
-        required: true,
+        required: false,
         type: [{type: Stat}]
     })
     stats: Stat[];

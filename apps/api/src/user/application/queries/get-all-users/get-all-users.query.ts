@@ -14,21 +14,17 @@ export class GetAllUsersQuery
       users.map(
         ({
           id,
-          name,
-          lastName,
+          fullName,
           email,
           phoneNumber,
-          password,
           birthDate,
           gender,
           stats,
         }) => ({
           id,
-          name,
-          lastName,
+          fullName,
           email,
           phoneNumber,
-          password,
           birthDate,
           gender,
           stats,

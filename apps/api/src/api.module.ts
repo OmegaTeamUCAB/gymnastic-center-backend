@@ -21,7 +21,7 @@ import { AuthModule } from './auth/infrastructure/auth.module';
       queue: 'EVENTS',
     }),
     MongooseModule.forRoot(process.env.MONGODB_CNN),
-    AuthModule
+    AuthModule,
   ],
   controllers: [ApiController],
   providers: [],

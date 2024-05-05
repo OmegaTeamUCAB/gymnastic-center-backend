@@ -17,7 +17,7 @@ import { AuthController } from './controllers/auth.controller';
     {
       provide: 'AuthUserRepository',
       useClass: MongoAuthUser,
-    }
+    },
   ],
 })
 export class AuthModule {}

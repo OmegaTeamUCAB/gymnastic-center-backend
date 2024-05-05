@@ -1,3 +1,3 @@
 export type ValidateUserResponse = {
-    id: string;
+  id: string;
 };

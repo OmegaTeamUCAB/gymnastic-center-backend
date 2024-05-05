@@ -8,7 +8,8 @@ import { MongoAuthUser } from '../models/mongo-auth-user.model';
 @Injectable()
 export class MongoAuthRepository implements IAuthRepository {
   constructor(
-    @InjectModel(MongoAuthUser.name) private readonly mongoAuthUserModel: Model<MongoAuthUser>,
+    @InjectModel(MongoAuthUser.name)
+    private readonly mongoAuthUserModel: Model<MongoAuthUser>,
   ) {}
 
   async save(user: AuthUser): Promise<void> {
@@ -35,5 +36,4 @@ export class MongoAuthRepository implements IAuthRepository {
     }
     return new AuthUser(user.aggregateId, user.email, user.password);
   }
-
 }

@@ -1,8 +1,12 @@
 import { Controller, Post, Body, Inject, Get } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { LoginDto, SignUpDto } from './dtos';
-import { AUTH_REPOSITORY, JWT_SERVICE } from '../constants';
-import { IAuthRepository, LoginCommand, SignUpCommand } from '../../application';
+import { LoginDto, RequestVerificationCodeDto, SignUpDto } from './dtos';
+import { AUTH_REPOSITORY, CODE_GENERATOR, JWT_SERVICE } from '../constants';
+import {
+  IAuthRepository,
+  LoginCommand,
+  SignUpCommand,
+} from '../../application';
 import {
   BCRYPT_SERVICE,
   CryptoService,
@@ -24,6 +28,8 @@ export class AuthController {
     private readonly bcryptService: CryptoService,
     @Inject(JWT_SERVICE)
     private readonly jwtService: TokenGenerator<string, { id: string }>,
+    @Inject(CODE_GENERATOR)
+    private readonly codeGenerator: TokenGenerator<string, { code: string }>,
   ) {}
 
   @Post('login')
@@ -62,4 +68,10 @@ export class AuthController {
     // TODO: chequear que esto funciona
     return user;
   }
+
+  @Post('requestCode')
+  @ApiResponse({ status: 200, description: 'Code requested' })
+  async requestVerificationCode(
+    @Body() requestVerificationCodeDto: RequestVerificationCodeDto,
+  ) {}
 }

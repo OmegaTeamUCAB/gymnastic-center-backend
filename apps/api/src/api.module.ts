@@ -8,6 +8,7 @@ import { AuthModule } from './auth/infrastructure/auth.module';
 import { CategoryModule } from './category/infrastructure';
 import { InstructorsModule } from './instructors/infraestructure/instructors.module';
 import { BlogModule } from './blog/blog.module';
+import { CourseModule } from './course/infrastructure/course.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { BlogModule } from './blog/blog.module';
     CategoryModule,
     InstructorsModule,
     BlogModule,
+    CourseModule,
   ],
   controllers: [ApiController],
   providers: [],

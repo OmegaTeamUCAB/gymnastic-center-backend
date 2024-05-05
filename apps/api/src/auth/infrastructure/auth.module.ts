@@ -5,10 +5,14 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongoAuthUser, AuthUserSchema } from './models/mongo-auth-user.model';
 import { AuthController } from './controllers/auth.controller';
-import { AUTH_REPOSITORY, JWT_SERVICE } from './constants';
+import { AUTH_REPOSITORY, CODE_GENERATOR, JWT_SERVICE } from './constants';
 import { MongoAuthRepository } from './repositories/mongo-auth.repository';
 import { BcryptModule, UUIDModule } from '@app/core';
-import { JwtGenerator, JwtStrategy } from './providers';
+import {
+  FourDigitCodeGeneratorService,
+  JwtGenerator,
+  JwtStrategy,
+} from './providers';
 
 @Module({
   imports: [
@@ -46,6 +50,10 @@ import { JwtGenerator, JwtStrategy } from './providers';
     {
       provide: AUTH_REPOSITORY,
       useClass: MongoAuthRepository,
+    },
+    {
+      provide: CODE_GENERATOR,
+      useClass: FourDigitCodeGeneratorService,
     },
   ],
 })

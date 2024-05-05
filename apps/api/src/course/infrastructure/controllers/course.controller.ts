@@ -13,6 +13,7 @@ import { COURSE_REPOSITORY } from '../constants';
 import { CourseRepository } from '../../domain';
 import { CourseResponse } from './responses/course.response';
 import {
+  CommentLessonCommand,
   CreateCourseCommand,
   GetCourseByIdQuery,
   GetCoursesByCategoryQuery,
@@ -20,7 +21,7 @@ import {
   GetCoursesQuery,
   UpdateCourseCommand,
 } from '../../application';
-import { CreateCourseDto, UpdateCourseDto } from './dtos';
+import { CommentLessonDto, CreateCourseDto, UpdateCourseDto } from './dtos';
 
 @Controller('courses')
 @ApiTags('Courses')
@@ -99,6 +100,24 @@ export class CourseController {
     );
     const result = await service.execute(createCategoryDto);
     return result.unwrap();
+  }
+
+  @Post('comment')
+  @ApiResponse({
+    status: 200,
+    description: 'Comment added',
+    type: IdResponse,
+  })
+  async commentLesson(@Body() commentLessonDto: CommentLessonDto) {
+    const service = new CommentLessonCommand(
+      this.courseRepository,
+      this.uuidGenerator,
+    );
+    const result = await service.execute(commentLessonDto);
+    const { commentId } = result.unwrap();
+    return {
+      id: commentId,
+    };
   }
 
   @Post(':id')

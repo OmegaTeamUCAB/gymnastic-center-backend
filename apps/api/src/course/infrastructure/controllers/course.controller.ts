@@ -93,12 +93,12 @@ export class CourseController {
     description: 'Course created',
     type: IdResponse,
   })
-  async createCategory(@Body() createCategoryDto: CreateCourseDto) {
+  async createCategory(@Body() createCourseDto: CreateCourseDto) {
     const service = new CreateCourseCommand(
       this.courseRepository,
       this.uuidGenerator,
     );
-    const result = await service.execute(createCategoryDto);
+    const result = await service.execute(createCourseDto);
     return result.unwrap();
   }
 
@@ -128,10 +128,10 @@ export class CourseController {
   })
   async updateCategory(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateCategoryDto: UpdateCourseDto,
+    @Body() updateCourseDto: UpdateCourseDto,
   ) {
     const service = new UpdateCourseCommand(this.courseRepository);
-    const result = await service.execute({ id, ...updateCategoryDto });
+    const result = await service.execute({ id, ...updateCourseDto });
     return result.unwrap();
   }
 }

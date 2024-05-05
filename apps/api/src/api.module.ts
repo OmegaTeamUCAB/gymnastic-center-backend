@@ -7,6 +7,7 @@ import { ApiController } from './api.controller';
 import { AuthModule } from './auth/infrastructure/auth.module';
 import { CategoryModule } from './category/infrastructure';
 import { InstructorsModule } from './instructors/infraestructure/instructors.module';
+import { CourseModule } from './course/infrastructure/course.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { InstructorsModule } from './instructors/infraestructure/instructors.mod
     AuthModule,
     CategoryModule,
     InstructorsModule,
+    CourseModule,
   ],
   controllers: [ApiController],
   providers: [],

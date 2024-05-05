@@ -1,6 +1,6 @@
-import { ApplicationService, Result } from "@app/core";
-import { GetAllBlogsReponse } from "./types/get-all-blogs-response";
-import { BlogRepository } from "../../../domain/repositories/blog.repository";
+import { BlogRepository } from '../../../domain';
+import { GetAllBlogsReponse } from './types';
+import { ApplicationService, Result } from '@app/core';
 
 export class GetAllBlogsQuery implements ApplicationService<void, GetAllBlogsReponse> {
     constructor(private readonly datasource: BlogRepository) { }

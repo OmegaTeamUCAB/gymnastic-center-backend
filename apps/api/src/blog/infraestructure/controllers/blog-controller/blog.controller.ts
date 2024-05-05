@@ -1,17 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Inject } from '@nestjs/common';
-import { CreateBlogCommand } from '../../application/commands/create-blog/create-blog.command';
-import { MongoBlogRepository } from '../repositories/mongo-blog-repository';
-import { InjectModel } from '@nestjs/mongoose';
-import { MongoBlog } from '../models/blog.model';
-import { Model } from 'mongoose';
-import { Blog } from '../../domain/blog';
+import { Blog } from '../../../domain';
+import { GetAllBlogsQuery, GetBlogByIdQuery, GetBlogByIdDto, CreateBlogCommentCommand, CreateBlogCommand } from '../../../application';
+import { CommentResponse, BlogResponse, MongoBlog, MongoBlogRepository, CreateBlogCommentDto, CreateBlogDto  } from "../../index";
 import { IdGenerator, UUIDGENERATOR } from '@app/core';
+import { Controller, Get, Post, Body, Param, Inject } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { ApiResponse } from '@nestjs/swagger';
-import { BlogResponse } from '../response/blog.response';
-import { CreateBlogDto } from './dtos/create-blog.dto';
-import { GetAllBlogsQuery } from '../../application/queries/get-all-blogs/get-all-blogs.query';
-import { GetBlogByIdQuery } from '../../application/queries/get-blog-by-id/get-blog-by-id.query';
-import { GetBlogByIdDto } from '../../application/queries/get-blog-by-id/types/get-blog-by-id.dto';
+import { Model } from 'mongoose';
 
 @Controller('blog')
 export class BlogController {
@@ -37,7 +31,7 @@ export class BlogController {
   }
 
   @ApiResponse({
-    
+
   })
   @Get(':id')
   getBlogById(@Param('id') id: string) {
@@ -62,6 +56,20 @@ export class BlogController {
     const service = new CreateBlogCommand(repository, this.uuidGenerator);
 
     service.execute(createBlogDto);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'The comment has been successfully posted',
+    type: [CommentResponse],
+  })
+  @Post('/create-comment')
+  createComment(@Body() crateBlogCommentDto: CreateBlogCommentDto) {
+    const repository = new MongoBlogRepository(this.blogModel);
+
+    const service = new CreateBlogCommentCommand(repository, this.uuidGenerator);
+
+    service.execute(crateBlogCommentDto);
   }
 
 }

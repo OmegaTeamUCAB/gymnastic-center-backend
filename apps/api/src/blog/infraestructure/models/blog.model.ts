@@ -1,4 +1,4 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema({ collection: 'blogs', timestamps: true, versionKey: false })
 export class MongoBlog {
@@ -27,8 +27,23 @@ export class MongoBlog {
     @Prop({ required: true })
     uploadDate: Date;
 
-    readonly createdat: Date;
+    @Prop({ required: true, default: [], type: [{
+        _id: false,
+        id: String,
+        userId: String,
+        blogId: String,
+        content: String,
+        postedAt: Date,
+    }]})
+    comments: {
+        id: string;
+        userId: string;
+        blogId: string;
+        content: string;
+        postedAt: Date;
+    }[];
 
+    readonly createdat: Date;
     readonly updatedAt: Date;
 }
 

@@ -1,4 +1,4 @@
-import { ApplicationException } from "@app/core";
+import { ApplicationException } from '@app/core';
 
 export class BlogNotFound extends ApplicationException {
     constructor() {

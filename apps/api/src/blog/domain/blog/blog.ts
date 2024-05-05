@@ -1,3 +1,5 @@
+import { BlogComment } from '../comment';
+
 export class Blog {
     constructor(
         public id: string,
@@ -6,5 +8,6 @@ export class Blog {
         public description: string,
         public content: string,
         public uploadDate: Date,
+        public comments: BlogComment[],
     ) {}
 }

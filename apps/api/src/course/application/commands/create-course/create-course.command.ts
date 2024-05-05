@@ -18,7 +18,6 @@ export class CreateCourseCommand
         return new Lesson(
           this.idGenerator.generateId(),
           lesson.title,
-          lesson.description,
           [],
           lesson.content,
           lesson.videoUrl,

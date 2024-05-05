@@ -15,7 +15,6 @@ export type GetCoursesResponse = {
 export type GetLessonsResponse = {
   id: string;
   title: string;
-  description: string;
   comments: GetCommentsResponse;
   content?: string;
   videoUrl?: string;

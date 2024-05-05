@@ -45,7 +45,6 @@ export class GetCoursesByCategoryQuery
             ({
               id,
               title,
-              description,
               comments,
               content,
               videoUrl,
@@ -53,7 +52,6 @@ export class GetCoursesByCategoryQuery
             }) => ({
               id,
               title,
-              description,
               comments: comments.map(({ id, content, userId, createdAt }) => ({
                 id,
                 content,

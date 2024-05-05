@@ -40,7 +40,6 @@ export class GetCoursesQuery
             ({
               id,
               title,
-              description,
               comments,
               content,
               videoUrl,

@@ -13,7 +13,6 @@ export type CreateCourseDto = {
 
 export type CreateLessonsDto = {
   title: string;
-  description: string;
   content?: string;
   videoUrl?: string;
   imageUrl?: string;

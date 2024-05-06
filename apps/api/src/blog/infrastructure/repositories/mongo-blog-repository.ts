@@ -35,6 +35,7 @@ export class MongoBlogRepository implements BlogRepository {
                     content: data.content,
                     uploadDate: data.uploadDate,
                     comments: data.comments,
+                    tags: data.tags
                 }
             },
             {

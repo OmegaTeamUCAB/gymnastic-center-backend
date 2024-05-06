@@ -1,6 +1,11 @@
 import { Controller, Post, Body, Inject, Get } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { LoginDto, RequestVerificationCodeDto, SignUpDto } from './dtos';
+import {
+  CheckCodeDto,
+  LoginDto,
+  RequestVerificationCodeDto,
+  SignUpDto,
+} from './dtos';
 import {
   AUTH_REPOSITORY,
   CODE_GENERATOR,
@@ -8,6 +13,7 @@ import {
   VERIFICATION_EMAIL_HANDLER,
 } from '../constants';
 import {
+  CheckVerificationCodeCommand,
   IAuthRepository,
   LoginCommand,
   RequestVerificationCodeCommand,
@@ -129,6 +135,23 @@ export class AuthController {
       this.codeGenerator,
     );
     const result = await service.execute(requestVerificationCodeDto);
+    result.unwrap();
+    return {
+      success: true,
+    };
+  }
+
+  @Post('checkCode')
+  @ApiResponse({
+    status: 200,
+    description: 'Code checked successfully',
+    type: SuccessBasedResponse,
+  })
+  @ApiResponse({ status: 400, description: 'Invalid code' })
+  @ApiResponse({ status: 400, description: 'Code expired' })
+  async checkVerificationCode(@Body() checkCodeDto: CheckCodeDto) {
+    const service = new CheckVerificationCodeCommand(this.repository);
+    const result = await service.execute(checkCodeDto);
     result.unwrap();
     return {
       success: true,

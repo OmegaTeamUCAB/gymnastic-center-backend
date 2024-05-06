@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import * as Joi from 'joi';
-import { MailgunModule, RabbitMQModule } from '@app/core';
+import { RabbitMQModule } from '@app/core';
 import { ApiController } from './api.controller';
 import { AuthModule } from './auth/infrastructure/auth.module';
 
@@ -26,9 +26,6 @@ import { AuthModule } from './auth/infrastructure/auth.module';
       queue: 'EVENTS',
     }),
     MongooseModule.forRoot(process.env.MONGODB_CNN),
-    MailgunModule.forRoot({
-      key: process.env.MAILGUN_API_KEY,
-    }),
     AuthModule,
   ],
   controllers: [ApiController],

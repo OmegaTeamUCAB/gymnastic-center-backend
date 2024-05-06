@@ -1,1 +1,0 @@
-export const MAILGUN = 'MAILGUN';

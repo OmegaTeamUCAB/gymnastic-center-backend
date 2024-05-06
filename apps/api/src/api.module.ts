@@ -5,8 +5,10 @@ import * as Joi from 'joi';
 import { RabbitMQModule } from '@app/core';
 import { ApiController } from './api.controller';
 import { AuthModule } from './auth/infrastructure/auth.module';
+import { UserModule } from './user/infrastructure';
+import { InstructorModule } from './instructor/infrastructure/instructors.module';
 import { CategoryModule } from './category/infrastructure';
-import { InstructorsModule } from './instructors/infraestructure/instructors.module';
+import { CourseModule } from './course/infrastructure/course.module';
 import { BlogModule } from './blog/infraestructure/blog.module';
 
 @Module({
@@ -17,6 +19,11 @@ import { BlogModule } from './blog/infraestructure/blog.module';
         RABBITMQ_URI: Joi.string().required(),
         RABBITMQ_EVENTS_QUEUE: Joi.string().required(),
         MONGODB_CNN: Joi.string().required(),
+        JWT_SECRET: Joi.string().required(),
+        MAILGUN_API_KEY: Joi.string().required(),
+        MAILGUN_FROM: Joi.string().required(),
+        MAILGUN_DOMAIN: Joi.string().required(),
+        VERIFICATION_EMAIL_TEMPLATE: Joi.string().required(),
       }),
       envFilePath: './apps/api/.env',
     }),
@@ -26,8 +33,10 @@ import { BlogModule } from './blog/infraestructure/blog.module';
     MongooseModule.forRoot(process.env.MONGODB_CNN),
     AuthModule,
     CategoryModule,
-    InstructorsModule,
+    UserModule,
+    InstructorModule,
     BlogModule,
+    CourseModule,
   ],
   controllers: [ApiController],
   providers: [],

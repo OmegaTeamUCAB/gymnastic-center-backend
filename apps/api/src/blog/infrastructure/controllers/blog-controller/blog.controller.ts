@@ -1,6 +1,6 @@
 import { Blog } from '../../../domain';
 import { GetAllBlogsQuery, GetBlogByIdQuery, GetBlogByIdDto, CreateBlogCommentCommand, CreateBlogCommand } from '../../../application';
-import { BlogResponse, MongoBlog, MongoBlogRepository, CreateBlogCommentDto, CreateBlogDto, BLogCommentResponse  } from "../../index";
+import { BlogResponse, MongoBlog, MongoBlogRepository, CreateBlogCommentDto, CreateBlogDto } from "../../index";
 import { IdGenerator, UUIDGENERATOR } from '@app/core';
 import { Controller, Get, Post, Body, Param, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';

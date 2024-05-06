@@ -20,8 +20,6 @@ export class ResetPasswordCommand
     if (!user) return Result.failure(new UserNotFoundException());
     if (!user.verificationCode)
       return Result.failure(new InvalidCodeException());
-    if (!user.codeExpirationDate || user.codeExpirationDate < new Date())
-      return Result.failure(new CodeExpiredException());
     user.password = await this.cryptoService.hash(data.newPassword);
     user.verificationCode = null;
     user.codeExpirationDate = null;

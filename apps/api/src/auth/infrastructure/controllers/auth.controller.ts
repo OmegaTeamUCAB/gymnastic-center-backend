@@ -20,6 +20,7 @@ import {
   IdGenerator,
   EmailHandler,
   CodeGenerator,
+  SuccessBasedResponse,
 } from '@app/core';
 import { TokenGenerator } from '../../application/token/token-generator.interface';
 import { Auth, CurrentUser } from '../decorators';
@@ -28,8 +29,7 @@ import { UserRepository } from 'apps/api/src/user/domain/repositories';
 import { GetUserByIdQuery } from 'apps/api/src/user/application/queries/get-user-by-id';
 import { CreateUserCommand } from 'apps/api/src/user/application/commands/create-user';
 import { User } from 'apps/api/src/user/domain/entities';
-import { authResponse } from './responses';
-import { UserResponse } from 'apps/api/src/user/infrastructure/controllers/responses';
+import { AuthResponse } from './responses';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -52,7 +52,11 @@ export class AuthController {
   ) {}
 
   @Post('login')
-  @ApiResponse({ status: 200, description: 'User logged in successfully', type: authResponse })
+  @ApiResponse({
+    status: 200,
+    description: 'User logged in successfully',
+    type: AuthResponse,
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async login(@Body() loginDto: LoginDto) {
     const loginService = new LoginCommand(
@@ -68,7 +72,11 @@ export class AuthController {
   }
 
   @Post('signUp')
-  @ApiResponse({ status: 201, description: 'User registered successfully', type: authResponse})
+  @ApiResponse({
+    status: 201,
+    description: 'User registered successfully',
+    type: AuthResponse,
+  })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async signUp(@Body() signUpDto: SignUpDto) {
     const signUpService = new SignUpCommand(
@@ -76,24 +84,42 @@ export class AuthController {
       this.jwtService,
       this.bcryptService,
     );
-    const service = new CreateUserCommand(this.userRepository, this.uuidGenerator);
-    const result = await service.execute({ ...signUpDto })
-    const id = result.unwrap().id;
-    const signUpResult = await signUpService.execute({ id ,...signUpDto});
+    const service = new CreateUserCommand(
+      this.userRepository,
+      this.uuidGenerator,
+    );
+    const result = await service.execute({ ...signUpDto });
+    const { id } = result.unwrap();
+    const signUpResult = await signUpService.execute({ id, ...signUpDto });
     const { token } = signUpResult.unwrap();
-    return {token, user: signUpDto};
+    return { token, user: signUpDto };
   }
 
   @Get('currentUser')
   @Auth()
-  @ApiResponse({ status: 200, description: 'User information', type: UserResponse })
+  @ApiResponse({
+    status: 200,
+    description: 'User information',
+    type: AuthResponse,
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async currentUser(@CurrentUser() user: User) {
-    return user;  
+    return {
+      user,
+      token: this.jwtService.generateToken({ id: user.id }),
+    };
   }
 
   @Post('requestCode')
-  @ApiResponse({ status: 200, description: 'Code requested' })
+  @ApiResponse({
+    status: 200,
+    description: 'Code requested',
+    type: SuccessBasedResponse,
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+  })
   async requestVerificationCode(
     @Body() requestVerificationCodeDto: RequestVerificationCodeDto,
   ) {

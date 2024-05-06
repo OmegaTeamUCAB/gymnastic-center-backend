@@ -3,7 +3,7 @@ import { HydratedDocument } from 'mongoose';
 
 export type AuthUserDocument = HydratedDocument<MongoAuthUser>;
 
-@Schema({ timestamps: true, versionKey: false })
+@Schema({ collection: 'authusers', timestamps: true, versionKey: false })
 export class MongoAuthUser {
   readonly _id: string;
 
@@ -18,6 +18,12 @@ export class MongoAuthUser {
 
   @Prop({ required: true })
   password: string;
+
+  @Prop()
+  verificationCode?: string;
+
+  @Prop({ type: Date })
+  codeExpirationDate?: Date
 
   readonly createdAt: Date;
 

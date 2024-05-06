@@ -4,19 +4,12 @@ import {
   EmailHandler,
   CodeGenerator,
 } from '@app/core';
-import {
-  GenerateVerificationCodeDto,
-  GenerateVerificationCodeResponse,
-} from './types';
+import { RequestVerificationCodeDto } from './types';
 import { UserNotFoundException } from '../../exceptions';
 import { IAuthRepository } from '../../repositories/auth.repository';
 
-export class GenerateVerificationCodeCommand
-  implements
-    ApplicationService<
-      GenerateVerificationCodeDto,
-      GenerateVerificationCodeResponse
-    >
+export class RequestVerificationCodeCommand
+  implements ApplicationService<RequestVerificationCodeDto, void>
 {
   constructor(
     private readonly authRepository: IAuthRepository,
@@ -24,14 +17,9 @@ export class GenerateVerificationCodeCommand
     private readonly codeGenerator: CodeGenerator<string>,
   ) {}
 
-  async execute(
-    data: GenerateVerificationCodeDto,
-  ): Promise<Result<GenerateVerificationCodeResponse>> {
+  async execute(data: RequestVerificationCodeDto): Promise<Result<void>> {
     const user = await this.authRepository.findByEmail(data.email);
-    if (!user)
-      return Result.failure<GenerateVerificationCodeResponse>(
-        new UserNotFoundException(),
-      );
+    if (!user) return Result.failure<void>(new UserNotFoundException());
     const code = this.codeGenerator.generateRandomCode();
     user.verificationCode = code;
     user.codeExpirationDate = new Date(Date.now() + 1000 * 60 * 15); // 15 minutes
@@ -39,8 +27,6 @@ export class GenerateVerificationCodeCommand
       this.emailHandler.sendEmail(user.email, { code }),
       this.authRepository.save(user),
     ]);
-    return Result.success<GenerateVerificationCodeResponse>({
-      code,
-    });
+    return Result.success<void>(null);
   }
 }

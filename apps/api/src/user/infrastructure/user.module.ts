@@ -22,5 +22,6 @@ import { MongoUser, UserSchema } from './models/mongo-user.model';
       useClass: MongoUserRepository,
     }
   ],
+  exports: [USER_REPOSITORY]
 })
 export class UserModule {}

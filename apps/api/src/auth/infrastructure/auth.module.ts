@@ -9,14 +9,16 @@ import { AUTH_REPOSITORY, JWT_SERVICE } from './constants';
 import { MongoAuthRepository } from './repositories/mongo-auth.repository';
 import { BcryptModule, UUIDModule } from '@app/core';
 import { JwtGenerator, JwtStrategy } from './providers';
+import { UserModule } from '../../user/infrastructure';
 
 @Module({
   imports: [
     PassportModule.register({
       defaultStrategy: 'jwt',
     }),
+    ConfigModule,
     JwtModule.registerAsync({
-      imports: [ConfigModule],
+      imports: [ConfigModule, UserModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const secret = configService.get('JWT_SECRET');
@@ -35,6 +37,7 @@ import { JwtGenerator, JwtStrategy } from './providers';
     ]),
     BcryptModule,
     UUIDModule,
+    UserModule
   ],
   controllers: [AuthController],
   providers: [

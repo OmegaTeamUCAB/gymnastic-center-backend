@@ -4,7 +4,7 @@ export type CreateUserDto = {
   fullName: string;
   email: string;
   phoneNumber: string;
-  birthDate: Date;
-  gender: Gender;
-  stats: Stat[];
+  birthDate?: Date;
+  gender?: Gender;
+  stats?: Stat[];
 };

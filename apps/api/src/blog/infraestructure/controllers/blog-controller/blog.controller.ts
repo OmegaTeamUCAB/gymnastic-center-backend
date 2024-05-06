@@ -1,13 +1,14 @@
 import { Blog } from '../../../domain';
 import { GetAllBlogsQuery, GetBlogByIdQuery, GetBlogByIdDto, CreateBlogCommentCommand, CreateBlogCommand } from '../../../application';
-import { CommentResponse, BlogResponse, MongoBlog, MongoBlogRepository, CreateBlogCommentDto, CreateBlogDto  } from "../../index";
+import { BlogResponse, MongoBlog, MongoBlogRepository, CreateBlogCommentDto, CreateBlogDto, BLogCommentResponse  } from "../../index";
 import { IdGenerator, UUIDGENERATOR } from '@app/core';
 import { Controller, Get, Post, Body, Param, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Model } from 'mongoose';
 
 @Controller('blog')
+@ApiTags('Blogs')
 export class BlogController {
   constructor(
     @InjectModel(MongoBlog.name) private readonly blogModel: Model<Blog>,
@@ -19,7 +20,7 @@ export class BlogController {
   @ApiResponse({
     status: 200,
     description: 'Blogs list',
-    type: [BlogResponse],
+    type: BlogResponse,
   })
 
   @Get()
@@ -45,7 +46,6 @@ export class BlogController {
   @ApiResponse({
     status: 200,
     description: 'The blog has been successfully created',
-    type: [BlogResponse],
   })
 
   @Post()
@@ -61,7 +61,6 @@ export class BlogController {
   @ApiResponse({
     status: 200,
     description: 'The comment has been successfully posted',
-    type: [CommentResponse],
   })
   @Post('/create-comment')
   createComment(@Body() crateBlogCommentDto: CreateBlogCommentDto) {

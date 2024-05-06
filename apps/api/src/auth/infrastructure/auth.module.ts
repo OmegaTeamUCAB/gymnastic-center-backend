@@ -19,14 +19,16 @@ import {
   JwtStrategy,
   VerificationCodeEmailService,
 } from './providers';
+import { UserModule } from '../../user/infrastructure';
 
 @Module({
   imports: [
     PassportModule.register({
       defaultStrategy: 'jwt',
     }),
+    ConfigModule,
     JwtModule.registerAsync({
-      imports: [ConfigModule],
+      imports: [ConfigModule, UserModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const secret = configService.get('JWT_SECRET');
@@ -45,6 +47,7 @@ import {
     ]),
     BcryptModule,
     UUIDModule,
+    UserModule
   ],
   controllers: [AuthController],
   providers: [

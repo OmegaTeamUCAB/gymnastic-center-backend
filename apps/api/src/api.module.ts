@@ -7,7 +7,7 @@ import { ApiController } from './api.controller';
 import { AuthModule } from './auth/infrastructure/auth.module';
 import { CategoryModule } from './category/infrastructure';
 import { InstructorsModule } from './instructors/infraestructure/instructors.module';
-import { BlogModule } from './blog/blog.module';
+import { BlogModule } from './blog/infraestructure/blog.module';
 
 @Module({
   imports: [
@@ -32,4 +32,4 @@ import { BlogModule } from './blog/blog.module';
   controllers: [ApiController],
   providers: [],
 })
-export class ApiModule {}
+export class ApiModule { }

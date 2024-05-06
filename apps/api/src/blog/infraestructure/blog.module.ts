@@ -1,6 +1,6 @@
 import { UUIDModule } from '@app/core';
-import { BlogController } from './infraestructure/controllers/blog-controller/blog.controller';
-import { BlogSchema, MongoBlog } from './infraestructure/models/blog.model';
+import { BlogController } from './controllers/blog-controller/blog.controller';
+import { BlogSchema, MongoBlog } from './models/blog.model';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Module } from '@nestjs/common';
 

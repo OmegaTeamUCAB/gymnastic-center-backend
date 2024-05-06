@@ -9,5 +9,6 @@ export class Blog {
         public content: string,
         public uploadDate: Date,
         public comments: BlogComment[],
+        public tags: string[],
     ) {}
 }

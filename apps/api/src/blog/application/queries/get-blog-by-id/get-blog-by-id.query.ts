@@ -14,10 +14,18 @@ export class GetBlogByIdQuery implements ApplicationService<GetBlogByIdDto, GetB
         return Result.success<GetBlogByIdResponse>({
             id: blog.id,
             imageUrl: blog.imageUrl,
+            comments: blog.comments.map(({ id, userId, blogId, content, postedAt }) => ({
+                id,
+                userId,
+                blogId,
+                content,
+                postedAt,
+            })),
             title: blog.title,
             description: blog.description,
             content: blog.content,
             uploadDate: blog.uploadDate,
+            tags: blog.tags,
         });
     }
 }

@@ -8,8 +8,8 @@ import { AuthModule } from './auth/infrastructure/auth.module';
 import { UserModule } from './user/infrastructure';
 import { InstructorModule } from './instructor/infrastructure/instructors.module';
 import { CategoryModule } from './category/infrastructure';
-import { BlogModule } from './blog/blog.module';
 import { CourseModule } from './course/infrastructure/course.module';
+import { BlogModule } from './blog/infrastructure/blog.module';
 
 @Module({
   imports: [
@@ -41,4 +41,4 @@ import { CourseModule } from './course/infrastructure/course.module';
   controllers: [ApiController],
   providers: [],
 })
-export class ApiModule {}
+export class ApiModule { }

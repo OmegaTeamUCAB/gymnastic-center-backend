@@ -17,6 +17,7 @@ import {
   IAuthRepository,
   LoginCommand,
   RequestVerificationCodeCommand,
+  ResetPasswordCommand,
   SignUpCommand,
 } from '../../application';
 import {
@@ -152,6 +153,28 @@ export class AuthController {
   async checkVerificationCode(@Body() checkCodeDto: CheckCodeDto) {
     const service = new CheckVerificationCodeCommand(this.repository);
     const result = await service.execute(checkCodeDto);
+    result.unwrap();
+    return {
+      success: true,
+    };
+  }
+
+  @Post('resetPassword')
+  @ApiResponse({
+    status: 200,
+    description: 'Password reset',
+    type: SuccessBasedResponse,
+  })
+  @ApiResponse({ status: 400, description: 'No code requested' })
+  async resetPassword(@Body() loginDto: LoginDto) {
+    const service = new ResetPasswordCommand(
+      this.repository,
+      this.bcryptService,
+    );
+    const result = await service.execute({
+      email: loginDto.email,
+      newPassword: loginDto.password,
+    });
     result.unwrap();
     return {
       success: true,

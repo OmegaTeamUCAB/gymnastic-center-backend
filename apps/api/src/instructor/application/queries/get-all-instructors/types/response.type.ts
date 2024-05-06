@@ -1,4 +1,4 @@
-import { Gender } from 'apps/api/src/instructors/domain/entities/instructor.entity'
+import { Gender } from '../../../../domain/entities/instructor.entity'
 
 export type GetAllInstructorsResponse = {
     id: string;

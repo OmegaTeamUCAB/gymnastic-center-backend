@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { CategoryResponse } from 'apps/api/src/category/infrastructure/controllers/responses';
-import { InstructorResponse } from 'apps/api/src/instructors/infraestructure/responses/instructor.response';
+import { InstructorResponse } from 'apps/api/src/instructor/infrastructure/responses/instructor.response';
 
 export class CourseResponse {
   @ApiProperty()

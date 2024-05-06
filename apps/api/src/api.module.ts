@@ -6,7 +6,7 @@ import { RabbitMQModule } from '@app/core';
 import { ApiController } from './api.controller';
 import { AuthModule } from './auth/infrastructure/auth.module';
 import { UserModule } from './user/infrastructure';
-import { InstructorsModule } from './instructors/infraestructure/instructors.module';
+import { InstructorModule } from './instructor/infrastructure/instructors.module';
 import { CategoryModule } from './category/infrastructure';
 import { BlogModule } from './blog/blog.module';
 import { CourseModule } from './course/infrastructure/course.module';
@@ -34,7 +34,7 @@ import { CourseModule } from './course/infrastructure/course.module';
     AuthModule,
     CategoryModule,
     UserModule,
-    InstructorsModule,
+    InstructorModule,
     BlogModule,
     CourseModule,
   ],

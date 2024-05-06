@@ -12,4 +12,5 @@ export type GetAllBlogsReponse = {
     description: string,
     content: string,
     uploadDate: Date,
-}[]
+    tags: string[],
+}[];

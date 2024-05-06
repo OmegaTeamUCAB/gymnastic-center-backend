@@ -22,4 +22,7 @@ export class BlogResponse {
 
     @ApiProperty()
     uploadDate: Date;
+
+    @ApiProperty()
+    tags: string[];
 }

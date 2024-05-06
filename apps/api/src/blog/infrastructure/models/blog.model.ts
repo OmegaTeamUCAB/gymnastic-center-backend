@@ -43,6 +43,9 @@ export class MongoBlog {
         postedAt: Date;
     }[];
 
+    @Prop({ required: true, default: [], type: [String]})
+    tags: string[];
+
     readonly createdat: Date;
     readonly updatedAt: Date;
 }

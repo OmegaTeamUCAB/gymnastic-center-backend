@@ -1,0 +1,1 @@
+export { ResetPasswordDto } from './dto';

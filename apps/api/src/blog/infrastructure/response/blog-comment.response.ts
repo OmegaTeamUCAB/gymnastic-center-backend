@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class CommentResponse {
+export class BLogCommentResponse {
     @ApiProperty()
     userId: string;
 

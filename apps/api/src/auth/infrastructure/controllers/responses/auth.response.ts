@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { UserResponse } from 'apps/api/src/user/infrastructure/controllers/responses';
 
-export class authResponse {
+export class AuthResponse {
   @ApiProperty()
   token: string;
 

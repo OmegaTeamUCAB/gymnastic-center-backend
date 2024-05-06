@@ -9,4 +9,4 @@ import { MongooseModule } from '@nestjs/mongoose';
   controllers: [InstructorsController],
   providers: [],
 })
-export class InstructorsModule {}
+export class InstructorModule {}

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import * as Joi from 'joi';
-import { RabbitMQModule } from '@app/core';
+import { RabbitMQModule, SearchesModule } from '@app/core';
 import { ApiController } from './api.controller';
 import { AuthModule } from './auth/infrastructure/auth.module';
 import { UserModule } from './user/infrastructure';
@@ -37,8 +37,9 @@ import { BlogModule } from './blog/infrastructure/blog.module';
     InstructorModule,
     BlogModule,
     CourseModule,
+    SearchesModule,
   ],
   controllers: [ApiController],
   providers: [],
 })
-export class ApiModule { }
+export class ApiModule {}

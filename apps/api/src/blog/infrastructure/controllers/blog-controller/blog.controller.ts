@@ -1,8 +1,8 @@
 import { Blog } from '../../../domain';
-import { GetAllBlogsQuery, GetBlogByIdQuery, GetBlogByIdDto, CreateBlogCommentCommand, CreateBlogCommand } from '../../../application';
-import { BlogResponse, MongoBlog, MongoBlogRepository, CreateBlogCommentDto, CreateBlogDto } from "../../index";
+import { GetAllBlogsQuery, GetBlogByIdQuery, GetBlogByIdDto, CreateBlogCommentCommand, CreateBlogCommand, UpdateBlogCommand } from '../../../application';
+import { BlogResponse, MongoBlog, MongoBlogRepository, CreateBlogCommentDto, CreateBlogDto, UpdateBlogDto } from '../../index';
 import { IdGenerator, UUIDGENERATOR } from '@app/core';
-import { Controller, Get, Post, Body, Param, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Inject, Patch } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Model } from 'mongoose';
@@ -24,11 +24,11 @@ export class BlogController {
   })
 
   @Get()
-  getAllBlogs() {
+  async getAllBlogs() {
     const repository = new MongoBlogRepository(this.blogModel);
     const service = new GetAllBlogsQuery(repository);
-
-    return service.execute()
+    const res = await service.execute()
+    return res.unwrap();
   }
 
   @ApiResponse({
@@ -56,6 +56,18 @@ export class BlogController {
     const service = new CreateBlogCommand(repository, this.uuidGenerator);
 
     service.execute(createBlogDto);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'The blog has been successfully updated',
+  })
+  @Patch()
+  updateBlog(@Body() data: UpdateBlogDto) {
+    const repository = new MongoBlogRepository(this.blogModel);
+    const service = new UpdateBlogCommand(repository);
+
+    service.execute(data);
   }
 
   @ApiResponse({

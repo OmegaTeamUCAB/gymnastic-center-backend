@@ -26,12 +26,12 @@ export class InstructorsController {
         description: 'Instructor not found',
     })
     @Get(':id')
-    findOneInstructor(@Param('id') id: string) {
+    async findOneInstructor(@Param('id') id: string) {
         const data: GetInstructorByIdDto = { id };
         const repository = new MongoInstructorRepository(this.model);
         const getInstructorByIdQuery = new GetInstructorByIdQuery(repository);
-
-        return getInstructorByIdQuery.execute(data);
+        const result = await getInstructorByIdQuery.execute(data);   
+        return result.unwrap();
     }
 
     @ApiResponse({
@@ -40,10 +40,10 @@ export class InstructorsController {
         type: [InstructorResponse],
     })
     @Get()
-    findAllInstructors() {
+    async findAllInstructors() {
         const repository = new MongoInstructorRepository(this.model);
         const getAllInstructors = new GetAllInstructors(repository);
-
-        return getAllInstructors.execute();
+        const result = await getAllInstructors.execute()
+        return result.unwrap();
     }
 }

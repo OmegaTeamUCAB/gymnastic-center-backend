@@ -66,6 +66,9 @@ export class SearchBlogsReadModel
           },
         },
       },
+      {
+        $limit: Math.max(1, data.limit),
+      },
     ]);
   }
 }

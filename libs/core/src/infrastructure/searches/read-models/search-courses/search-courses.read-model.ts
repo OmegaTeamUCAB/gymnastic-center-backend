@@ -62,6 +62,9 @@ export class SearchCoursesReadModel
           },
         },
       },
+      {
+        $limit: Math.max(1, data.limit),
+      },
     ]);
   }
 }

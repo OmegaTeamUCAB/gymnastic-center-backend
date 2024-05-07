@@ -8,13 +8,13 @@ import {
   Query,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { ApiQuery, ApiResponse } from '@nestjs/swagger';
 import {
   EVENTS_QUEUE,
   SearchBlogsReadModel,
   SearchCoursesReadModel,
   SearchResponse,
 } from '@app/core';
-import { ApiQuery, ApiResponse } from '@nestjs/swagger';
 
 @Controller()
 export class ApiController {

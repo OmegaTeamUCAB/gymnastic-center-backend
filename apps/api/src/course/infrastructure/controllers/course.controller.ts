@@ -147,10 +147,10 @@ export class CourseController {
     const service = new UpdateCourseCommand(this.courseRepository);
     const result = await service.execute({ id, ...updateCourseDto });
     const response = result.unwrap();
-    /* this.rmqClient.emit(COURSE_UPDATED, {
+    this.rmqClient.emit(COURSE_UPDATED, {
       id,
       dto: updateCourseDto,
-    }); */
+    });
     return response;
   }
 }

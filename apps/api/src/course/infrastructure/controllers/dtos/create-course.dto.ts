@@ -5,7 +5,7 @@ export class CreateCourseDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  name: string;
+  title: string;
 
   @IsString()
   @IsNotEmpty()

@@ -11,14 +11,10 @@ import {
 
 export class UpdateCourseDto {
   @IsString()
-  @IsUUID()
-  id: string;
-  
-  @IsString()
   @IsNotEmpty()
   @IsOptional()
   @ApiProperty()
-  name: string;
+  title: string;
 
   @IsString()
   @IsNotEmpty()

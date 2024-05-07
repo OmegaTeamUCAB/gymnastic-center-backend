@@ -12,7 +12,7 @@ export class UpdateCourseCommand
     const course = await this.courseRepository.getCourseById(data.id);
     if (!course)
       return Result.failure<UpdateCourseResponse>(new CourseNotFoundException());
-    course.name = data.name ?? course.name;
+    course.name = data.title ?? course.name;
     course.description = data.description ?? course.description;
     course.level = data.level ?? course.level;
     course.weeks = data.weeks ?? course.weeks;

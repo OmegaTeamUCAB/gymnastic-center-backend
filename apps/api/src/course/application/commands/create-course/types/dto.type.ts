@@ -1,5 +1,5 @@
 export type CreateCourseDto = {
-  name: string;
+  title: string;
   description: string;
   level: number;
   tags: string[];

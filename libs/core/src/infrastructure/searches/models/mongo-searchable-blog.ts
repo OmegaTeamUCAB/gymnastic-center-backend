@@ -5,13 +5,19 @@ export class MongoSearchableBlog {
   readonly _id: string;
 
   @Prop()
-  aggregateId: string;
+  id: string;
 
   @Prop()
   imageUrl: string;
 
   @Prop()
   title: string;
+
+  @Prop()
+  categoryName: string;
+
+  @Prop()
+  instructorName: string;
 
   @Prop()
   description: string;

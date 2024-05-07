@@ -1,6 +1,11 @@
 import { Controller, Get, Inject, Param } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { SearchCoursesReadModel } from '@app/core';
+import {
+  SearchBlogsReadModel,
+  SearchCoursesReadModel,
+  SearchResponse,
+} from '@app/core';
+import { ApiResponse } from '@nestjs/swagger';
 
 @Controller()
 export class ApiController {
@@ -8,6 +13,7 @@ export class ApiController {
     @Inject('EVENTS')
     private readonly rmqClient: ClientProxy,
     private readonly searchCoursesReadModel: SearchCoursesReadModel,
+    private readonly searchBlogsReadModel: SearchBlogsReadModel,
   ) {}
 
   @Get('health')
@@ -17,7 +23,19 @@ export class ApiController {
   }
 
   @Get('search/:searchTerm')
-  search(@Param('searchTerm') searchTerm: string) {
-    return this.searchCoursesReadModel.execute({ searchTerm });
+  @ApiResponse({
+    status: 200,
+    description: 'Search matching courses and blogs',
+    type: SearchResponse,
+  })
+  async search(@Param('searchTerm') searchTerm: string) {
+    const [courses, blogs] = await Promise.all([
+      this.searchCoursesReadModel.execute({ searchTerm }),
+      this.searchBlogsReadModel.execute({ searchTerm }),
+    ]);
+    return {
+      courses,
+      blogs,
+    };
   }
 }

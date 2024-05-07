@@ -12,7 +12,7 @@ export class MongoSearchableCourse {
   readonly _id: string;
 
   @Prop()
-  aggregateId: string;
+  id: string;
 
   @Prop()
   title: string;

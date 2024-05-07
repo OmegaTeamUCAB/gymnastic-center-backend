@@ -5,6 +5,11 @@ import {
   SearchableCourseSchema,
 } from './models/mongo-searchable-course';
 import { SearchCoursesReadModel } from './read-models/search-courses/search-courses.read-model';
+import {
+  MongoSearchableBlog,
+  SearchableBlogSchema,
+} from './models/mongo-searchable-blog';
+import { SearchBlogsReadModel } from './read-models';
 
 @Module({
   imports: [
@@ -13,9 +18,13 @@ import { SearchCoursesReadModel } from './read-models/search-courses/search-cour
         name: MongoSearchableCourse.name,
         schema: SearchableCourseSchema,
       },
+      {
+        name: MongoSearchableBlog.name,
+        schema: SearchableBlogSchema,
+      },
     ]),
   ],
-  providers: [SearchCoursesReadModel],
-  exports: [SearchCoursesReadModel],
+  providers: [SearchCoursesReadModel, SearchBlogsReadModel],
+  exports: [SearchCoursesReadModel, SearchBlogsReadModel],
 })
 export class SearchesModule {}

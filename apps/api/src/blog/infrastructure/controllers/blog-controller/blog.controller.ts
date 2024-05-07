@@ -24,11 +24,11 @@ export class BlogController {
   })
 
   @Get()
-  getAllBlogs() {
+  async getAllBlogs() {
     const repository = new MongoBlogRepository(this.blogModel);
     const service = new GetAllBlogsQuery(repository);
-
-    return service.execute()
+    const res = await service.execute()
+    return res.unwrap();
   }
 
   @ApiResponse({

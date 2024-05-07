@@ -40,10 +40,10 @@ export class InstructorsController {
         type: [InstructorResponse],
     })
     @Get()
-    findAllInstructors() {
+    async findAllInstructors() {
         const repository = new MongoInstructorRepository(this.model);
         const getAllInstructors = new GetAllInstructors(repository);
-
-        return getAllInstructors.execute();
+        const result = await getAllInstructors.execute()
+        return result.unwrap();
     }
 }

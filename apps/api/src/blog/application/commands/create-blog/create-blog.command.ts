@@ -11,7 +11,7 @@ export class CreateBlogCommand implements ApplicationService<CreateBlogDto, Crea
 
     async execute(data: CreateBlogDto) {
         const id = this.idGenerator.generateId();
-        const blog = new Blog(id, data.imageUrl, data.title, data.description, data.content, data.uploadDate, [], data.tags);
+        const blog = new Blog(id, data.imageUrl, data.title, data.description, data.content, data.uploadDate, [], data.tags, data.categoryId, data.instructorId);
         await this.blogRepository.createBlog(blog);
 
         return Result.success<CreateBlogResponse>({ id });

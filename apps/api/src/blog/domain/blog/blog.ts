@@ -10,5 +10,7 @@ export class Blog {
         public uploadDate: Date,
         public comments: BlogComment[],
         public tags: string[],
+        public categoryId: string,
+        public instructorId: string,
     ) {}
 }

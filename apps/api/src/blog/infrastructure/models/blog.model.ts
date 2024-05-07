@@ -46,6 +46,12 @@ export class MongoBlog {
     @Prop({ required: true, default: [], type: [String]})
     tags: string[];
 
+    @Prop({ required: true })
+    categoryId: string;
+
+    @Prop({ required: true })
+    instructorId: string;
+
     readonly createdat: Date;
     readonly updatedAt: Date;
 }

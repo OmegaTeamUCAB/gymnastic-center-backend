@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsEmpty, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsArray, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class UpdateBlogDto {
 
@@ -31,4 +31,9 @@ export class UpdateBlogDto {
     @IsArray()
     @IsOptional()
     public tags: string[];
+
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty()
+    categoryId: string;
 }

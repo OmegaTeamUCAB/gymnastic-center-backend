@@ -25,4 +25,10 @@ export class BlogResponse {
 
     @ApiProperty()
     tags: string[];
+
+    @ApiProperty()
+    categoryId: string;
+
+    @ApiProperty()
+    instructorId: string;
 }

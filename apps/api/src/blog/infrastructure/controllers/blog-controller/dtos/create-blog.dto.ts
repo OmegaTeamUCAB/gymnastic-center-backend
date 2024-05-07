@@ -34,4 +34,14 @@ export class CreateBlogDto {
     @IsArray()
     @ApiProperty()
     public tags: string[];
+
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty()
+    categoryId: string;
+  
+    @IsString()
+    @IsNotEmpty()
+    @ApiProperty()
+    instructorId: string;
 }

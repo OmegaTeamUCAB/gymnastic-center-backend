@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Param, Inject } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Inject,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ClientProxy } from '@nestjs/microservices';
 import {
@@ -6,9 +14,17 @@ import {
   GetBlogByIdQuery,
   CreateBlogCommentCommand,
   CreateBlogCommand,
+  UpdateBlogCommand,
 } from '../../application';
-import { CreateBlogCommentDto, CreateBlogDto } from './dtos';
-import { BLOG_CREATED, EVENTS_QUEUE, IdGenerator, IdResponse, UUIDGENERATOR } from '@app/core';
+import { CreateBlogCommentDto, CreateBlogDto, UpdateBlogDto } from './dtos';
+import {
+  BLOG_CREATED,
+  BLOG_UPDATED,
+  EVENTS_QUEUE,
+  IdGenerator,
+  IdResponse,
+  UUIDGENERATOR,
+} from '@app/core';
 import { BlogResponse } from './responses';
 import { BlogRepository } from '../../domain';
 import { BLOG_REPOSITORY } from '../constants';
@@ -78,5 +94,25 @@ export class BlogController {
     );
     const result = await service.execute(createBlogCommentDto);
     return result.unwrap();
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'The blog has been successfully created',
+    type: IdResponse,
+  })
+  @Post(':id')
+  async updateBlog(
+    @Body() updateBlogDto: UpdateBlogDto,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const service = new UpdateBlogCommand(this.repository);
+    const result = await service.execute({ ...updateBlogDto, id });
+    const response = result.unwrap();
+    this.rmqClient.emit(BLOG_UPDATED, {
+      id: response.id,
+      dto: updateBlogDto,
+    });
+    return response;
   }
 }

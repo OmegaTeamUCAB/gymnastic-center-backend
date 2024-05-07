@@ -24,7 +24,7 @@ export class MongoBlogRepository implements BlogRepository {
     return blog;
   }
 
-  async createBlog(data: Blog): Promise<void> {
+  async saveBlog(data: Blog): Promise<void> {
     await this.datasource.updateOne(
       {
         aggregateId: data.id,

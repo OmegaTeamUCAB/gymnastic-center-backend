@@ -7,8 +7,16 @@ import {
   ParseUUIDPipe,
   Post,
 } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { IdGenerator, IdResponse, UUIDGENERATOR } from '@app/core';
+import {
+  COURSE_CREATED,
+  COURSE_UPDATED,
+  EVENTS_QUEUE,
+  IdGenerator,
+  IdResponse,
+  UUIDGENERATOR,
+} from '@app/core';
 import { COURSE_REPOSITORY } from '../constants';
 import { CourseRepository } from '../../domain';
 import { CourseResponse } from './responses/course.response';
@@ -31,6 +39,8 @@ export class CourseController {
     private readonly courseRepository: CourseRepository,
     @Inject(UUIDGENERATOR)
     private readonly uuidGenerator: IdGenerator<string>,
+    @Inject(EVENTS_QUEUE)
+    private readonly rmqClient: ClientProxy,
   ) {}
 
   @Get()
@@ -63,7 +73,7 @@ export class CourseController {
     description: 'Courses by instructor',
     type: [CourseResponse],
   })
-  async getCoursesByInstruvtor(
+  async getCoursesByInstructor(
     @Param('id', ParseUUIDPipe) instructorId: string,
   ) {
     const service = new GetCoursesByInstructorQuery(this.courseRepository);
@@ -93,13 +103,17 @@ export class CourseController {
     description: 'Course created',
     type: IdResponse,
   })
-  async createCategory(@Body() createCourseDto: CreateCourseDto) {
+  async createCourse(@Body() createCourseDto: CreateCourseDto) {
     const service = new CreateCourseCommand(
       this.courseRepository,
       this.uuidGenerator,
     );
     const result = await service.execute(createCourseDto);
-    return result.unwrap();
+    const response = result.unwrap();
+    this.rmqClient.emit(COURSE_CREATED, {
+      id: response.id,
+    });
+    return response;
   }
 
   @Post('comment')
@@ -126,12 +140,17 @@ export class CourseController {
     description: 'Course updated',
     type: IdResponse,
   })
-  async updateCategory(
+  async updateCourse(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCourseDto: UpdateCourseDto,
   ) {
     const service = new UpdateCourseCommand(this.courseRepository);
     const result = await service.execute({ id, ...updateCourseDto });
-    return result.unwrap();
+    const response = result.unwrap();
+    /* this.rmqClient.emit(COURSE_UPDATED, {
+      id,
+      dto: updateCourseDto,
+    }); */
+    return response;
   }
 }

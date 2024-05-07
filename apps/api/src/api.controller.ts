@@ -1,6 +1,7 @@
 import { Controller, Get, Inject, Param } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import {
+  EVENTS_QUEUE,
   SearchBlogsReadModel,
   SearchCoursesReadModel,
   SearchResponse,
@@ -10,7 +11,7 @@ import { ApiResponse } from '@nestjs/swagger';
 @Controller()
 export class ApiController {
   constructor(
-    @Inject('EVENTS')
+    @Inject(EVENTS_QUEUE)
     private readonly rmqClient: ClientProxy,
     private readonly searchCoursesReadModel: SearchCoursesReadModel,
     private readonly searchBlogsReadModel: SearchBlogsReadModel,

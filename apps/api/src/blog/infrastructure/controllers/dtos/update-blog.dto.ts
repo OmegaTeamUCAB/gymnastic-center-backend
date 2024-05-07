@@ -1,34 +1,33 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsEmpty, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class UpdateBlogDto {
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  @ApiProperty()
+  imageUrl?: string;
 
-    @IsString()
-    @IsNotEmpty()
-    @ApiProperty()
-    public id: string;
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  @ApiProperty()
+  title?: string;
 
-    @IsString()
-    @IsNotEmpty()
-    @ApiProperty()
-    public imageUrl: string;
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  @ApiProperty()
+  description?: string;
 
-    @IsString()
-    @IsNotEmpty()
-    @ApiProperty()
-    public title: string;
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  @ApiProperty()
+  content?: string;
 
-    @IsString()
-    @IsNotEmpty()
-    @ApiProperty()
-    public description: string;
-
-    @IsString()
-    @IsNotEmpty()
-    @ApiProperty()
-    public content: string;
-
-    @IsArray()
-    @IsOptional()
-    public tags: string[];
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  tags?: string[];
 }

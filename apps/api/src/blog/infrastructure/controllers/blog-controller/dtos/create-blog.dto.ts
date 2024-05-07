@@ -30,4 +30,8 @@ export class CreateBlogDto {
     @IsArray()
     @ApiProperty()
     public comments: BlogComment[];
+
+    @IsArray()
+    @ApiProperty()
+    public tags: string[];
 }

@@ -4,4 +4,5 @@ export type CreateBlogDto = {
     description: string,
     content: string,
     uploadDate: Date,
+    tags: string[],
 }

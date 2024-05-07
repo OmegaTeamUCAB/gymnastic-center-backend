@@ -20,7 +20,7 @@ export class CreateBlogCommentCommand
       data.userId,
       data.blogId,
       data.content,
-      data.postedAt,
+      new Date(),
     );
     await this.repository.createComment(blogComment);
     return Result.success<CreateBlogCommentResponse>({ id });

@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Param, Inject } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ClientProxy } from '@nestjs/microservices';
 import {
   GetAllBlogsQuery,
   GetBlogByIdQuery,
@@ -7,7 +8,7 @@ import {
   CreateBlogCommand,
 } from '../../application';
 import { CreateBlogCommentDto, CreateBlogDto } from './dtos';
-import { IdGenerator, IdResponse, UUIDGENERATOR } from '@app/core';
+import { BLOG_CREATED, EVENTS_QUEUE, IdGenerator, IdResponse, UUIDGENERATOR } from '@app/core';
 import { BlogResponse } from './responses';
 import { BlogRepository } from '../../domain';
 import { BLOG_REPOSITORY } from '../constants';
@@ -20,6 +21,8 @@ export class BlogController {
     private readonly repository: BlogRepository,
     @Inject(UUIDGENERATOR)
     private readonly uuidGenerator: IdGenerator<string>,
+    @Inject(EVENTS_QUEUE)
+    private readonly rmqClient: ClientProxy,
   ) {}
 
   @ApiResponse({
@@ -55,7 +58,11 @@ export class BlogController {
   async createBlog(@Body() createBlogDto: CreateBlogDto) {
     const service = new CreateBlogCommand(this.repository, this.uuidGenerator);
     const result = await service.execute(createBlogDto);
-    return result.unwrap();
+    const response = result.unwrap();
+    this.rmqClient.emit(BLOG_CREATED, {
+      id: response.id,
+    });
+    return response;
   }
 
   @ApiResponse({
@@ -64,12 +71,12 @@ export class BlogController {
     type: IdResponse,
   })
   @Post('/create-comment')
-  async createComment(@Body() crateBlogCommentDto: CreateBlogCommentDto) {
+  async createComment(@Body() createBlogCommentDto: CreateBlogCommentDto) {
     const service = new CreateBlogCommentCommand(
       this.repository,
       this.uuidGenerator,
     );
-    const result = await service.execute(crateBlogCommentDto);
+    const result = await service.execute(createBlogCommentDto);
     return result.unwrap();
   }
 }

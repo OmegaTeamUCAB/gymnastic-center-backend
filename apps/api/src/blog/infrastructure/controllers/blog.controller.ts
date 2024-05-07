@@ -7,7 +7,7 @@ import {
   CreateBlogCommand,
 } from '../../application';
 import { CreateBlogCommentDto, CreateBlogDto } from './dtos';
-import { IdGenerator, UUIDGENERATOR } from '@app/core';
+import { IdGenerator, IdResponse, UUIDGENERATOR } from '@app/core';
 import { BlogResponse } from './responses';
 import { BlogRepository } from '../../domain';
 import { BLOG_REPOSITORY } from '../constants';
@@ -25,7 +25,7 @@ export class BlogController {
   @ApiResponse({
     status: 200,
     description: 'Blogs list',
-    type: BlogResponse,
+    type: [BlogResponse],
   })
   @Get()
   async getAllBlogs() {
@@ -34,7 +34,11 @@ export class BlogController {
     return result.unwrap();
   }
 
-  @ApiResponse({})
+  @ApiResponse({
+    status: 200,
+    description: 'Blog details',
+    type: BlogResponse,
+  })
   @Get(':id')
   async getBlogById(@Param('id') id: string) {
     const service = new GetBlogByIdQuery(this.repository);
@@ -45,6 +49,7 @@ export class BlogController {
   @ApiResponse({
     status: 200,
     description: 'The blog has been successfully created',
+    type: IdResponse,
   })
   @Post()
   async createBlog(@Body() createBlogDto: CreateBlogDto) {
@@ -56,6 +61,7 @@ export class BlogController {
   @ApiResponse({
     status: 200,
     description: 'The comment has been successfully posted',
+    type: IdResponse,
   })
   @Post('/create-comment')
   async createComment(@Body() crateBlogCommentDto: CreateBlogCommentDto) {

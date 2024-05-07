@@ -11,53 +11,49 @@ import {
 
 export class UpdateCourseDto {
   @IsString()
-  @IsUUID()
-  id: string;
-  
-  @IsString()
   @IsNotEmpty()
   @IsOptional()
   @ApiProperty()
-  name: string;
+  title?: string;
 
   @IsString()
   @IsNotEmpty()
   @IsOptional()
   @ApiProperty()
-  description: string;
+  description?: string;
 
   @IsInt()
   @Min(1)
   @IsOptional()
   @ApiProperty()
-  level: number;
+  level?: number;
 
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   @IsOptional()
   @ApiProperty()
-  tags: string[];
+  tags?: string[];
 
   @IsInt()
   @Min(1)
   @IsOptional()
   @ApiProperty()
-  weeks: number;
+  weeks?: number;
 
   @IsInt()
   @Min(1)
   @IsOptional()
   @ApiProperty()
-  minutes: number;
+  minutes?: number;
 
   @IsUrl()
   @IsOptional()
   @ApiProperty()
-  imageUrl: string;
+  imageUrl?: string;
 
   @IsString()
   @IsUUID()
   @IsOptional()
   @ApiProperty()
-  categoryId: string;
+  categoryId?: string;
 }

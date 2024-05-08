@@ -1,8 +1,10 @@
 import { UUIDModule } from '@app/core';
-import { BlogController } from './controllers/blog-controller/blog.controller';
-import { BlogSchema, MongoBlog } from './models/blog.model';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Module } from '@nestjs/common';
+import { BlogController } from './controllers/blog.controller';
+import { BlogSchema, MongoBlog } from './models/blog.model';
+import { BLOG_REPOSITORY } from './constants';
+import { MongoBlogRepository } from './repositories';
 
 @Module({
   imports: [
@@ -12,9 +14,14 @@ import { Module } from '@nestjs/common';
         schema: BlogSchema,
       },
     ]),
-    UUIDModule
+    UUIDModule,
   ],
   controllers: [BlogController],
-  providers: [],
+  providers: [
+    {
+      provide: BLOG_REPOSITORY,
+      useClass: MongoBlogRepository,
+    },
+  ],
 })
-export class BlogModule { }
+export class BlogModule {}

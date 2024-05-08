@@ -27,7 +27,7 @@ export class CreateCourseCommand
     );
     const course = new Course(
       id,
-      data.name,
+      data.title,
       data.description,
       data.level,
       data.tags,

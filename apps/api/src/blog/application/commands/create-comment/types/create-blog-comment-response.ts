@@ -1,3 +1,3 @@
-export type createBlogCommentResponse =  {
+export type CreateBlogCommentResponse =  {
     id: string;
 }

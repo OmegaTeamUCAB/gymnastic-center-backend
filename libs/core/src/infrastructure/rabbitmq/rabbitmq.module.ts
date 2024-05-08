@@ -16,6 +16,7 @@ export class RabbitMQModule {
   static registerClient({ queue }: RmqModuleOptions): DynamicModule {
     return {
       module: RabbitMQModule,
+      global: true,
       imports: [
         ClientsModule.registerAsync([
           {

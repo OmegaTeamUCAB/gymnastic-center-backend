@@ -1,6 +1,6 @@
 export type UpdateCourseDto = {
   id: string
-  name?: string;
+  title?: string;
   description?: string;
   level?: number;
   tags?: string[];

@@ -3,6 +3,7 @@ export type CreateBlogDto = {
     title: string,
     description: string,
     content: string,
-    uploadDate: Date,
+    categoryId: string,
+    instructorId: string,
     tags: string[],
 }

@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export class UpdateBlogDto {
   @IsString()
@@ -30,4 +36,9 @@ export class UpdateBlogDto {
   @IsString({ each: true })
   @IsOptional()
   tags?: string[];
+
+  @IsString()
+  @IsUUID()
+  @IsOptional()
+  categoryId?: string;
 }

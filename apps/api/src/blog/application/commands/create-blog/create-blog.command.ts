@@ -19,7 +19,9 @@ export class CreateBlogCommand
       data.title,
       data.description,
       data.content,
-      data.uploadDate,
+      data.categoryId,
+      data.instructorId,
+      new Date(),
       [],
       data.tags,
     );

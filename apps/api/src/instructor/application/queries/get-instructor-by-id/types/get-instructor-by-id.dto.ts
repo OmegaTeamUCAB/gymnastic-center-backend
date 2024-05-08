@@ -1,3 +1,3 @@
 export type GetInstructorByIdDto = {
-    id: string;
-}
+  id: string;
+};

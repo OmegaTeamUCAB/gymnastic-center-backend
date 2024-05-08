@@ -1,33 +1,37 @@
-import { IsArray, IsNotEmpty, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateBlogDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  public imageUrl: string;
+  imageUrl: string;
 
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  public title: string;
+  title: string;
 
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  public description: string;
+  description: string;
 
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  public content: string;
+  content: string;
 
-  @IsNotEmpty()
-  @ApiProperty()
-  public uploadDate: Date;
+  @IsString()
+  @IsUUID()
+  categoryId: string;
+
+  @IsString()
+  @IsUUID()
+  instructorId: string;
 
   @IsArray()
   @IsString({ each: true })
   @ApiProperty()
-  public tags: string[];
+  tags: string[];
 }

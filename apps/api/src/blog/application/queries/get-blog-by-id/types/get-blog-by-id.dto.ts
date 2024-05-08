@@ -1,3 +1,3 @@
 export type GetBlogByIdDto = {
-    id: string;
-}
+  id: string;
+};

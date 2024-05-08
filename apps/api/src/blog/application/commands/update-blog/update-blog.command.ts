@@ -16,6 +16,7 @@ export class UpdateBlogCommand
     blog.description = data.description ?? blog.description;
     blog.content = data.content ?? blog.content;
     blog.tags = data.tags ?? blog.tags;
+    blog.categoryId = data.categoryId ?? blog.categoryId;
     await this.repository.saveBlog(blog);
     return Result.success<UpdateBlogResponse>({ id: blog.id });
   }

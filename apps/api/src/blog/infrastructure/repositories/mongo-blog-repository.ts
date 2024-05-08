@@ -4,24 +4,67 @@ import { Model } from 'mongoose';
 import { BlogRepository } from '../../domain/blog/repositories/blog.repository';
 import { BlogComment } from '../../domain/comment/blog-comment';
 import { Blog } from '../../domain/blog/blog';
-import { MongoBlog } from '../models/blog.model';
+import { MongoBlog, MongoBlogDocument } from '../models/blog.model';
 
 @Injectable()
 export class MongoBlogRepository implements BlogRepository {
   constructor(
-    @InjectModel(MongoBlog.name) private readonly datasource: Model<Blog>,
+    @InjectModel(MongoBlog.name)
+    private readonly datasource: Model<MongoBlogDocument>,
   ) {}
 
   async findAllBlogs(): Promise<Blog[]> {
     const blogs = await this.datasource.find();
     if (!blogs) return [];
-    return blogs;
+    return blogs.map(
+      ({
+        aggregateId,
+        imageUrl,
+        comments,
+        title,
+        description,
+        content,
+        tags,
+        uploadDate,
+        instructorId,
+        categoryId,
+      }) =>
+        new Blog(
+          aggregateId,
+          imageUrl,
+          title,
+          description,
+          content,
+          categoryId,
+          instructorId,
+          uploadDate,
+          comments.map(
+            ({ id, userId, blogId, content, postedAt }) =>
+              new BlogComment(id, userId, blogId, content, postedAt),
+          ),
+          tags,
+        ),
+    );
   }
 
   async getBlogById(id: string): Promise<Blog> {
     const blog = await this.datasource.findOne({ aggregateId: id });
     if (!blog) return null;
-    return blog;
+    return new Blog(
+      blog.aggregateId,
+      blog.imageUrl,
+      blog.title,
+      blog.description,
+      blog.content,
+      blog.categoryId,
+      blog.instructorId,
+      blog.uploadDate,
+      blog.comments.map(
+        ({ id, userId, blogId, content, postedAt }) =>
+          new BlogComment(id, userId, blogId, content, postedAt),
+      ),
+      blog.tags,
+    );
   }
 
   async saveBlog(data: Blog): Promise<void> {
@@ -38,6 +81,8 @@ export class MongoBlogRepository implements BlogRepository {
           uploadDate: data.uploadDate,
           comments: data.comments,
           tags: data.tags,
+          categoryId: data.categoryId,
+          instructorId: data.instructorId,
         },
       },
       {

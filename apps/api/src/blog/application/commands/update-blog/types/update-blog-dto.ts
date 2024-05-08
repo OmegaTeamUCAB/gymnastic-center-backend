@@ -5,4 +5,5 @@ export type UpdateBlogDto = {
   description?: string;
   content?: string;
   tags?: string[];
+  categoryId?: string;
 };

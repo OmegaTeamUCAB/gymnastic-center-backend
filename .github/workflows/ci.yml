@@ -1,0 +1,38 @@
+name: CI - Build
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  build:
+    name: Build and Test
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      # - name: Lint
+      #  run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Build
+        run: npm run build datasync
+
+      # - name: Test
+      #   run: npm run test

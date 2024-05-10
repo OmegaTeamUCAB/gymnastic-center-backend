@@ -1,0 +1,5 @@
+export const EVENTS_QUEUE = 'EVENTS';
+export const COURSE_CREATED = 'COURSE_CREATED';
+export const COURSE_UPDATED = 'COURSE_UPDATED';
+export const BLOG_CREATED = 'BLOG_CREATED';
+export const BLOG_UPDATED = 'BLOG_UPDATED';

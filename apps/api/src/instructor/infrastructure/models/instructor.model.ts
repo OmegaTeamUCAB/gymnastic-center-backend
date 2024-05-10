@@ -1,0 +1,32 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument } from 'mongoose';
+
+export type InstructorDocument = HydratedDocument<MongoInstructor>;
+
+@Schema({ collection: 'instructors', timestamps: true, versionKey: false })
+export class MongoInstructor {
+  readonly _id: string;
+
+  @Prop({
+    required: true,
+    unique: true,
+  })
+  aggregateId: string;
+
+  @Prop({ required: true, minlength: 1 })
+  name: string;
+
+  @Prop({ required: true, minlength: 1 })
+  lastName: string;
+
+  @Prop({ required: true })
+  birthDate: Date;
+
+  @Prop({ required: true, unique: true })
+  email: string;
+
+  @Prop({ required: true, minlength: 4 })
+  gender: string;
+}
+
+export const InstructorSchema = SchemaFactory.createForClass(MongoInstructor);

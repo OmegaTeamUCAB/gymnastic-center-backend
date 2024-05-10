@@ -21,6 +21,8 @@ export class MongoAuthRepository implements IAuthRepository {
         $set: {
           email: user.email,
           password: user.password,
+          verificationCode: user.verificationCode ?? null,
+          codeExpirationDate: user.codeExpirationDate ?? null,
         },
       },
       {

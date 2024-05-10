@@ -5,12 +5,12 @@ import { ApiModule } from './api.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(ApiModule);
-  app.useGlobalPipes(
+  /* app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
     }),
-  );
+  ); */
   const config = new DocumentBuilder().setTitle('Gymnastic Center API').build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);

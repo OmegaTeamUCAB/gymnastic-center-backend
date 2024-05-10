@@ -12,6 +12,33 @@ export class MongoUserRepository implements UserRepository {
     private readonly userModel: Model<UserDocument>,
   ) {}
 
+  async findUserByEmail(_email: string): Promise<User> {
+    const user = await this.userModel.findOne({
+      email: _email,
+    });
+
+    const {
+      fullName,
+      email,
+      phoneNumber,
+      birthDate,
+      gender,
+      stats,
+    } = user;
+
+    return user
+      ? new User(
+          user.id,
+          fullName,
+          email,
+          phoneNumber,
+          birthDate,
+          gender,
+          stats,
+        )
+      : null;
+  }
+
   async saveUser(user: User): Promise<void> {
     await this.userModel.updateOne(
       {

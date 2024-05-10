@@ -3,6 +3,7 @@ import { CreateUserDto, CreateUserResponse } from './types';
 import { UserRepository } from '../../../domain/repositories';
 import { IdGenerator } from '@app/core/application/id/id-generator.interface';
 import { User } from '../../../domain/entities';
+import { UserAlreadyExistsException } from '../../exceptions';
 
 export class CreateUserCommand
   implements ApplicationService<CreateUserDto, CreateUserResponse>
@@ -14,6 +15,8 @@ export class CreateUserCommand
 
   async execute(data: CreateUserDto): Promise<Result<CreateUserResponse>> {
     const id = this.idGenerator.generateId();
+    const _user = await this.userRepository.findUserByEmail(data.email);
+    if (_user) throw new UserAlreadyExistsException(data.email);
     const user = new User(
       id,
       data.fullName,

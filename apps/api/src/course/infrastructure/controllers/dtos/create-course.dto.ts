@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, IsUrl, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, IsUrl, Min, ValidateNested } from 'class-validator';
 
 export class CreateCourseDto {
   @IsString()
@@ -49,6 +49,7 @@ export class CreateCourseDto {
   @ApiProperty({
     type: () => [CreateLessonDto],
   })
+  @ValidateNested({ each: true })
   lessons: CreateLessonDto[];
 }
 

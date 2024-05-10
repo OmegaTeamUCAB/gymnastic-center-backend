@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Inject, Get } from '@nestjs/common';
+import { Controller, Post, Body, Inject, Get, UnauthorizedException } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginDto, SignUpDto } from './dtos';
 import { AUTH_REPOSITORY, JWT_SERVICE } from '../constants';
@@ -39,33 +39,41 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'User logged in successfully', type: authResponse })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async login(@Body() loginDto: LoginDto) {
-    const loginService = new LoginCommand(
-      this.repository,
-      this.jwtService,
-      this.bcryptService,
-    );
-    const loginResult = await loginService.execute(loginDto);
-    const { token, id } = loginResult.unwrap();
-    const service = new GetUserByIdQuery(this.userRepository);
-    const result = await service.execute({ id });
-    return { token, user: result.unwrap() };
+    try {
+      const loginService = new LoginCommand(
+        this.repository,
+        this.jwtService,
+        this.bcryptService,
+      );
+      const loginResult = await loginService.execute(loginDto);
+      const { token, id } = loginResult.unwrap();
+      const service = new GetUserByIdQuery(this.userRepository);
+      const result = await service.execute({ id });
+      return { token, user: result.unwrap() };
+    } catch (error) {
+      throw new UnauthorizedException(error.message);
+    }
   }
 
   @Post('signUp')
   @ApiResponse({ status: 201, description: 'User registered successfully', type: authResponse})
   @ApiResponse({ status: 400, description: 'Bad request' })
   async signUp(@Body() signUpDto: SignUpDto) {
-    const signUpService = new SignUpCommand(
-      this.repository,
-      this.jwtService,
-      this.bcryptService,
-    );
-    const service = new CreateUserCommand(this.userRepository, this.uuidGenerator);
-    const result = await service.execute({ ...signUpDto })
-    const id = result.unwrap().id;
-    const signUpResult = await signUpService.execute({ id ,...signUpDto});
-    const { token } = signUpResult.unwrap();
-    return {token, user: signUpDto};
+    try {
+      const signUpService = new SignUpCommand(
+        this.repository,
+        this.jwtService,
+        this.bcryptService,
+      );
+      const service = new CreateUserCommand(this.userRepository, this.uuidGenerator);
+      const result = await service.execute({ ...signUpDto })
+      const id = result.unwrap().id;
+      const signUpResult = await signUpService.execute({ id ,...signUpDto});
+      const { token } = signUpResult.unwrap();
+      return {token, user: signUpDto};
+    } catch (error) {
+      throw new UnauthorizedException(error.message); 
+    }
   }
 
   @Get('currentUser')

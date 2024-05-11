@@ -12,15 +12,7 @@ export class GetAllUsersQuery
     if (users.length === 0) return Result.success<GetAllUsersResponse>([]);
     return Result.success<GetAllUsersResponse>(
       users.map(
-        ({
-          id,
-          fullName,
-          email,
-          phoneNumber,
-          birthDate,
-          gender,
-          stats,
-        }) => ({
+        ({ id, fullName, email, phoneNumber, birthDate, gender, stats }) => ({
           id,
           fullName,
           email,

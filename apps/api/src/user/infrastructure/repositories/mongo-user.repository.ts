@@ -12,29 +12,19 @@ export class MongoUserRepository implements UserRepository {
     private readonly userModel: Model<UserDocument>,
   ) {}
 
-  async findUserByEmail(_email: string): Promise<User> {
+  async findUserByEmail(email: string): Promise<User> {
     const user = await this.userModel.findOne({
-      email: _email,
-    });
-
-    const {
-      fullName,
       email,
-      phoneNumber,
-      birthDate,
-      gender,
-      stats,
-    } = user;
-
+    });
     return user
       ? new User(
           user.id,
-          fullName,
-          email,
-          phoneNumber,
-          birthDate,
-          gender,
-          stats,
+          user.fullName,
+          user.email,
+          user.phoneNumber,
+          user.birthDate,
+          user.gender,
+          user.stats,
         )
       : null;
   }
@@ -65,54 +55,23 @@ export class MongoUserRepository implements UserRepository {
       id: id,
     });
 
-    const {
-      fullName,
-      email,
-      phoneNumber,
-      birthDate,
-      gender,
-      stats,
-    } = user;
+    const { fullName, email, phoneNumber, birthDate, gender, stats } = user;
 
     return user
-      ? new User(
-          id,
-          fullName,
-          email,
-          phoneNumber,
-          birthDate,
-          gender,
-          stats,
-        )
+      ? new User(id, fullName, email, phoneNumber, birthDate, gender, stats)
       : null;
   }
 
   async findAllUsers(): Promise<User[]> {
     return (await this.userModel.find()).map(
-      ({
-        id,
-        fullName,
-        email,
-        phoneNumber,
-        birthDate,
-        gender,
-        stats,
-      }) =>
-        new User(
-          id,
-          fullName,
-          email,
-          phoneNumber,
-          birthDate,
-          gender,
-          stats,
-        ),
+      ({ id, fullName, email, phoneNumber, birthDate, gender, stats }) =>
+        new User(id, fullName, email, phoneNumber, birthDate, gender, stats),
     );
   }
 
   async deleteUserById(id: string): Promise<void> {
     await this.userModel.deleteOne({
-        id: id
-    })
+      id: id,
+    });
   }
 }

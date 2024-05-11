@@ -1,7 +1,7 @@
 import { ApplicationService, Result } from '@app/core';
 import { UpdateUserDto, UpdateUserResponse } from './types';
 import { UserRepository } from '../../../domain/repositories';
-import { UserNotFoundException } from '../../exceptions/user-not-found';
+import { UserNotFoundException } from '../../exceptions/user-not-found.exception';
 
 export class UpdateUserCommand
   implements ApplicationService<UpdateUserDto, UpdateUserResponse>

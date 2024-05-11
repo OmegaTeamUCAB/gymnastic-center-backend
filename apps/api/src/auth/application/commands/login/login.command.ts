@@ -13,7 +13,7 @@ export class LoginCommand
   constructor(
     private readonly authRepository: IAuthRepository,
     private readonly jwtService: TokenGenerator<string, { id: string }>,
-    private readonly bcrypt: CryptoService,
+    private readonly cryptoService: CryptoService,
   ) {}
 
   public async execute(data: LoginDto): Promise<Result<LoginResponse>> {
@@ -21,7 +21,7 @@ export class LoginCommand
     if (!user) {
       return Result.failure<LoginResponse>(new UserNotFoundException());
     }
-    if (!(await this.bcrypt.compare(data.password, user.password))) {
+    if (!(await this.cryptoService.compare(data.password, user.password))) {
       return Result.failure<LoginResponse>(new InvalidPasswordException());
     }
     const payload = { id: user.id };

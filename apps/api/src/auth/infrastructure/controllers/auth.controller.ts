@@ -1,10 +1,19 @@
-import { Controller, Post, Body, Inject, Get, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Inject,
+  Get,
+  UnauthorizedException,
+  Put,
+} from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   CheckCodeDto,
   LoginDto,
   RequestVerificationCodeDto,
   SignUpDto,
+  ResetPasswordDto,
 } from './dtos';
 import {
   AUTH_REPOSITORY,
@@ -28,6 +37,8 @@ import {
   EmailHandler,
   CodeGenerator,
   SuccessBasedResponse,
+  IdResponse,
+  DateBasedResponse,
 } from '@app/core';
 import { TokenGenerator } from '../../application/token/token-generator.interface';
 import { Auth, CurrentUser } from '../decorators';
@@ -37,6 +48,7 @@ import { GetUserByIdQuery } from 'apps/api/src/user/application/queries/get-user
 import { CreateUserCommand } from 'apps/api/src/user/application/commands/create-user';
 import { User } from 'apps/api/src/user/domain/entities';
 import { AuthResponse } from './responses';
+import { UserResponse } from 'apps/api/src/user/infrastructure/controllers/responses';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -82,11 +94,11 @@ export class AuthController {
     }
   }
 
-  @Post('signUp')
+  @Post('register')
   @ApiResponse({
     status: 201,
     description: 'User registered successfully',
-    type: AuthResponse,
+    type: IdResponse,
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async signUp(@Body() signUpDto: SignUpDto) {
@@ -96,37 +108,39 @@ export class AuthController {
         this.jwtService,
         this.bcryptService,
       );
-      const service = new CreateUserCommand(this.userRepository, this.uuidGenerator);
-      const result = await service.execute({ ...signUpDto })
+      const service = new CreateUserCommand(
+        this.userRepository,
+        this.uuidGenerator,
+      );
+      const result = await service.execute({ ...signUpDto });
       const id = result.unwrap().id;
-      const signUpResult = await signUpService.execute({ id ,...signUpDto});
-      const { token } = signUpResult.unwrap();
-      return {token, user: signUpDto};
+      const signUpResult = await signUpService.execute({ id, ...signUpDto });
+      signUpResult.unwrap();
+      return { id };
     } catch (error) {
-      throw new UnauthorizedException(error.message); 
+      throw new UnauthorizedException(error.message);
     }
   }
 
-  @Get('currentUser')
+  @Get('current')
   @Auth()
   @ApiResponse({
     status: 200,
     description: 'User information',
-    type: AuthResponse,
+    type: UserResponse,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async currentUser(@CurrentUser() user: User) {
     return {
-      user,
-      token: this.jwtService.generateToken({ id: user.id }),
+      ...user,
     };
   }
 
-  @Post('requestCode')
+  @Post('forget/password')
   @ApiResponse({
     status: 200,
-    description: 'Code requested',
-    type: SuccessBasedResponse,
+    description: 'Code sent',
+    type: DateBasedResponse,
   })
   @ApiResponse({
     status: 500,
@@ -143,11 +157,11 @@ export class AuthController {
     const result = await service.execute(requestVerificationCodeDto);
     result.unwrap();
     return {
-      success: true,
+      date: new Date(),
     };
   }
 
-  @Post('checkCode')
+  @Post('code/validate')
   @ApiResponse({
     status: 200,
     description: 'Code checked successfully',
@@ -164,21 +178,24 @@ export class AuthController {
     };
   }
 
-  @Post('resetPassword')
+  @Put('change/password')
   @ApiResponse({
     status: 200,
     description: 'Password reset',
     type: SuccessBasedResponse,
   })
   @ApiResponse({ status: 400, description: 'No code requested' })
-  async resetPassword(@Body() loginDto: LoginDto) {
+  @ApiResponse({ status: 400, description: 'Invalid code' })
+  @ApiResponse({ status: 400, description: 'Code expired' })
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     const service = new ResetPasswordCommand(
       this.repository,
       this.bcryptService,
     );
     const result = await service.execute({
-      email: loginDto.email,
-      newPassword: loginDto.password,
+      email: resetPasswordDto.email,
+      newPassword: resetPasswordDto.password,
+      code: resetPasswordDto.code,
     });
     result.unwrap();
     return {

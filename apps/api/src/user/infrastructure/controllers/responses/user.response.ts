@@ -1,31 +1,23 @@
-import { ApiProperty } from "@nestjs/swagger"
-import { Gender, Stat } from "../../../domain/entities"
+import { ApiProperty } from '@nestjs/swagger';
 
-export class UserResponse{
-    @ApiProperty()
-    id: string
+export class UserResponse {
+  @ApiProperty()
+  id: string;
 
-    @ApiProperty()
-    name: string
+  @ApiProperty()
+  name: string;
 
-    @ApiProperty()
-    lastName: string
+  @ApiProperty()
+  email: string;
 
-    @ApiProperty()
-    email: string
+  @ApiProperty()
+  phone: string;
 
-    @ApiProperty()
-    phoneNumber: string
-
-    @ApiProperty()
-    password: string
-
-    @ApiProperty()
-    birthDate: Date
-
-    @ApiProperty()
-    gender: Gender
-
-    @ApiProperty()
-    stats: Stat[]
+  @ApiProperty({
+    type: 'string',
+    format: 'base64',
+    required: false,
+    nullable: true,
+  })
+  image?: string;
 }

@@ -1,7 +1,7 @@
 import { ApplicationService, CryptoService, Result } from '@app/core';
 import { ResetPasswordDto } from './types';
 import { IAuthRepository } from '../../repositories/auth.repository';
-import { InvalidCodeException, UserNotFoundException } from '../../exceptions';
+import { CodeExpiredException, InvalidCodeException, UserNotFoundException } from '../../exceptions';
 
 export class ResetPasswordCommand
   implements ApplicationService<ResetPasswordDto, void>
@@ -14,8 +14,10 @@ export class ResetPasswordCommand
   async execute(data: ResetPasswordDto): Promise<Result<void>> {
     const user = await this.repository.findByEmail(data.email);
     if (!user) return Result.failure(new UserNotFoundException());
-    if (!user.verificationCode)
+    if (!user.verificationCode || user.verificationCode !== data.code)
       return Result.failure(new InvalidCodeException());
+    if (!user.codeExpirationDate || user.codeExpirationDate < new Date())
+      return Result.failure(new CodeExpiredException());
     user.password = await this.cryptoService.hash(data.newPassword);
     user.verificationCode = null;
     user.codeExpirationDate = null;

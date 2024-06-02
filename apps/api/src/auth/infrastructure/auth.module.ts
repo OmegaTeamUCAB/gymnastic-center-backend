@@ -35,7 +35,7 @@ import { UserModule } from '../../user/infrastructure';
         if (!secret) throw new Error('JWT_SECRET is not defined');
         return {
           secret,
-          signOptions: { expiresIn: '1d' },
+          signOptions: { expiresIn: '1y' },
         };
       },
     }),

@@ -1,1 +1,2 @@
-import { CourseResponse } from './course.response';
+export { CourseResponse } from './course.response';
+export { CourseLeanResponse } from './course.lean.response';

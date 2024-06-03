@@ -1,15 +1,21 @@
-import { GetLessonsResponse } from '../../types';
-
 export type GetCourseByIdResponse = {
   id: string;
-  name: string;
+  title: string;
   description: string;
   level: number;
   tags: string[];
-  weeks: number;
-  minutes: number;
-  imageUrl: string;
-  categoryId: string;
-  instructorId: string;
+  durationWeeks: number;
+  durationMinutes: number;
+  image: string;
+  category: string;
+  trainer: string;
   lessons: GetLessonsResponse;
 };
+
+export type GetLessonsResponse = {
+  id: string;
+  title: string;
+  content: string;
+  video?: string;
+  image?: string;
+}[];

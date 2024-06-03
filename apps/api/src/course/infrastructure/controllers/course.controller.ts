@@ -4,8 +4,10 @@ import {
   Get,
   Inject,
   Param,
+  ParseIntPipe,
   ParseUUIDPipe,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -19,7 +21,6 @@ import {
 } from '@app/core';
 import { COURSE_REPOSITORY } from '../constants';
 import { CourseRepository } from '../../domain';
-import { CourseResponse } from './responses/course.response';
 import {
   CommentLessonCommand,
   CreateCourseCommand,
@@ -30,9 +31,12 @@ import {
   UpdateCourseCommand,
 } from '../../application';
 import { CommentLessonDto, CreateCourseDto, UpdateCourseDto } from './dtos';
+import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
+import { CourseLeanResponse, CourseResponse } from './responses';
 
-@Controller('courses')
+@Controller('course')
 @ApiTags('Courses')
+@Auth()
 export class CourseController {
   constructor(
     @Inject(COURSE_REPOSITORY)
@@ -43,45 +47,37 @@ export class CourseController {
     private readonly rmqClient: ClientProxy,
   ) {}
 
-  @Get()
+  @Get('many')
   @ApiResponse({
     status: 200,
     description: 'Courses list',
-    type: [CourseResponse],
+    type: [CourseLeanResponse],
   })
-  async getCategories() {
+  async getCourses(
+    @Query('page', ParseIntPipe) page: number,
+    @Query('perPage', ParseIntPipe) limit: number,
+    @Query('filter') filter?: 'POPULAR' | 'RECENT',
+    @Query('trainer') trainer?: string,
+    @Query('category') category?: string,
+  ) {
+    const byCategory = !!category;
+    const byTrainer = !!trainer;
+    if (byCategory) {
+      const service = new GetCoursesByCategoryQuery(this.courseRepository);
+      const result = await service.execute({ categoryId: category });
+      return result.unwrap();
+    }
+    if (byTrainer) {
+      const service = new GetCoursesByInstructorQuery(this.courseRepository);
+      const result = await service.execute({ instructorId: trainer });
+      return result.unwrap();
+    }
     const service = new GetCoursesQuery(this.courseRepository);
     const result = await service.execute();
     return result.unwrap();
   }
 
-  @Get('category/:id')
-  @ApiResponse({
-    status: 200,
-    description: 'Courses by category',
-    type: [CourseResponse],
-  })
-  async getCoursesByCategory(@Param('id', ParseUUIDPipe) categoryId: string) {
-    const service = new GetCoursesByCategoryQuery(this.courseRepository);
-    const result = await service.execute({ categoryId });
-    return result.unwrap();
-  }
-
-  @Get('instructor/:id')
-  @ApiResponse({
-    status: 200,
-    description: 'Courses by instructor',
-    type: [CourseResponse],
-  })
-  async getCoursesByInstructor(
-    @Param('id', ParseUUIDPipe) instructorId: string,
-  ) {
-    const service = new GetCoursesByInstructorQuery(this.courseRepository);
-    const result = await service.execute({ instructorId });
-    return result.unwrap();
-  }
-
-  @Get(':id')
+  @Get('one/:id')
   @ApiResponse({
     status: 200,
     description: 'Course found',

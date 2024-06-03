@@ -1,18 +1,10 @@
 export type GetBlogByIdResponse = {
   id: string;
-  imageUrl: string;
-  comments: {
-    id: string;
-    userId: string;
-    blogId: string;
-    content: string;
-    postedAt: Date;
-  }[];
+  images: string[];
   title: string;
   description: string;
-  content: string;
-  uploadDate: Date;
+  date: Date;
   tags: string[];
-  categoryId: string;
-  instructorId: string;
+  category: string;
+  trainer: string;
 };

@@ -13,23 +13,13 @@ export class GetBlogByIdQuery
     if (!blog) return Result.failure<GetBlogByIdResponse>(new BlogNotFound());
     return Result.success<GetBlogByIdResponse>({
       id: blog.id,
-      imageUrl: blog.imageUrl,
-      comments: blog.comments.map(
-        ({ id, userId, blogId, content, postedAt }) => ({
-          id,
-          userId,
-          blogId,
-          content,
-          postedAt,
-        }),
-      ),
+      images: [blog.imageUrl],
       title: blog.title,
       description: blog.description,
-      content: blog.content,
-      uploadDate: blog.uploadDate,
+      date: blog.uploadDate,
       tags: blog.tags,
-      categoryId: blog.categoryId,
-      instructorId: blog.instructorId,
+      category: blog.categoryId,
+      trainer: blog.instructorId,
     });
   }
 }

@@ -6,6 +6,8 @@ import {
   Param,
   Inject,
   ParseUUIDPipe,
+  Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ClientProxy } from '@nestjs/microservices';
@@ -28,9 +30,11 @@ import {
 import { BlogResponse } from './responses';
 import { BlogRepository } from '../../domain';
 import { BLOG_REPOSITORY } from '../constants';
+import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
 
 @Controller('blog')
 @ApiTags('Blogs')
+@Auth()
 export class BlogController {
   constructor(
     @Inject(BLOG_REPOSITORY)
@@ -46,8 +50,14 @@ export class BlogController {
     description: 'Blogs list',
     type: [BlogResponse],
   })
-  @Get()
-  async getAllBlogs() {
+  @Get('many')
+  async getAllBlogs(
+    @Query('page', ParseIntPipe) page: number,
+    @Query('perPage', ParseIntPipe) limit: number,
+    @Query('filter') filter?: 'POPULAR' | 'RECENT',
+    @Query('trainer') trainer?: string,
+    @Query('category') category?: string,
+  ) {
     const service = new GetAllBlogsQuery(this.repository);
     const result = await service.execute();
     return result.unwrap();
@@ -58,8 +68,8 @@ export class BlogController {
     description: 'Blog details',
     type: BlogResponse,
   })
-  @Get(':id')
-  async getBlogById(@Param('id') id: string) {
+  @Get('one/:id')
+  async getBlogById(@Param('id', ParseUUIDPipe) id: string) {
     const service = new GetBlogByIdQuery(this.repository);
     const result = await service.execute({ id });
     return result.unwrap();

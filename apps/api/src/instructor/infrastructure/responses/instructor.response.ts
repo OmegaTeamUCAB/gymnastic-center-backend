@@ -8,14 +8,11 @@ export class InstructorResponse {
   name: string;
 
   @ApiProperty()
-  lastName: string;
+  followers: number;
 
   @ApiProperty()
-  birthDate: Date;
+  userFollow: boolean;
 
   @ApiProperty()
-  email: string;
-
-  @ApiProperty({ enum: ['male', 'female'] })
-  gender: string;
+  location: string;
 }

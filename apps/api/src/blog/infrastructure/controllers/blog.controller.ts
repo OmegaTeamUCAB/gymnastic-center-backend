@@ -27,7 +27,7 @@ import {
   IdResponse,
   UUIDGENERATOR,
 } from '@app/core';
-import { BlogResponse } from './responses';
+import { BlogLeanResponse, BlogResponse } from './responses';
 import { BlogRepository } from '../../domain';
 import { BLOG_REPOSITORY } from '../constants';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
@@ -48,7 +48,7 @@ export class BlogController {
   @ApiResponse({
     status: 200,
     description: 'Blogs list',
-    type: [BlogResponse],
+    type: [BlogLeanResponse],
   })
   @Get('many')
   async getAllBlogs(

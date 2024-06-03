@@ -1,2 +1,2 @@
-export * from './blog.response';
-export * from './blog-comment.response';
+export { BlogResponse } from './blog.response';
+export { BlogLeanResponse } from './blog.lean.response';

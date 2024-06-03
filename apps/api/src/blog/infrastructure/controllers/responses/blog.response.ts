@@ -1,28 +1,39 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { BLogCommentResponse } from './blog-comment.response';
 
 export class BlogResponse {
   @ApiProperty()
   id: string;
 
-  @ApiProperty({ type: [BLogCommentResponse] })
-  comments: BLogCommentResponse[];
-
-  @ApiProperty()
-  imageUrl: string;
-
   @ApiProperty()
   title: string;
 
   @ApiProperty()
+  images: string[];
+
+  @ApiProperty()
   description: string;
 
-  @ApiProperty()
-  content: string;
+  @ApiProperty({
+    description: 'Category name'
+  })
+  category: string;
+
+  @ApiProperty({
+    type: () => BlogTrainerResponse,
+  })
+  trainer: BlogTrainerResponse;
 
   @ApiProperty()
-  uploadDate: Date;
+  date: Date;
 
   @ApiProperty()
   tags: string[];
+}
+
+export class BlogTrainerResponse {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
 }

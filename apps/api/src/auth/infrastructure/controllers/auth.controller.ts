@@ -41,12 +41,11 @@ import {
   DateBasedResponse,
 } from '@app/core';
 import { TokenGenerator } from '../../application/token/token-generator.interface';
-import { Auth, CurrentUser } from '../decorators';
+import { Auth, UserIdReq } from '../decorators';
 import { USER_REPOSITORY } from 'apps/api/src/user/infrastructure/constants';
 import { UserRepository } from 'apps/api/src/user/domain/repositories';
 import { GetUserByIdQuery } from 'apps/api/src/user/application/queries/get-user-by-id';
 import { CreateUserCommand } from 'apps/api/src/user/application/commands/create-user';
-import { User } from 'apps/api/src/user/domain/entities';
 import { AuthResponse } from './responses';
 import { UserResponse } from 'apps/api/src/user/infrastructure/controllers/responses';
 
@@ -130,10 +129,10 @@ export class AuthController {
     type: UserResponse,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async currentUser(@CurrentUser() user: User) {
-    return {
-      ...user,
-    };
+  async currentUser(@UserIdReq() id: string) {
+    const service = new GetUserByIdQuery(this.userRepository);
+    const result = await service.execute({ id });
+    return result.unwrap();
   }
 
   @Post('forget/password')

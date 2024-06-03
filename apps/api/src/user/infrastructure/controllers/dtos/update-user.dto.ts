@@ -1,11 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsArray,
-  IsBase64,
-  IsDateString,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsBase64, IsOptional, IsString } from 'class-validator';
 
 export class UpdateUserDto {
   @IsString()
@@ -28,20 +22,6 @@ export class UpdateUserDto {
     nullable: true,
   })
   phoneNumber: string;
-
-  @IsString()
-  @IsOptional()
-  @ApiProperty({
-    nullable: true,
-  })
-  password: string;
-
-  @IsDateString()
-  @IsOptional()
-  @ApiProperty({
-    nullable: true,
-  })
-  birthDate: Date;
 
   @IsBase64()
   @IsOptional()

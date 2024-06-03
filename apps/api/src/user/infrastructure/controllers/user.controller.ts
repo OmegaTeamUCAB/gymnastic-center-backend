@@ -1,68 +1,36 @@
 import {
   Controller,
-  Get,
-  Post,
   Body,
-  Param,
   Delete,
   Inject,
-  ParseUUIDPipe,
+  Put,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { USER_REPOSITORY } from '../constants';
 import { UserRepository } from '../../domain/repositories';
-import { UserResponse } from './responses';
-import { GetAllUsersQuery } from '../../application/queries/get-all-users';
-import { GetUserByIdQuery } from '../../application/queries/get-user-by-id';
 import { UpdateUserCommand } from '../../application/commands/update-user-by-id/update-user-by-id.command';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { IdResponse } from '@app/core';
 import { DeleteUserCommand } from '../../application/commands/delete-user-by-id';
+import { Auth, UserIdReq } from 'apps/api/src/auth/infrastructure/decorators';
 
 @Controller('users')
 @ApiTags('Users')
+@Auth()
 export class UserController {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
   ) {}
 
-  @Get()
-  @ApiResponse({
-    status: 200,
-    description: 'Users list',
-    type: [UserResponse],
-  })
-  async findAllUsers() {
-    const service = new GetAllUsersQuery(this.userRepository);
-    const result = await service.execute();
-    return result.unwrap();
-  }
-
-  @Get(':id')
-  @ApiResponse({
-    status: 200,
-    description: 'User found',
-    type: UserResponse,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'User not found',
-  })
-  async findUserById(@Param('id', ParseUUIDPipe) id: string) {
-    const service = new GetUserByIdQuery(this.userRepository);
-    const result = await service.execute({ id });
-    return result.unwrap();
-  }
-
-  @Post(':id')
+  @Put('update')
   @ApiResponse({
     status: 200,
     description: 'User updated',
     type: IdResponse,
   })
   async updateUserById(
-    @Param('id', ParseUUIDPipe) id: string,
+    @UserIdReq() id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     const service = new UpdateUserCommand(this.userRepository);
@@ -70,13 +38,13 @@ export class UserController {
     return result.unwrap();
   }
 
-  @Delete(':id')
+  @Delete()
   @ApiResponse({
     status: 200,
     description: 'User deleted',
     type: IdResponse,
   })
-  async deleteUserById(@Param('id', ParseUUIDPipe) id: string) {
+  async deleteUserById(@UserIdReq() id: string) {
     const service = new DeleteUserCommand(this.userRepository);
     const result = await service.execute({ id });
     return result.unwrap();

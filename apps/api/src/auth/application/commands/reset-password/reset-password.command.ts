@@ -1,27 +1,27 @@
 import { ApplicationService, CryptoService, Result } from '@app/core';
 import { ResetPasswordDto } from './types';
-import { IAuthRepository } from '../../repositories/credentials.repository';
+import { CredentialsRepository } from '../../repositories/credentials.repository';
 import { CodeExpiredException, InvalidCodeException, UserNotFoundException } from '../../exceptions';
 
 export class ResetPasswordCommand
   implements ApplicationService<ResetPasswordDto, void>
 {
   constructor(
-    private readonly repository: IAuthRepository,
+    private readonly credentialsRepository: CredentialsRepository,
     private readonly cryptoService: CryptoService,
   ) {}
 
   async execute(data: ResetPasswordDto): Promise<Result<void>> {
-    const user = await this.repository.findByEmail(data.email);
-    if (!user) return Result.failure(new UserNotFoundException());
-    if (!user.verificationCode || user.verificationCode !== data.code)
+    const credentials = await this.credentialsRepository.findCredentialsByEmail(data.email);
+    if (!credentials) return Result.failure(new UserNotFoundException());
+    if (!credentials.verificationCode || credentials.verificationCode !== data.code)
       return Result.failure(new InvalidCodeException());
-    if (!user.codeExpirationDate || user.codeExpirationDate < new Date())
+    if (!credentials.codeExpirationDate || credentials.codeExpirationDate < new Date())
       return Result.failure(new CodeExpiredException());
-    user.password = await this.cryptoService.hash(data.newPassword);
-    user.verificationCode = null;
-    user.codeExpirationDate = null;
-    await this.repository.save(user);
+    credentials.password = await this.cryptoService.hash(data.newPassword);
+    credentials.verificationCode = null;
+    credentials.codeExpirationDate = null;
+    await this.credentialsRepository.saveCredentials(credentials);
     return Result.success(null);
   }
 }

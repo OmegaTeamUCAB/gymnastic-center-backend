@@ -1,7 +1,7 @@
 import { CryptoService, ApplicationService, Result } from '@app/core';
-import { IAuthRepository } from '../../repositories/auth.repository';
+import { IAuthRepository } from '../../repositories/credentials.repository';
 import { SignUpDTO, SignUpResponse } from './types';
-import { AuthUser } from '../../models/auth-user.model';
+import { AuthUser } from '../../models/credentials.model';
 import { TokenGenerator } from '../../token/token-generator.interface';
 
 export class SignUpCommand

@@ -4,7 +4,7 @@ export class User {
     public fullName: string,
     public email: string,
     public phoneNumber: string,
-    public image: string,
+    public image?: string,
   ) {}
 
   public getId(): string {

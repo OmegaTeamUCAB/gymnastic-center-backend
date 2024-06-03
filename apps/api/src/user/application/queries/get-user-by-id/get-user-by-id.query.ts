@@ -15,10 +15,8 @@ export class GetUserByIdQuery
       id: data.id,
       fullName: user.getName(),
       email: user.getEmail(),
-      phoneNumber: user.getPhoneNumber(),
-      birthDate: user.getBirthDate(),
-      gender: user.getGender(),
-      stats: user.getStats(),
+      phone: user.getPhoneNumber(),
+      image: user.getImage(),
     });
   }
 }

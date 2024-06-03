@@ -3,7 +3,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongoAuthUser, AuthUserSchema } from './models/mongo-auth-user.model';
+import {
+  MongoCredentials,
+  CredentialsSchema,
+} from './models/mongo-credentials.model';
 import { AuthController } from './controllers/auth.controller';
 import {
   AUTH_REPOSITORY,
@@ -11,7 +14,7 @@ import {
   JWT_SERVICE,
   VERIFICATION_EMAIL_HANDLER,
 } from './constants';
-import { MongoAuthRepository } from './repositories/mongo-auth.repository';
+import { MongoCredentialsRepository } from './repositories/mongo-credentials.repository';
 import { BcryptModule, UUIDModule } from '@app/core';
 import {
   FourDigitCodeGeneratorService,
@@ -41,13 +44,13 @@ import { UserModule } from '../../user/infrastructure';
     }),
     MongooseModule.forFeature([
       {
-        name: MongoAuthUser.name,
-        schema: AuthUserSchema,
+        name: MongoCredentials.name,
+        schema: CredentialsSchema,
       },
     ]),
     BcryptModule,
     UUIDModule,
-    UserModule
+    UserModule,
   ],
   controllers: [AuthController],
   providers: [
@@ -58,7 +61,7 @@ import { UserModule } from '../../user/infrastructure';
     JwtStrategy,
     {
       provide: AUTH_REPOSITORY,
-      useClass: MongoAuthRepository,
+      useClass: MongoCredentialsRepository,
     },
     {
       provide: CODE_GENERATOR,

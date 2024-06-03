@@ -1,6 +1,6 @@
-export class AuthUser {
+export class Credentials {
   constructor(
-    public id: string,
+    public userId: string,
     public email: string,
     public password: string,
     public verificationCode?: string,

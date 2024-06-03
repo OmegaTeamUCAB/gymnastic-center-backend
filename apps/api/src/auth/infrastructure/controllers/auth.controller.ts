@@ -23,7 +23,7 @@ import {
 } from '../constants';
 import {
   CheckVerificationCodeCommand,
-  IAuthRepository,
+  CredentialsRepository,
   LoginCommand,
   RequestVerificationCodeCommand,
   ResetPasswordCommand,
@@ -55,7 +55,7 @@ import { UserResponse } from 'apps/api/src/user/infrastructure/controllers/respo
 export class AuthController {
   constructor(
     @Inject(AUTH_REPOSITORY)
-    private readonly repository: IAuthRepository,
+    private readonly repository: CredentialsRepository,
     @Inject(UUIDGENERATOR)
     private readonly uuidGenerator: IdGenerator<string>,
     @Inject(BCRYPT_SERVICE)

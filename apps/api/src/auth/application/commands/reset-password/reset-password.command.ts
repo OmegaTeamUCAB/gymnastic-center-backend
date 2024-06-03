@@ -1,6 +1,6 @@
 import { ApplicationService, CryptoService, Result } from '@app/core';
 import { ResetPasswordDto } from './types';
-import { IAuthRepository } from '../../repositories/auth.repository';
+import { IAuthRepository } from '../../repositories/credentials.repository';
 import { CodeExpiredException, InvalidCodeException, UserNotFoundException } from '../../exceptions';
 
 export class ResetPasswordCommand

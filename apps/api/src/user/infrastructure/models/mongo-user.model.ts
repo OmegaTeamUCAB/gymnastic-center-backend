@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import { Gender, Stat } from '../../domain/entities';
 
 export type UserDocument = HydratedDocument<MongoUser>;
 
@@ -31,19 +30,7 @@ export class MongoUser {
   @Prop({
     required: false,
   })
-  birthDate: Date;
-
-  @Prop({
-    required: false,
-    type: String,
-  })
-  gender: Gender;
-
-  @Prop({
-    required: false,
-    type: [{ type: Stat }],
-  })
-  stats: Stat[];
+  image: string;
 
   createdAt: Date;
 

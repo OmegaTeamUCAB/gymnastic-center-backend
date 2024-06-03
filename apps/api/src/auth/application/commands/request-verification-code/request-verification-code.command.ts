@@ -6,7 +6,7 @@ import {
 } from '@app/core';
 import { RequestVerificationCodeDto } from './types';
 import { UserNotFoundException } from '../../exceptions';
-import { IAuthRepository } from '../../repositories/auth.repository';
+import { IAuthRepository } from '../../repositories/credentials.repository';
 
 export class RequestVerificationCodeCommand
   implements ApplicationService<RequestVerificationCodeDto, void>

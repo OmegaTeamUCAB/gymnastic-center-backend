@@ -4,7 +4,7 @@ import {
   UserNotFoundException,
   InvalidPasswordException,
 } from '../../exceptions';
-import { IAuthRepository } from '../../repositories/auth.repository';
+import { IAuthRepository } from '../../repositories/credentials.repository';
 import { TokenGenerator } from '../../token/token-generator.interface';
 
 export class LoginCommand

@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export class BlogTrainerResponse {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+}
+
 export class BlogResponse {
   @ApiProperty()
   id: string;
@@ -28,12 +36,4 @@ export class BlogResponse {
 
   @ApiProperty()
   tags: string[];
-}
-
-export class BlogTrainerResponse {
-  @ApiProperty()
-  id: string;
-
-  @ApiProperty()
-  name: string;
 }

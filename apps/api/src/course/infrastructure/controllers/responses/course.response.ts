@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export class CourseTrainerResponse {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+}
+
 export class CourseResponse {
   @ApiProperty()
   id: string;
@@ -66,12 +74,4 @@ export class LessonResponse {
     nullable: true,
   })
   image: string;
-}
-
-export class CourseTrainerResponse {
-  @ApiProperty()
-  id: string;
-
-  @ApiProperty()
-  name: string;
 }

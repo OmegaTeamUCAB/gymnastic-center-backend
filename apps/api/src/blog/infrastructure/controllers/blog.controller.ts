@@ -14,7 +14,6 @@ import { ClientProxy } from '@nestjs/microservices';
 import {
   GetAllBlogsQuery,
   GetBlogByIdQuery,
-  CreateBlogCommentCommand,
   CreateBlogCommand,
   UpdateBlogCommand,
 } from '../../application';
@@ -89,21 +88,6 @@ export class BlogController {
       id: response.id,
     });
     return response;
-  }
-
-  @ApiResponse({
-    status: 200,
-    description: 'The comment has been successfully posted',
-    type: IdResponse,
-  })
-  @Post('/create-comment')
-  async createComment(@Body() createBlogCommentDto: CreateBlogCommentDto) {
-    const service = new CreateBlogCommentCommand(
-      this.repository,
-      this.uuidGenerator,
-    );
-    const result = await service.execute(createBlogCommentDto);
-    return result.unwrap();
   }
 
   @ApiResponse({

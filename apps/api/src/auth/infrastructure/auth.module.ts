@@ -15,7 +15,7 @@ import {
   VERIFICATION_EMAIL_HANDLER,
 } from './constants';
 import { MongoCredentialsRepository } from './repositories/mongo-credentials.repository';
-import { BcryptModule, UUIDModule } from '@app/core';
+import { BcryptModule } from '@app/core';
 import {
   FourDigitCodeGeneratorService,
   JwtGenerator,
@@ -48,7 +48,6 @@ import {
       },
     ]),
     BcryptModule,
-    UUIDModule,
   ],
   controllers: [AuthController],
   providers: [
@@ -70,6 +69,6 @@ import {
       useClass: VerificationCodeEmailService,
     },
   ],
-  exports: [PassportModule],
+  exports: [PassportModule, AUTH_REPOSITORY, JWT_SERVICE],
 })
 export class AuthModule {}

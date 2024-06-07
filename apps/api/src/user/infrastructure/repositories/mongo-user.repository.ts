@@ -22,9 +22,7 @@ export class MongoUserRepository implements UserRepository {
           user.fullName,
           user.email,
           user.phoneNumber,
-          user.birthDate,
-          user.gender,
-          user.stats,
+          user.image,
         )
       : null;
   }
@@ -39,9 +37,7 @@ export class MongoUserRepository implements UserRepository {
           fullName: user.getName(),
           email: user.getEmail(),
           phoneNumber: user.getPhoneNumber(),
-          birthDate: user.getBirthDate(),
-          gender: user.getGender(),
-          stats: user.getStats(),
+          image: user.getImage(),
         },
       },
       {
@@ -55,17 +51,17 @@ export class MongoUserRepository implements UserRepository {
       id: id,
     });
 
-    const { fullName, email, phoneNumber, birthDate, gender, stats } = user;
+    const { fullName, email, phoneNumber, image } = user;
 
     return user
-      ? new User(id, fullName, email, phoneNumber, birthDate, gender, stats)
+      ? new User(id, fullName, email, phoneNumber, image)
       : null;
   }
 
   async findAllUsers(): Promise<User[]> {
     return (await this.userModel.find()).map(
-      ({ id, fullName, email, phoneNumber, birthDate, gender, stats }) =>
-        new User(id, fullName, email, phoneNumber, birthDate, gender, stats),
+      ({ id, fullName, email, phoneNumber, image }) =>
+        new User(id, fullName, email, phoneNumber, image),
     );
   }
 

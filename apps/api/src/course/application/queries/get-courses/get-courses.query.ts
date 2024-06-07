@@ -11,56 +11,13 @@ export class GetCoursesQuery
     const courses = await this.courseRepository.getCourses();
     return Result.success<GetCoursesResponse>(
       courses.map(
-        ({
+        ({ id, name, imageUrl, categoryId, instructorId, createdAt }) => ({
           id,
-          name,
-          description,
-          level,
-          tags,
-          weeks,
-          minutes,
-          imageUrl,
-          categoryId,
-          instructorId,
-          lessons,
-          createdAt,
-          updatedAt,
-        }) => ({
-          id,
-          name,
-          description,
-          level,
-          tags,
-          weeks,
-          minutes,
-          imageUrl,
-          categoryId,
-          instructorId,
-          lessons: lessons.map(
-            ({
-              id,
-              title,
-              comments,
-              content,
-              videoUrl,
-              imageUrl,
-            }) => ({
-              id,
-              title,
-              description,
-              comments: comments.map(({ id, content, userId, createdAt }) => ({
-                id,
-                content,
-                userId,
-                createdAt,
-              })),
-              content,
-              videoUrl,
-              imageUrl,
-            }),
-          ),
-          createdAt,
-          updatedAt,
+          title: name,
+          image: imageUrl,
+          category: categoryId,
+          trainer: instructorId,
+          date: createdAt,
         }),
       ),
     );

@@ -19,12 +19,9 @@ export class CreateUserCommand
     if (_user) return Result.failure(new EmailAlreadyUsedException(data.email));
     const user = new User(
       id,
-      data.fullName,
+      data.name,
       data.email,
-      data.phoneNumber,
-      data.birthDate,
-      data.gender,
-      data.stats,
+      data.phone,
     );
 
     await this.userRepository.saveUser(user);

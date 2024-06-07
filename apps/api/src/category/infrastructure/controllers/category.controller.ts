@@ -4,8 +4,10 @@ import {
   Get,
   Inject,
   Param,
+  ParseIntPipe,
   ParseUUIDPipe,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { IdResponse, UUIDGENERATOR, IdGenerator } from '@app/core';
@@ -21,9 +23,11 @@ import {
 } from '../../application/commands';
 import { CategoryResponse } from './responses';
 import { CreateCategoryDto, UpdateCategoryDto } from './dtos';
+import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
 
-@Controller('categories')
+@Controller('category')
 @ApiTags('Categories')
+@Auth()
 export class CategoryController {
   constructor(
     @Inject(CATEGORY_REPOSITORY)
@@ -32,13 +36,16 @@ export class CategoryController {
     private readonly uuidGenerator: IdGenerator<string>,
   ) {}
 
-  @Get()
+  @Get('many')
   @ApiResponse({
     status: 200,
     description: 'Categories list',
     type: [CategoryResponse],
   })
-  async getCategories() {
+  async getCategories(
+    @Query('page', ParseIntPipe) page: number,
+    @Query('perPage', ParseIntPipe) limit: number,
+  ) {
     const service = new GetCategoriesQuery(this.categoryRepository);
     const result = await service.execute();
     return result.unwrap();

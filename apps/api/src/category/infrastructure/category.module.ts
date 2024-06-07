@@ -5,6 +5,7 @@ import { CategoryController } from './controllers/category.controller';
 import { CategorySchema, MongoCategory } from './models/mongo-category.model';
 import { MongoCategoryRepository } from './repositories/mongo-category.repository';
 import { CATEGORY_REPOSITORY } from './constants';
+import { AuthModule } from '../../auth/infrastructure';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { CATEGORY_REPOSITORY } from './constants';
         schema: CategorySchema,
       },
     ]),
+    AuthModule,
     UUIDModule
   ],
   controllers: [CategoryController],

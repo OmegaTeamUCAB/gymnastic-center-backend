@@ -3,7 +3,7 @@ import {
   DefaultValuePipe,
   Get,
   Inject,
-  Param,
+  ParseArrayPipe,
   ParseIntPipe,
   Query,
 } from '@nestjs/common';
@@ -15,6 +15,7 @@ import {
   SearchCoursesReadModel,
   SearchResponse,
 } from '@app/core';
+import { Auth } from './auth/infrastructure/decorators';
 
 @Controller()
 export class ApiController {
@@ -31,26 +32,48 @@ export class ApiController {
     return 'Health check sent';
   }
 
-  @Get('search/:searchTerm')
+  @Get('search')
+  @Auth()
   @ApiQuery({
-    name: 'limit',
+    name: 'perPage',
     required: false,
     description:
       'Number of results to return for each type of search. DEFAULT = 3',
     type: Number,
   })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description:
+      'Number of . DEFAULT = 1',
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'term',
+    required: false,
+    description: 'Search term',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'tag',
+    description: 'Search by tags. DEFAULT = []',
+    required: false,
+    type: [String],
+  })
   @ApiResponse({
     status: 200,
-    description: 'Search matching courses and blogs',
+    description: 'Search matching courses and blogs.',
     type: SearchResponse,
   })
   async search(
-    @Param('searchTerm') searchTerm: string,
-    @Query('limit', new DefaultValuePipe(3), ParseIntPipe) limit: number = 3,
+    @Query('term') searchTerm: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
+    @Query('perPage', new DefaultValuePipe(3), ParseIntPipe) perPage: number = 3,
+    @Query('tag', new DefaultValuePipe([]), ParseArrayPipe) tag: string[] = [],
   ) {
     const [courses, blogs] = await Promise.all([
-      this.searchCoursesReadModel.execute({ searchTerm, limit }),
-      this.searchBlogsReadModel.execute({ searchTerm, limit }),
+      this.searchCoursesReadModel.execute({ searchTerm, limit: perPage }),
+      this.searchBlogsReadModel.execute({ searchTerm, limit: perPage }),
     ]);
     return {
       courses,

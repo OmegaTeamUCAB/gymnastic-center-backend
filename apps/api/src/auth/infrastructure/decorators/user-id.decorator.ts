@@ -4,15 +4,14 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 
-export const CurrentUser = createParamDecorator(
+export const UserIdReq = createParamDecorator(
   (data: any, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
-    const user = request.user;
-    if (!user)
+    const userId = request.userId;
+    if (!userId)
       throw new InternalServerErrorException(
-        'User no encontrado en la request',
+        'User id no encontrado en la request',
       );
-    if (!data) return user;
-    return user[data];
+    return userId;
   },
 );

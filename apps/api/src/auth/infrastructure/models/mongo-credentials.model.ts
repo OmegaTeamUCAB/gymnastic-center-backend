@@ -1,17 +1,17 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
-export type AuthUserDocument = HydratedDocument<MongoAuthUser>;
+export type CredentialsDocument = HydratedDocument<MongoCredentials>;
 
-@Schema({ collection: 'authusers', timestamps: true, versionKey: false })
-export class MongoAuthUser {
+@Schema({ collection: 'credentials', timestamps: true, versionKey: false })
+export class MongoCredentials {
   readonly _id: string;
 
   @Prop({
     required: true,
     unique: true,
   })
-  aggregateId: string;
+  userId: string;
 
   @Prop({ unique: true, required: true })
   email: string;
@@ -23,11 +23,11 @@ export class MongoAuthUser {
   verificationCode?: string;
 
   @Prop({ type: Date })
-  codeExpirationDate?: Date
+  codeExpirationDate?: Date;
 
   readonly createdAt: Date;
 
   readonly updatedAt: Date;
 }
 
-export const AuthUserSchema = SchemaFactory.createForClass(MongoAuthUser);
+export const CredentialsSchema = SchemaFactory.createForClass(MongoCredentials);

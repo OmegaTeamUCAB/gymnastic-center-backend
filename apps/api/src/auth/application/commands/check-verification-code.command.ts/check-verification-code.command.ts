@@ -1,6 +1,6 @@
 import { ApplicationService, CryptoService, Result } from '@app/core';
 import { CheckVerificationCodeDto } from './types';
-import { IAuthRepository } from '../../repositories/auth.repository';
+import { CredentialsRepository } from '../../repositories/credentials.repository';
 import {
   CodeExpiredException,
   InvalidCodeException,
@@ -10,20 +10,26 @@ import {
 export class CheckVerificationCodeCommand
   implements ApplicationService<CheckVerificationCodeDto, void>
 {
-  constructor(
-    private readonly repository: IAuthRepository,
-  ) {}
+  constructor(private readonly credentialsRepository: CredentialsRepository) {}
 
   async execute(data: CheckVerificationCodeDto): Promise<Result<void>> {
-    const user = await this.repository.findByEmail(data.email);
-    if (!user) return Result.failure(new UserNotFoundException());
-    if (!user.verificationCode || user.verificationCode !== data.code)
+    const credentials = await this.credentialsRepository.findCredentialsByEmail(
+      data.email,
+    );
+    if (!credentials) return Result.failure(new UserNotFoundException());
+    if (
+      !credentials.verificationCode ||
+      credentials.verificationCode !== data.code
+    )
       return Result.failure(new InvalidCodeException());
-    if (!user.codeExpirationDate || user.codeExpirationDate < new Date())
+    if (
+      !credentials.codeExpirationDate ||
+      credentials.codeExpirationDate < new Date()
+    )
       return Result.failure(new CodeExpiredException());
-    user.verificationCode = null;
-    user.codeExpirationDate = null;
-    await this.repository.save(user);
+    credentials.verificationCode = null;
+    credentials.codeExpirationDate = null;
+    await this.credentialsRepository.saveCredentials(credentials);
     return Result.success(null);
   }
 }

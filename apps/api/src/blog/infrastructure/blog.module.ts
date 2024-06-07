@@ -5,6 +5,7 @@ import { BlogController } from './controllers/blog.controller';
 import { BlogSchema, MongoBlog } from './models/blog.model';
 import { BLOG_REPOSITORY } from './constants';
 import { MongoBlogRepository } from './repositories';
+import { AuthModule } from '../../auth/infrastructure';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { MongoBlogRepository } from './repositories';
         schema: BlogSchema,
       },
     ]),
+    AuthModule,
     UUIDModule,
   ],
   controllers: [BlogController],

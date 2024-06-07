@@ -1,13 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { CategoryResponse } from 'apps/api/src/category/infrastructure/controllers/responses';
-import { InstructorResponse } from 'apps/api/src/instructor/infrastructure/responses/instructor.response';
+
+export class CourseTrainerResponse {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+}
 
 export class CourseResponse {
   @ApiProperty()
   id: string;
 
   @ApiProperty()
-  name: string;
+  title: string;
 
   @ApiProperty()
   description: string;
@@ -19,23 +25,23 @@ export class CourseResponse {
   tags: string[];
 
   @ApiProperty()
-  weeks: number;
+  durationWeeks: number;
 
   @ApiProperty()
-  minutes: number;
+  durationMinutes: number;
 
   @ApiProperty()
-  imageUrl: string;
+  image: string;
 
   @ApiProperty({
-    type: () => [CategoryResponse],
+    description: 'Category name',
   })
-  category: CategoryResponse;
+  category: string;
 
   @ApiProperty({
-    type: () => InstructorResponse,
+    type: () => CourseTrainerResponse,
   })
-  instructor: InstructorResponse;
+  trainer: CourseTrainerResponse;
 
   @ApiProperty({
     type: () => [LessonResponse],
@@ -46,13 +52,7 @@ export class CourseResponse {
     type: () => Date,
     example: new Date(),
   })
-  createdAt: Date;
-
-  @ApiProperty({
-    type: () => Date,
-    example: new Date(),
-  })
-  updatedAt: Date;
+  date: Date;
 }
 
 export class LessonResponse {
@@ -63,42 +63,15 @@ export class LessonResponse {
   title: string;
 
   @ApiProperty()
-  description: string;
-
-  @ApiProperty({
-    nullable: true,
-  })
   content: string;
 
   @ApiProperty({
     nullable: true,
   })
-  videoUrl: string;
+  video: string;
 
   @ApiProperty({
     nullable: true,
   })
-  imageUrl: string;
-
-  @ApiProperty({
-    type: () => [CommentResponse],
-  })
-  comments: CommentResponse[];
-}
-
-export class CommentResponse {
-  @ApiProperty()
-  id: string;
-
-  @ApiProperty()
-  user: string;
-
-  @ApiProperty()
-  content: string;
-
-  @ApiProperty({
-    type: () => Date,
-    example: new Date(),
-  })
-  createdAt: Date;
+  image: string;
 }

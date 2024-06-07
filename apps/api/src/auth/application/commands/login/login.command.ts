@@ -4,30 +4,30 @@ import {
   UserNotFoundException,
   InvalidPasswordException,
 } from '../../exceptions';
-import { IAuthRepository } from '../../repositories/auth.repository';
+import { CredentialsRepository } from '../../repositories/credentials.repository';
 import { TokenGenerator } from '../../token/token-generator.interface';
 
 export class LoginCommand
   implements ApplicationService<LoginDto, LoginResponse>
 {
   constructor(
-    private readonly authRepository: IAuthRepository,
+    private readonly credentialsRepository: CredentialsRepository,
     private readonly jwtService: TokenGenerator<string, { id: string }>,
     private readonly cryptoService: CryptoService,
   ) {}
 
   public async execute(data: LoginDto): Promise<Result<LoginResponse>> {
-    const user = await this.authRepository.findByEmail(data.email);
-    if (!user) {
+    const credentials = await this.credentialsRepository.findCredentialsByEmail(data.email);
+    if (!credentials) {
       return Result.failure<LoginResponse>(new UserNotFoundException());
     }
-    if (!(await this.cryptoService.compare(data.password, user.password))) {
+    if (!(await this.cryptoService.compare(data.password, credentials.password))) {
       return Result.failure<LoginResponse>(new InvalidPasswordException());
     }
-    const payload = { id: user.id };
+    const payload = { id: credentials.userId };
     return Result.success<LoginResponse>({
       token: this.jwtService.generateToken(payload),
-      id: user.id,
+      id: credentials.userId,
     });
   }
 }

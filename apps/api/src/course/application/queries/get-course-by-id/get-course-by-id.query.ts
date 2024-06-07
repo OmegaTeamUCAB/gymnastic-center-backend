@@ -18,35 +18,22 @@ export class GetCourseByIdQuery
       );
     return Result.success<GetCourseByIdResponse>({
       id: course.id,
-      name: course.name,
+      title: course.name,
       description: course.description,
       level: course.level,
       tags: course.tags,
-      weeks: course.weeks,
-      minutes: course.minutes,
-      imageUrl: course.imageUrl,
-      categoryId: course.categoryId,
-      instructorId: course.instructorId,
+      durationWeeks: course.weeks,
+      durationMinutes: course.minutes,
+      image: course.imageUrl,
+      category: course.categoryId,
+      trainer: course.instructorId,
       lessons: course.lessons.map(
-        ({
+        ({ id, title, content, videoUrl, imageUrl }) => ({
           id,
           title,
-          comments,
           content,
-          videoUrl,
-          imageUrl,
-        }) => ({
-          id,
-          title,
-          comments: comments.map(({ id, content, userId, createdAt }) => ({
-            id,
-            content,
-            userId,
-            createdAt,
-          })),
-          content,
-          videoUrl,
-          imageUrl,
+          video: videoUrl,
+          image: imageUrl,
         }),
       ),
     });

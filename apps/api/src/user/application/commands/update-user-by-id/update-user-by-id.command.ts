@@ -15,9 +15,7 @@ export class UpdateUserCommand
     if (data.fullName) user.setName(data.fullName);
     if (data.email) user.setEmail(data.email);
     if (data.phoneNumber) user.setPhoneNumber(data.phoneNumber);
-    if (data.birthDate) user.setBirthDate(data.birthDate);
-    if (data.gender) user.setGender(data.gender);
-    if (data.stats) user.setStats(data.stats);
+    if (data.image) user.setImage(data.image);
     await this.userRepository.saveUser(user);
     return Result.success<UpdateUserResponse>({
       id: user.getId(),

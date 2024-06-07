@@ -5,6 +5,7 @@ import { USER_REPOSITORY } from './constants';
 import { MongoUserRepository } from './repositories';
 import { MongoUser, UserSchema } from './models/mongo-user.model';
 import { AuthModule } from '../../auth/infrastructure';
+import { BcryptModule, UUIDModule } from '@app/core';
 
 @Module({
   imports: [
@@ -15,6 +16,8 @@ import { AuthModule } from '../../auth/infrastructure';
       },
     ]),
     AuthModule,
+    BcryptModule,
+    UUIDModule,
   ],
   controllers: [UserController],
   providers: [

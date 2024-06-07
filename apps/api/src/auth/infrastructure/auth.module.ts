@@ -22,7 +22,6 @@ import {
   JwtStrategy,
   VerificationCodeEmailService,
 } from './providers';
-import { UserModule } from '../../user/infrastructure';
 
 @Module({
   imports: [
@@ -31,7 +30,7 @@ import { UserModule } from '../../user/infrastructure';
     }),
     ConfigModule,
     JwtModule.registerAsync({
-      imports: [ConfigModule, UserModule],
+      imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         const secret = configService.get('JWT_SECRET');
@@ -50,7 +49,6 @@ import { UserModule } from '../../user/infrastructure';
     ]),
     BcryptModule,
     UUIDModule,
-    UserModule,
   ],
   controllers: [AuthController],
   providers: [
@@ -72,5 +70,6 @@ import { UserModule } from '../../user/infrastructure';
       useClass: VerificationCodeEmailService,
     },
   ],
+  exports: [PassportModule],
 })
 export class AuthModule {}

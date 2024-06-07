@@ -5,6 +5,7 @@ import { CourseSchema, MongoCourse } from './models/mongo-course.model';
 import { MongoCourseRepository } from './repositories/mongo-course.repository';
 import { COURSE_REPOSITORY } from './constants';
 import { UUIDModule } from '@app/core';
+import { AuthModule } from '../../auth/infrastructure';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { UUIDModule } from '@app/core';
         schema: CourseSchema,
       },
     ]),
+    AuthModule,
     UUIDModule,
   ],
   providers: [

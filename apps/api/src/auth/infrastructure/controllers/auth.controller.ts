@@ -8,6 +8,7 @@ import {
   Put,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Model } from 'mongoose';
 import {
   CheckCodeDto,
   LoginDto,
@@ -42,12 +43,12 @@ import {
 } from '@app/core';
 import { TokenGenerator } from '../../application/token/token-generator.interface';
 import { Auth, UserIdReq } from '../decorators';
-import { USER_REPOSITORY } from 'apps/api/src/user/infrastructure/constants';
-import { UserRepository } from 'apps/api/src/user/domain/repositories';
 import { GetUserByIdQuery } from 'apps/api/src/user/application/queries/get-user-by-id';
 import { CreateUserCommand } from 'apps/api/src/user/application/commands/create-user';
 import { AuthResponse } from './responses';
 import { UserResponse } from 'apps/api/src/user/infrastructure/controllers/responses';
+import { MongoUserRepository } from 'apps/api/src/user/infrastructure/repositories';
+import { UserSchema } from 'apps/api/src/user/infrastructure/models/mongo-user.model';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -65,8 +66,6 @@ export class AuthController {
     private readonly codeGenerator: CodeGenerator<string>,
     @Inject(VERIFICATION_EMAIL_HANDLER)
     private readonly verificationEmailHandler: EmailHandler<{ code: string }>,
-    @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
   ) {}
 
   @Post('login')
@@ -85,7 +84,7 @@ export class AuthController {
       );
       const loginResult = await loginService.execute(loginDto);
       const { token, id } = loginResult.unwrap();
-      const service = new GetUserByIdQuery(this.userRepository);
+      const service = new GetUserByIdQuery(new MongoUserRepository(new Model(UserSchema)));
       const result = await service.execute({ id });
       return { token, user: result.unwrap() };
     } catch (error) {
@@ -108,7 +107,7 @@ export class AuthController {
         this.bcryptService,
       );
       const service = new CreateUserCommand(
-        this.userRepository,
+        new MongoUserRepository(new Model(UserSchema)),
         this.uuidGenerator,
       );
       const result = await service.execute({ ...signUpDto });
@@ -130,7 +129,7 @@ export class AuthController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async currentUser(@UserIdReq() id: string) {
-    const service = new GetUserByIdQuery(this.userRepository);
+    const service = new GetUserByIdQuery(new MongoUserRepository(new Model(UserSchema)));
     const result = await service.execute({ id });
     return result.unwrap();
   }

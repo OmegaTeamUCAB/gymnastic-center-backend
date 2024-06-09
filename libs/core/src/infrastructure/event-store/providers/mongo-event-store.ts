@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { EventStore } from '@app/core/application/event-store/event-store';
 import { DomainEvent } from '@app/core/domain';
 import { MongoEvent } from '../models/mongo-event.model';
+import { Result } from '@app/core/utils';
 
 @Injectable()
 export class MongoEventStore implements EventStore {
@@ -12,7 +13,10 @@ export class MongoEventStore implements EventStore {
     private readonly eventStore: Model<MongoEvent>,
   ) {}
 
-  async appendEvents(stream: string, events: DomainEvent[]): Promise<void> {
+  async appendEvents(
+    stream: string,
+    events: DomainEvent[],
+  ): Promise<Result<void>> {
     const session = await this.eventStore.startSession();
     const serializedEvents: MongoEvent[] = events.map((event) => {
       return {
@@ -29,36 +33,31 @@ export class MongoEventStore implements EventStore {
         ordered: true,
       });
       await session.commitTransaction();
+      return Result.success(null);
     } catch (error) {
       await session.abortTransaction();
-      const UNIQUE_CONSTRAINT_ERROR_CODE = 11000;
-      if (error?.code === UNIQUE_CONSTRAINT_ERROR_CODE) {
-        //Events could not be persisted. Aggregate is stale
-        console.error(error.writeErrors?.[0]?.err?.errmsg);
-      } else {
-        throw error;
-      }
+      return Result.failure(error);
     } finally {
       await session.endSession();
     }
   }
 
-  async getEventsByStream(stream: string): Promise<DomainEvent[]> {
-    const events = await this.eventStore
-      .find({ stream })
-      .sort({ date: 1 });
-    return events.map((event) => ({
-      dispatcherId: event.stream,
-      name: event.type,
-      timestamp: event.date,
-      context: event.context,
-    }));
+  async getEventsByStream(stream: string): Promise<Result<DomainEvent[]>> {
+    const events = await this.eventStore.find({ stream }).sort({ date: 1 });
+    return Result.success(
+      events.map((event) => ({
+        dispatcherId: event.stream,
+        name: event.type,
+        timestamp: event.date,
+        context: event.context,
+      })),
+    );
   }
 
   async getEventsByDateRange(
     from?: Date,
     until: Date = new Date(),
-  ): Promise<DomainEvent[]> {
+  ): Promise<Result<DomainEvent[]>> {
     const events = await this.eventStore
       .find({
         date: {
@@ -67,11 +66,13 @@ export class MongoEventStore implements EventStore {
         },
       })
       .sort({ date: 1 });
-    return events.map((event) => ({
-      dispatcherId: event.stream,
-      name: event.type,
-      timestamp: event.date,
-      context: event.context,
-    }));
+    return Result.success(
+      events.map((event) => ({
+        dispatcherId: event.stream,
+        name: event.type,
+        timestamp: event.date,
+        context: event.context,
+      })),
+    );
   }
 }

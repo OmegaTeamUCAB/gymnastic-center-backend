@@ -1,7 +1,11 @@
 import { DomainEvent } from '@app/core/domain';
+import { Result } from '@app/core/utils';
 
 export interface EventStore {
-  appendEvents(stream: string, events: DomainEvent[]): Promise<void>;
-  getEventsByStream(stream: string): Promise<DomainEvent[]>;
-  getEventsByDateRange(from?: Date, until?: Date): Promise<DomainEvent[]>;
+  appendEvents(stream: string, events: DomainEvent[]): Promise<Result<void>>;
+  getEventsByStream(stream: string): Promise<Result<DomainEvent[]>>;
+  getEventsByDateRange(
+    from?: Date,
+    until?: Date,
+  ): Promise<Result<DomainEvent[]>>;
 }

@@ -1,13 +1,17 @@
-export abstract class DomainEvent {
-  constructor(protected _time = new Date()) {}
+export abstract class DomainEvent<T = Object> {
+  constructor(
+    protected _time = new Date()
+  ) {}
 
-  get time() {
+  get occuredOn() {
     return this._time;
   }
 
   get eventName() {
     return this.constructor.name;
   }
+
+  abstract get context(): T;
 
   static get eventName() {
     return this.prototype.constructor.name;

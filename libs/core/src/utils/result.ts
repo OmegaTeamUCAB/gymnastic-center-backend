@@ -4,9 +4,7 @@ export class Result<T> {
     private error?: Error,
   ) {
     if (value !== undefined && error !== undefined)
-      throw new Error('Value and error not to be definined same time');
-    else if (value === undefined && error === undefined)
-      throw new Error('Value and error not to be undefined same time');
+      throw new Error('Value and error not to be defined at the same time');
   }
 
   unwrap(): T {
@@ -14,17 +12,12 @@ export class Result<T> {
     return this.value!;
   }
 
-  unwrapOr(defaultValue: T): T {
-    if (this.value === undefined) return defaultValue;
-    return this.value;
-  }
-
   get isSuccessful() {
     return !this.error;
   }
 
   get isFailure() {
-    return !this.value;
+    return !!this.error;
   }
 
   static success<T>(value: T) {

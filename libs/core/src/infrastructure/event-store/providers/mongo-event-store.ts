@@ -42,22 +42,20 @@ export class MongoEventStore implements EventStore {
     }
   }
 
-  async getEventsByStream(stream: string): Promise<Result<DomainEvent[]>> {
+  async getEventsByStream(stream: string): Promise<DomainEvent[]> {
     const events = await this.eventStore.find({ stream }).sort({ date: 1 });
-    return Result.success(
-      events.map((event) => ({
-        dispatcherId: event.stream,
-        name: event.type,
-        timestamp: event.date,
-        context: event.context,
-      })),
-    );
+    return events.map((event) => ({
+      dispatcherId: event.stream,
+      name: event.type,
+      timestamp: event.date,
+      context: event.context,
+    }));
   }
 
   async getEventsByDateRange(
     from?: Date,
     until: Date = new Date(),
-  ): Promise<Result<DomainEvent[]>> {
+  ): Promise<DomainEvent[]> {
     const events = await this.eventStore
       .find({
         date: {
@@ -66,13 +64,11 @@ export class MongoEventStore implements EventStore {
         },
       })
       .sort({ date: 1 });
-    return Result.success(
-      events.map((event) => ({
-        dispatcherId: event.stream,
-        name: event.type,
-        timestamp: event.date,
-        context: event.context,
-      })),
-    );
+    return events.map((event) => ({
+      dispatcherId: event.stream,
+      name: event.type,
+      timestamp: event.date,
+      context: event.context,
+    }));
   }
 }

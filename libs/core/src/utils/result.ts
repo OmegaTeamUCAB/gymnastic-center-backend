@@ -1,7 +1,8 @@
-import { ApplicationException } from '../exceptions/application-exception';
-
 export class Result<T> {
-  private constructor(private value?: T, private error?: ApplicationException) {
+  private constructor(
+    private value?: T,
+    private error?: Error,
+  ) {
     if (value !== undefined && error !== undefined)
       throw new Error('Value and error not to be definined same time');
     else if (value === undefined && error === undefined)
@@ -30,7 +31,7 @@ export class Result<T> {
     return new Result(value, undefined);
   }
 
-  static failure<T>(error: ApplicationException) {
+  static failure<T>(error: Error) {
     return new Result<T>(undefined, error);
   }
 }

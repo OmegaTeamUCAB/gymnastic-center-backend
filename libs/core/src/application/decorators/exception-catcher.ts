@@ -1,5 +1,5 @@
+import { Result } from '@app/core/utils';
 import { ApplicationService } from '../services/application-service';
-import { Result } from '../result-wrapper/result';
 
 export class ExceptionCatcherDecorator<T, U>
   implements ApplicationService<T, U>

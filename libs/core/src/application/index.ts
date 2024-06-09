@@ -5,6 +5,5 @@ export { EmailHandler } from './email/email-handler.interface';
 export { EventHandler } from './event-handler/event-handler';
 export { ExceptionCatcherDecorator } from './decorators/exception-catcher';
 export { IdGenerator } from './id/id-generator.interface';
-export { Result } from './result-wrapper/result';
 export { CryptoService } from './crypto/crypto-service.interface';
 export { ReadModel } from './read-model/read-model';

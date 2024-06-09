@@ -1,19 +1,15 @@
-export abstract class DomainEvent<T = Object> {
-  constructor(
-    protected _time = new Date()
-  ) {}
-
-  get occuredOn() {
-    return this._time;
-  }
-
-  get eventName() {
-    return this.constructor.name;
-  }
-
-  abstract get context(): T;
-
-  static get eventName() {
-    return this.prototype.constructor.name;
-  }
+export interface DomainEvent<T extends object = object> {
+  readonly dispatcherId: string;
+  readonly name: string;
+  readonly timestamp: Date;
+  readonly context: T;
 }
+
+export const DomainEventFactory =
+  <T extends object>(name: string) =>
+  (dispatcherId: string, context: T): DomainEvent<T> => ({
+    dispatcherId,
+    name,
+    timestamp: new Date(),
+    context,
+  });

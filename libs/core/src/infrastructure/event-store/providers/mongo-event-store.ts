@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { EventStore } from '@app/core/application/event-store/event-store';
-import { DomainEvent, EventTypePool } from '@app/core/domain';
+import { DomainEvent } from '@app/core/domain';
 import { MongoEvent } from '../models/mongo-event.model';
 
 @Injectable()
@@ -12,13 +12,13 @@ export class MongoEventStore implements EventStore {
     private readonly eventStore: Model<MongoEvent>,
   ) {}
 
-  async append(dispatcherId: string, events: DomainEvent[]): Promise<void> {
+  async appendEvents(stream: string, events: DomainEvent[]): Promise<void> {
     const session = await this.eventStore.startSession();
     const serializedEvents: MongoEvent[] = events.map((event) => {
       return {
-        streamId: dispatcherId,
-        type: event.eventName,
-        date: event.occuredOn,
+        stream: stream,
+        type: event.name,
+        date: event.timestamp,
         context: event.context,
       };
     });
@@ -43,13 +43,16 @@ export class MongoEventStore implements EventStore {
     }
   }
 
-  async getEventsByDispatcherId(dispatcherId: string): Promise<DomainEvent[]> {
+  async getEventsByStream(stream: string): Promise<DomainEvent[]> {
     const events = await this.eventStore
-      .find({ dispatcherId })
+      .find({ stream })
       .sort({ date: 1 });
-    if (events.length === 0)
-      throw new Error(`Aggregate with id ${dispatcherId} does not exist`);
-    return events.map((event) => this.parseEvent(event));
+    return events.map((event) => ({
+      dispatcherId: event.stream,
+      name: event.type,
+      timestamp: event.date,
+      context: event.context,
+    }));
   }
 
   async getEventsByDateRange(
@@ -64,13 +67,11 @@ export class MongoEventStore implements EventStore {
         },
       })
       .sort({ date: 1 });
-    return events.map((event) => this.parseEvent(event));
-  }
-
-  private parseEvent<T extends DomainEvent>(event: MongoEvent): T {
-    const eventClass = EventTypePool.get(event.type);
-    if (!eventClass)
-      throw new Error(`Event ${event.type} not found in EventTypePool`);
-    return Object.assign(Object.create(eventClass.prototype), event.context);
+    return events.map((event) => ({
+      dispatcherId: event.stream,
+      name: event.type,
+      timestamp: event.date,
+      context: event.context,
+    }));
   }
 }

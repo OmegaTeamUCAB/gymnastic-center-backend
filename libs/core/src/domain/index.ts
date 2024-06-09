@@ -4,4 +4,3 @@ export { DomainException } from './exceptions/domain-exception';
 export { DomainService } from './services/domain-service';
 export { Entity } from './entities/entity';
 export { ValueObject } from './value-objects/value-object';
-export { RegisterEventClass, EventTypePool } from './events/event-type-pool';

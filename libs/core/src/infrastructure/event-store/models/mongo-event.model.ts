@@ -14,7 +14,7 @@ export class MongoEvent {
     required: true,
     immutable: true,
   })
-  streamId: string;
+  stream: string;
 
   @Prop({
     required: true,
@@ -38,4 +38,4 @@ export class MongoEvent {
 }
 
 export const EventSchema = SchemaFactory.createForClass(MongoEvent);
-EventSchema.index({ streamId: 1, date: 1 });
+EventSchema.index({ stream: 1, date: 1 });

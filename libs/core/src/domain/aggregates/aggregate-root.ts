@@ -11,7 +11,7 @@ export abstract class AggregateRoot<
     super(id);
   }
 
-  abstract validateState(): void;
+  protected abstract validateState(): void;
 
   pullEvents(): DomainEvent[] {
     const events = this.events;
@@ -26,14 +26,14 @@ export abstract class AggregateRoot<
 
   protected apply(event: DomainEvent, fromHistory: boolean = false): void {
     const handler = this.getEventHandler(event);
-    if (!handler) throw new Error(`No handler for event: ${event.eventName}`);
+    if (!handler) throw new Error(`No handler for event: ${event.name}`);
     if (!fromHistory) this.events.push(event);
-    handler.call(this, event);
+    handler.call(this, event.context);
     this.validateState();
   }
 
   protected getEventHandler(event: DomainEvent): Function | undefined {
-    const handler = `on${event.eventName}`;
+    const handler = `on${event.name}`;
     return this[handler];
   }
 }

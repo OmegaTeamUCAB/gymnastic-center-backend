@@ -5,3 +5,4 @@ export * from './responses';
 export * from './bcrypt';
 export * from './uuid';
 export * from './searches';
+export * from './event-handler';

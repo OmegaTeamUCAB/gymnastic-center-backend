@@ -1,13 +1,13 @@
 import { ApplicationService } from '../services/application-service';
 import { Result } from '../result-wrapper/result';
-import { ILogger } from './logger.port';
+import { LoggerService } from './logger.interface';
 
 export class LoggerDecorator<T, U> 
   implements ApplicationService<T, U> 
 {  
   constructor(
     private readonly service: ApplicationService<T, U>,
-    private readonly logger: ILogger
+    private readonly logger: LoggerService
   ) {}
   
   async execute(data: T): Promise<Result<U>> {

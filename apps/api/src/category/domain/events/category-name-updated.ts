@@ -15,10 +15,10 @@ export class CategoryNameUpdated {
     categoryName: CategoryName,
   ): CategoryNameUpdatedEvent {
     return DomainEventFactory<CategoryNameUpdated>({
-      dispatcherId: dispatcher.id,
+      dispatcherId: dispatcher.value,
       name: CategoryNameUpdated.name,
       context: {
-        name: categoryName.name,
+        name: categoryName.value,
       },
     });
   }

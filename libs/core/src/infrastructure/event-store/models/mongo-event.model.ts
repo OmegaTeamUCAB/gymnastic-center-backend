@@ -31,7 +31,7 @@ export class MongoEvent {
 
   @Prop({
     type: SchemaTypes.Mixed,
-    required: false,
+    default: {},
     immutable: true,
   })
   context: Object;

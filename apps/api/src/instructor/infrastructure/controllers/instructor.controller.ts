@@ -6,7 +6,6 @@ import { InstructorResponse } from '../responses/instructor.response';
 import { InstructorRepository } from '../../domain/repositories/instructor.repository.interface';
 import { INSTRUCTORS_REPOSITORY } from '../constants';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
-import { UserIdReq } from '../../../auth/infrastructure/decorators/user-id.decorator';
 
 @Controller('trainer')
 @ApiTags('Instructors')
@@ -27,10 +26,7 @@ export class InstructorsController {
     description: 'Instructor not found',
   })
   @Get('one/:id')
-  async findOneInstructor(
-    @Param('id') id: string,
-    @UserIdReq() userId: string,
-  ) {
+  async findOneInstructor(@Param('id') id: string) {
     const data: GetInstructorByIdDto = { id };
     const getInstructorByIdQuery = new GetInstructorByIdQuery(this.repository);
     const result = await getInstructorByIdQuery.execute(data);

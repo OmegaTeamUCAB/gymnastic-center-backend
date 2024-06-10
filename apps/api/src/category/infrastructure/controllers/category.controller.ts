@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Inject,
+  NotFoundException,
   Param,
   ParseIntPipe,
   ParseUUIDPipe,
@@ -20,6 +21,7 @@ import {
   EventStore,
   LOCAL_EVENT_HANDLER,
   EventHandler,
+  MongoCategory,
 } from '@app/core';
 import {
   CreateCategoryCommandHandler,
@@ -28,10 +30,6 @@ import {
 import { CategoryResponse } from './responses';
 import { CreateCategoryDto, UpdateCategoryDto } from './dtos';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
-import {
-  CategoryDocument,
-  MongoCategory,
-} from '../models/mongo-category.model';
 import { CategoryNotFoundException } from '../../application/exceptions';
 
 @Controller('category')
@@ -46,7 +44,7 @@ export class CategoryController {
     @Inject(LOCAL_EVENT_HANDLER)
     private readonly localEventHandler: EventHandler,
     @InjectModel(MongoCategory.name)
-    private readonly categoryModel: Model<CategoryDocument>,
+    private readonly categoryModel: Model<MongoCategory>,
   ) {}
 
   @Get('many')
@@ -64,7 +62,7 @@ export class CategoryController {
       .skip(page * perPage)
       .limit(perPage);
     return categories.map((category) => ({
-      id: category.aggregateId,
+      id: category.id,
       name: category.name,
       icon: category.icon,
     }));
@@ -84,11 +82,11 @@ export class CategoryController {
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<CategoryResponse> {
     const category = await this.categoryModel.findOne({
-      aggregateId: id,
+      id,
     });
-    if (!category) throw new CategoryNotFoundException();
+    if (!category) throw new NotFoundException(new CategoryNotFoundException());
     return {
-      id: category.aggregateId,
+      id: category.id,
       name: category.name,
       icon: category.icon,
     };

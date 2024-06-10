@@ -7,6 +7,10 @@ export class UserPhone implements ValueObject<UserPhone>{
         if (!UserPhone.isValid(phone)) throw new InvalidUserPhoneException(phone); 
     }
 
+    get value(): string {
+        return this.phone;
+    }
+
     equals(other: UserPhone): boolean {
         return this.phone === other.phone;
     }

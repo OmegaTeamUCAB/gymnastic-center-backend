@@ -3,7 +3,7 @@ import { NativeLoggerService } from "@app/core/application";
 
 @Injectable()
 export class NativeLogger implements NativeLoggerService {
-    private readonly logger = new Logger();
+    private readonly logger = new Logger('NATIVE LOGGER');
     
     log(message: string): void {
         this.logger.log(message);

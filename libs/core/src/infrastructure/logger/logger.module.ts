@@ -1,15 +1,16 @@
 import { Module } from '@nestjs/common';
-import { NestLoggerService } from './providers/logging.service';
+import { NativeLogger } from './providers/logging.service';
+import { LOGGER_SERVICE } from './constants';
 
 @Module({
     imports : [],
     controllers : [],
     providers : [
         {
-            provide : 'LoggerService',
-            useClass : NestLoggerService
+            provide : LOGGER_SERVICE,
+            useClass : NativeLogger,
         }
     ],
-    exports : ['LoggerService']
+    exports : [LOGGER_SERVICE]
 })
 export class LoggerModule {}

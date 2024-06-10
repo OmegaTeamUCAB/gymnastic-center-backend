@@ -6,11 +6,11 @@ export class CategoryName implements ValueObject<CategoryName> {
     if (_name.length < 4) throw new InvalidCategoryNameException();
   }
 
-  get name(): string {
+  get value(): string {
     return this._name;
   }
 
   equals(other: CategoryName): boolean {
-    return this._name === other.name;
+    return this._name === other.value;
   }
 }

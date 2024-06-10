@@ -6,11 +6,11 @@ export class CategoryIcon implements ValueObject<CategoryIcon> {
     if (_icon.length === 0) throw new InvalidCategoryIconException();
   }
 
-  get icon(): string {
+  get value(): string {
     return this._icon;
   }
 
   equals(other: CategoryIcon): boolean {
-    return this._icon === other.icon;
+    return this._icon === other.value;
   }
 }

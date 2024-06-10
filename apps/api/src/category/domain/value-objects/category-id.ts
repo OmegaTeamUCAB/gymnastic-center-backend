@@ -6,11 +6,11 @@ export class CategoryId implements ValueObject<CategoryId> {
     if (!UUIDRegExp.test(_id)) throw new InvalidCategoryIdException();
   }
 
-  get id(): string {
+  get value(): string {
     return this._id;
   }
 
   equals(other: CategoryId): boolean {
-    return this._id === other.id;
+    return this._id === other.value;
   }
 }

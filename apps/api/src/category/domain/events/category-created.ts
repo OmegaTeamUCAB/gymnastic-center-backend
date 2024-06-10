@@ -18,11 +18,11 @@ export class CategoryCreated {
     categoryIcon: CategoryIcon,
   ): CategoryCreatedEvent {
     return DomainEventFactory<CategoryCreated>({
-      dispatcherId: dispatcher.id,
+      dispatcherId: dispatcher.value,
       name: CategoryCreated.name,
       context: {
-        name: categoryName.name,
-        icon: categoryIcon.icon,
+        name: categoryName.value,
+        icon: categoryIcon.value,
       },
     });
   }

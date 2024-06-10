@@ -1,4 +1,4 @@
-import { Instructor } from '../entities/instructor.entity';
+import { Instructor } from '../instructor';
 
 export interface InstructorRepository {
   getInstructors(): Promise<Instructor[]>;

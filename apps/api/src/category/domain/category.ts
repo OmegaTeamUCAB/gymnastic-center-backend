@@ -41,7 +41,7 @@ export class Category extends AggregateRoot<CategoryId> {
 
   static create(
     id: CategoryId,
-    data: {
+    data: { 
       name: CategoryName;
       icon: CategoryIcon;
     },

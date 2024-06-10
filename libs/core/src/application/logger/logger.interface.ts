@@ -1,5 +1,4 @@
-export interface LoggerService {
+export interface NativeLoggerService {
     log(message: string): void;
-    error(message: string): void;
-    warn(message: string): void;
+    logError(message: string): void;
 }

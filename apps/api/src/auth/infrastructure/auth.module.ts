@@ -69,6 +69,6 @@ import {
       useClass: VerificationCodeEmailService,
     },
   ],
-  exports: [PassportModule, AUTH_REPOSITORY, JWT_SERVICE],
+  exports: [PassportModule, AUTH_REPOSITORY, JWT_SERVICE, JwtStrategy, JwtModule],
 })
 export class AuthModule {}

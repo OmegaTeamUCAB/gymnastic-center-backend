@@ -21,7 +21,7 @@ import {
   UUIDGENERATOR,
 } from '@app/core';
 import { DeleteUserCommand } from '../../application/commands/delete-user-by-id';
-import { Auth, UserIdReq } from 'apps/api/src/auth/infrastructure/decorators';
+import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import {
   CredentialsRepository,
   LoginCommand,
@@ -36,6 +36,7 @@ import { AuthResponse } from 'apps/api/src/auth/infrastructure/controllers/respo
 import { GetUserByIdQuery } from '../../application/queries/get-user-by-id';
 import { CreateUserCommand } from '../../application/commands/create-user';
 import { UserResponse } from './responses';
+import { Credentials } from 'apps/api/src/auth/application/models/credentials.model';
 
 @Controller()
 @ApiTags('Users & Auth')
@@ -114,9 +115,9 @@ export class UserController {
     type: UserResponse,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async currentUser(@UserIdReq() id: string) {
+  async currentUser(@CurrentUser() credentials: Credentials) {
     const service = new GetUserByIdQuery(this.userRepository);
-    const result = await service.execute({ id });
+    const result = await service.execute({ id: credentials.userId });
     return result.unwrap();
   }
 
@@ -128,11 +129,11 @@ export class UserController {
     type: IdResponse,
   })
   async updateUserById(
-    @UserIdReq() id: string,
+    @CurrentUser() credentials: Credentials,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     const service = new UpdateUserCommand(this.userRepository);
-    const result = await service.execute({ id, ...updateUserDto });
+    const result = await service.execute({ id: credentials.userId, ...updateUserDto });
     return result.unwrap();
   }
 
@@ -143,9 +144,9 @@ export class UserController {
     description: 'User deleted',
     type: IdResponse,
   })
-  async deleteUserById(@UserIdReq() id: string) {
+  async deleteUserById(@CurrentUser() credentials: Credentials) {
     const service = new DeleteUserCommand(this.userRepository);
-    const result = await service.execute({ id });
+    const result = await service.execute({ id: credentials.userId });
     return result.unwrap();
   }
 }

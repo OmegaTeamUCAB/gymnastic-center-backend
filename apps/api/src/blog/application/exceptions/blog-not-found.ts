@@ -1,7 +1,7 @@
 import { ApplicationException } from '@app/core';
 
-export class BlogNotFound extends ApplicationException {
-    constructor() {
-        super(`Blog not found`);
-    }
+export class BlogNotFoundException extends ApplicationException {
+  constructor() {
+    super(`Blog not found`);
+  }
 }

@@ -11,7 +11,7 @@ import { EventStore } from '@app/core/application';
 import { DomainEvent } from '@app/core/domain';
 import { MongoEvent } from '../models/mongo-event.model';
 import { Result } from '@app/core/utils';
-import { EVENTS_QUEUE } from '../../constants';
+import { EVENTS_QUEUE } from '@app/core/infrastructure';
 
 @Injectable()
 export class MongoEventStore
@@ -87,7 +87,7 @@ export class MongoEventStore
 
   onApplicationBootstrap() {
     this.changeStream = this.eventStore.watch().on('change', (change) => {
-      if(change.operationType === 'insert') {
+      if (change.operationType === 'insert') {
         const event: MongoEvent = change.fullDocument;
         this.rmqClient.emit(event.type, {
           dispatcherId: event.stream,

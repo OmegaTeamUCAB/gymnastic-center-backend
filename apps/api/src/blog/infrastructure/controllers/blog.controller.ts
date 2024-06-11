@@ -10,7 +10,6 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ClientProxy } from '@nestjs/microservices';
 import {
   GetAllBlogsQuery,
   GetBlogByIdQuery,
@@ -18,14 +17,7 @@ import {
   UpdateBlogCommand,
 } from '../../application';
 import { CreateBlogCommentDto, CreateBlogDto, UpdateBlogDto } from './dtos';
-import {
-  BLOG_CREATED,
-  BLOG_UPDATED,
-  EVENTS_QUEUE,
-  IdGenerator,
-  IdResponse,
-  UUIDGENERATOR,
-} from '@app/core';
+import { IdGenerator, IdResponse, UUIDGENERATOR } from '@app/core';
 import { BlogLeanResponse, BlogResponse } from './responses';
 import { BlogRepository } from '../../domain';
 import { BLOG_REPOSITORY } from '../constants';
@@ -40,8 +32,6 @@ export class BlogController {
     private readonly repository: BlogRepository,
     @Inject(UUIDGENERATOR)
     private readonly uuidGenerator: IdGenerator<string>,
-    @Inject(EVENTS_QUEUE)
-    private readonly rmqClient: ClientProxy,
   ) {}
 
   @ApiResponse({
@@ -84,9 +74,6 @@ export class BlogController {
     const service = new CreateBlogCommand(this.repository, this.uuidGenerator);
     const result = await service.execute(createBlogDto);
     const response = result.unwrap();
-    this.rmqClient.emit(BLOG_CREATED, {
-      id: response.id,
-    });
     return response;
   }
 
@@ -103,10 +90,6 @@ export class BlogController {
     const service = new UpdateBlogCommand(this.repository);
     const result = await service.execute({ ...updateBlogDto, id });
     const response = result.unwrap();
-    this.rmqClient.emit(BLOG_UPDATED, {
-      id: response.id,
-      dto: updateBlogDto,
-    });
     return response;
   }
 }

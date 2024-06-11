@@ -9,16 +9,8 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import {
-  COURSE_CREATED,
-  COURSE_UPDATED,
-  EVENTS_QUEUE,
-  IdGenerator,
-  IdResponse,
-  UUIDGENERATOR,
-} from '@app/core';
+import { IdGenerator, IdResponse, UUIDGENERATOR } from '@app/core';
 import { COURSE_REPOSITORY } from '../constants';
 import { CourseRepository } from '../../domain';
 import {
@@ -42,8 +34,6 @@ export class CourseController {
     private readonly courseRepository: CourseRepository,
     @Inject(UUIDGENERATOR)
     private readonly uuidGenerator: IdGenerator<string>,
-    @Inject(EVENTS_QUEUE)
-    private readonly rmqClient: ClientProxy,
   ) {}
 
   @Get('many')
@@ -105,9 +95,6 @@ export class CourseController {
     );
     const result = await service.execute(createCourseDto);
     const response = result.unwrap();
-    this.rmqClient.emit(COURSE_CREATED, {
-      id: response.id,
-    });
     return response;
   }
 
@@ -124,10 +111,6 @@ export class CourseController {
     const service = new UpdateCourseCommand(this.courseRepository);
     const result = await service.execute({ id, ...updateCourseDto });
     const response = result.unwrap();
-    this.rmqClient.emit(COURSE_UPDATED, {
-      id,
-      dto: updateCourseDto,
-    });
     return response;
   }
 }

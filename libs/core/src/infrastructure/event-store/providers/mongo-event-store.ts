@@ -11,7 +11,7 @@ import { EventStore } from '@app/core/application';
 import { DomainEvent } from '@app/core/domain';
 import { MongoEvent } from '../models/mongo-event.model';
 import { Result } from '@app/core/utils';
-import { EVENTS_QUEUE } from '@app/core/infrastructure';
+import { EVENTS_QUEUE } from '../../rabbitmq';
 
 @Injectable()
 export class MongoEventStore

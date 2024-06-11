@@ -1,7 +1,7 @@
-import { ValueObject } from "@app/core";
-import { InvalidInstructorFollowersException } from "../exceptions/invalide-instructor-followers.exception";
+import { ValueObject } from '@app/core';
+import { InvalidInstructorFollowersException } from '../exceptions/invalid-instructor-followers.exception';
 
-export class InstructorFollowers implements ValueObject<InstructorFollowers>{
+export class InstructorFollowers implements ValueObject<InstructorFollowers> {
   //Userid[] para el tipo de followers
   //if (_followers.length < 0) throw new InvalidInstructorFollowersException();
   constructor(private readonly _followers: number) {
@@ -13,6 +13,6 @@ export class InstructorFollowers implements ValueObject<InstructorFollowers>{
   }
 
   equals(other: InstructorFollowers): boolean {
-      return this._followers === other.value;
+    return this._followers === other.value;
   }
 }

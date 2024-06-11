@@ -3,7 +3,7 @@ import { InvalidInstructorException } from '../exceptions/invalid-instructor.exc
 
 export class InstructorId implements ValueObject<InstructorId> {
   constructor(private readonly _id: string) {
-    if (!UUIDRegExp.test(_id)) throw new InvalidInstructorException()
+    if (!UUIDRegExp.test(_id)) throw new InvalidInstructorException();
   }
 
   get value(): string {

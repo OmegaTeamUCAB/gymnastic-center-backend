@@ -14,5 +14,8 @@ export class InstructorResponse {
   userFollow: boolean;
 
   @ApiProperty()
-  location: string;
+  country: string;
+
+  @ApiProperty()
+  city: string;
 }

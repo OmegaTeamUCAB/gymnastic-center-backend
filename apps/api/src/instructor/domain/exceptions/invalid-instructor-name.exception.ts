@@ -1,7 +1,7 @@
-import { DomainException } from "@app/core";
+import { DomainException } from '@app/core';
 
 export class InvalidInstructorNameException extends DomainException {
-    constructor() {
-        super('Invalid Instructor Name');
-    }
+  constructor() {
+    super('Invalid Instructor Name');
+  }
 }

@@ -1,20 +1,19 @@
-import { Controller, Get, Inject, Param } from '@nestjs/common';
+import { Controller, Get, Inject, Param, ParseUUIDPipe } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { GetInstructorByIdQuery } from '../../application/queries/get-instructor-by-id/get-instructor-by-id.query';
-import { GetInstructorByIdDto } from '../../application/queries/get-instructor-by-id/types/get-instructor-by-id.dto';
 import { InstructorResponse } from '../responses/instructor.response';
-import { InstructorRepository } from '../../domain/repositories/instructor.repository.interface';
-import { INSTRUCTORS_REPOSITORY } from '../constants';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
-import { UserIdReq } from '../../../auth/infrastructure/decorators/user-id.decorator';
+import { InjectModel } from '@nestjs/mongoose';
+import { MongoInstructor } from '../models/instructor.model';
+import { Model } from 'mongoose';
+import { InstructorNotFoundException } from '../../application/exceptions/instructor-not-found';
 
 @Controller('trainer')
 @ApiTags('Instructors')
 @Auth()
 export class InstructorsController {
   constructor(
-    @Inject(INSTRUCTORS_REPOSITORY)
-    private readonly repository: InstructorRepository,
+    @InjectModel(MongoInstructor.name)
+    private readonly instructorModel: Model<MongoInstructor>,
   ) {}
 
   @ApiResponse({
@@ -27,20 +26,18 @@ export class InstructorsController {
     description: 'Instructor not found',
   })
   @Get('one/:id')
-  async findOneInstructor(
-    @Param('id') id: string,
-    @UserIdReq() userId: string,
-  ) {
-    const data: GetInstructorByIdDto = { id };
-    const getInstructorByIdQuery = new GetInstructorByIdQuery(this.repository);
-    const result = await getInstructorByIdQuery.execute(data);
-    const instructor = result.unwrap();
+  async getInstructorById(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<InstructorResponse> {
+    const instructor = await this.instructorModel.findOne({ aggregateId: id });
+    if (!instructor) throw new InstructorNotFoundException();
     return {
-      id: instructor.id,
+      id: instructor.aggregateId,
       name: instructor.name,
-      followers: 100,
-      userFollow: false,
-      location: 'Caracas, Venezuela',
+      followers: instructor.followers,
+      country: instructor.country,
+      city: instructor.city,
+      userFollow: instructor.userFollow,
     };
   }
 }

@@ -17,16 +17,16 @@ export class MongoInstructor {
   name: string;
 
   @Prop({ required: true, minlength: 1 })
-  lastName: string;
+  city: string;
+
+  @Prop({ required: true, minlength: 1 })
+  country: string;
 
   @Prop({ required: true })
-  birthDate: Date;
+  followers: number;
 
-  @Prop({ required: true, unique: true })
-  email: string;
-
-  @Prop({ required: true, minlength: 4 })
-  gender: string;
+  @Prop({ required: true })
+  userFollow: boolean;
 }
 
 export const InstructorSchema = SchemaFactory.createForClass(MongoInstructor);

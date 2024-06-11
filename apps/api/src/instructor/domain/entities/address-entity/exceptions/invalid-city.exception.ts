@@ -1,4 +1,4 @@
-import { DomainException } from "@app/core";
+import { DomainException } from '@app/core';
 
 export class InvalidCityException extends DomainException {
   constructor() {

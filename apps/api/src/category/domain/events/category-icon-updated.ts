@@ -15,10 +15,10 @@ export class CategoryIconUpdated {
     categoryIcon: CategoryIcon,
   ): CategoryIconUpdatedEvent {
     return DomainEventFactory<CategoryIconUpdated>({
-      dispatcherId: dispatcher.id,
+      dispatcherId: dispatcher.value,
       name: CategoryIconUpdated.name,
       context: {
-        icon: categoryIcon.icon,
+        icon: categoryIcon.value,
       },
     });
   }

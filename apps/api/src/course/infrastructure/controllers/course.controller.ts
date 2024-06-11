@@ -22,6 +22,7 @@ import { CreateCourseDto, UpdateCourseDto } from './dtos';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
 import { CourseLeanResponse, CourseResponse } from './responses';
 import { MongoCourse } from '../models/mongo-course.model';
+import { CourseNotFoundException } from '../../application/exceptions';
 
 @Controller('course')
 @ApiTags('Courses')
@@ -53,10 +54,9 @@ export class CourseController {
   @ApiQuery({
     name: 'filter',
     required: false,
-    description:
-      'Course Sorting',
+    description: 'Course Sorting',
     type: String,
-    enum: ['POPULAR', 'RECENT']
+    enum: ['POPULAR', 'RECENT'],
   })
   @ApiQuery({
     name: 'trainer',
@@ -77,7 +77,7 @@ export class CourseController {
   })
   async getCourses(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('perPage', new DefaultValuePipe(8) ,ParseIntPipe) perPage: number,
+    @Query('perPage', new DefaultValuePipe(8), ParseIntPipe) perPage: number,
     @Query('filter') filter?: 'POPULAR' | 'RECENT',
     @Query('trainer') instructorId?: string,
     @Query('category') categoryId?: string,
@@ -118,7 +118,7 @@ export class CourseController {
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<CourseResponse> {
     const course = await this.courseModel.findOne({ aggregateId: id });
-    if (!course) throw new NotFoundException('Course not found');
+    if (!course) throw new NotFoundException(new CourseNotFoundException());
     return {
       id: course.aggregateId,
       title: course.title,

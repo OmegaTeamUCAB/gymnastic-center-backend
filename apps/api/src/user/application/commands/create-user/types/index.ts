@@ -1,2 +1,2 @@
-export * from './create-user.dto';
+export * from './command.type';
 export * from './response.type';

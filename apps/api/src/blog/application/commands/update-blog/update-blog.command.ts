@@ -1,7 +1,7 @@
 import { ApplicationService, Result } from '@app/core';
 import { UpdateBlogResponse, UpdateBlogDto } from './types';
 import { BlogRepository } from '../../../domain';
-import { BlogNotFound } from '../../exceptions';
+import { BlogNotFoundException } from '../../exceptions';
 
 export class UpdateBlogCommand
   implements ApplicationService<UpdateBlogDto, UpdateBlogResponse>
@@ -10,7 +10,8 @@ export class UpdateBlogCommand
 
   async execute(data: UpdateBlogDto): Promise<Result<UpdateBlogResponse>> {
     const blog = await this.repository.getBlogById(data.id);
-    if (!blog) return Result.failure<UpdateBlogResponse>(new BlogNotFound());
+    if (!blog)
+      return Result.failure<UpdateBlogResponse>(new BlogNotFoundException());
     blog.imageUrl = data.imageUrl ?? blog.imageUrl;
     blog.title = data.title ?? blog.title;
     blog.description = data.description ?? blog.description;

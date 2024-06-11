@@ -65,13 +65,6 @@ export class LessonResponse {
   @ApiProperty()
   content: string;
 
-  @ApiProperty({
-    nullable: true,
-  })
+  @ApiProperty()
   video: string;
-
-  @ApiProperty({
-    nullable: true,
-  })
-  image: string;
 }

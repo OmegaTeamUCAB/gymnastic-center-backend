@@ -1,2 +1,2 @@
-export * from './create-blog-dto';
-export * from './create-blog-response';
+export * from './command.type';
+export * from './response.type';

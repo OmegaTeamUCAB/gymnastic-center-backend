@@ -1,1 +1,1 @@
-export * from './blog-not-found';
+export * from './blog-not-found.exception';

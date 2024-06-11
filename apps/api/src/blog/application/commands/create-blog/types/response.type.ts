@@ -1,3 +1,3 @@
 export class CreateBlogResponse {
-    id: string;
+  id: string;
 }

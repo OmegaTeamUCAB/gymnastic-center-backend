@@ -63,6 +63,10 @@ export class Instructor extends AggregateRoot<InstructorId> {
     this.apply(InstructorFollowersUpdated.createEvent(this.id, followers));
   }
 
+  updateUserFollow(userFollow: InstructorUserFollow): void {
+    this.apply(InstructorUserFollowUpdated.createEvent(this.id, userFollow));
+  }
+
   static create(
     id: InstructorId,
     data: {

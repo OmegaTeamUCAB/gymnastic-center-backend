@@ -9,9 +9,14 @@ import {
   Query,
   ParseIntPipe,
   DefaultValuePipe,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CreateBlogCommand, UpdateBlogCommand } from '../../application';
+import {
+  BlogNotFoundException,
+  CreateBlogCommand,
+  UpdateBlogCommand,
+} from '../../application';
 import { CreateBlogCommentDto, CreateBlogDto, UpdateBlogDto } from './dtos';
 import { IdGenerator, IdResponse, UUIDGENERATOR } from '@app/core';
 import { BlogLeanResponse, BlogResponse } from './responses';
@@ -111,6 +116,7 @@ export class BlogController {
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<BlogResponse> {
     const blog = await this.blogModel.findOne({ aggregateId: id });
+    if (!blog) throw new NotFoundException(new BlogNotFoundException());
     return {
       id: blog.id,
       title: blog.title,

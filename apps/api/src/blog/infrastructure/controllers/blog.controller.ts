@@ -12,8 +12,6 @@ import {
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ClientProxy } from '@nestjs/microservices';
 import {
-  GetAllBlogsQuery,
-  GetBlogByIdQuery,
   CreateBlogCommand,
   UpdateBlogCommand,
 } from '../../application';
@@ -27,8 +25,6 @@ import {
   UUIDGENERATOR,
 } from '@app/core';
 import { BlogLeanResponse, BlogResponse } from './responses';
-import { BlogRepository } from '../../domain';
-import { BLOG_REPOSITORY } from '../constants';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
 
 @Controller('blog')
@@ -36,8 +32,6 @@ import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
 @Auth()
 export class BlogController {
   constructor(
-    @Inject(BLOG_REPOSITORY)
-    private readonly repository: BlogRepository,
     @Inject(UUIDGENERATOR)
     private readonly uuidGenerator: IdGenerator<string>,
     @Inject(EVENTS_QUEUE)
@@ -57,9 +51,7 @@ export class BlogController {
     @Query('trainer') trainer?: string,
     @Query('category') category?: string,
   ) {
-    const service = new GetAllBlogsQuery(this.repository);
-    const result = await service.execute();
-    return result.unwrap();
+
   }
 
   @ApiResponse({
@@ -69,9 +61,8 @@ export class BlogController {
   })
   @Get('one/:id')
   async getBlogById(@Param('id', ParseUUIDPipe) id: string) {
-    const service = new GetBlogByIdQuery(this.repository);
-    const result = await service.execute({ id });
-    return result.unwrap();
+
+
   }
 
   @ApiResponse({

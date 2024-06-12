@@ -1,5 +1,5 @@
 import { ApplicationService } from '../services/application-service';
-import { Result } from '../result-wrapper/result';
+import { Result } from '@app/core/utils';
 import { Logger } from '../logger/logger.interface';
 
 export class LoggingDecorator<T, U>

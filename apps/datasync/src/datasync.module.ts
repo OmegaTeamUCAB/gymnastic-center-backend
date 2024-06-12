@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import * as Joi from 'joi';
-import { CategorySchema, MongoCategory, RabbitMQModule } from '@app/core';
+import { CategorySchema, MongoCategory, MongoUser, RabbitMQModule, UserSchema } from '@app/core';
 import { DatasyncController } from './datasync.controller';
 
 @Module({
@@ -23,6 +23,10 @@ import { DatasyncController } from './datasync.controller';
         name: MongoCategory.name,
         schema: CategorySchema,
       },
+      {
+        name: MongoUser.name,
+        schema: UserSchema,
+      }
     ]),
   ],
   controllers: [DatasyncController],

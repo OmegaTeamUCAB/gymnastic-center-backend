@@ -33,10 +33,9 @@ export class CreateUserCommandHandler
       name: new UserName(command.name),
       email: new UserEmail(command.email),
       phone: new UserPhone(command.phone),
-      image: new UserImage(command.image),
     };
-
     const user = User.create(new UserId(id), data);
+
     const events = user.pullEvents();
     await this.eventStore.appendEvents(id, events);
     this.eventHandler.publishEvents(events);

@@ -8,12 +8,14 @@ import { IdGenerator } from '@app/core';
 import { CreateBlogCommand, CreateBlogResponse } from './types';
 import { Blog } from '../../../domain/blog';
 import {
+  BlogContent,
   BlogDate,
   BlogId,
   BlogImages,
   BlogTags,
   BlogTitle,
 } from '../../../domain/value-objects';
+import { CategoryId } from 'apps/api/src/category/domain/value-objects/category-id';
 
 export class CreateBlogCommandHandler
   implements ApplicationService<CreateBlogCommand, CreateBlogResponse>
@@ -30,9 +32,11 @@ export class CreateBlogCommandHandler
     const id = this.idGenerator.generateId();
     const data = {
       date: new BlogDate(command.date),
-      images: new BlogImages(command.images),
-      tags: new BlogTags(command.tags),
+      images: command.images.map(image => new BlogImages(image)),
+      tags: command.tags.map(tag => new BlogTags(tag)),
       title: new BlogTitle(command.title),
+      category: new CategoryId(command.category),
+      content: new BlogContent(command.content),
     };
     const blog = Blog.create(new BlogId(id), data);
     const events = blog.pullEvents();

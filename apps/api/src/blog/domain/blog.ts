@@ -1,5 +1,6 @@
 import { AggregateRoot, DomainEvent } from '@app/core';
 import {
+  BlogContent,
   BlogDate,
   BlogId,
   BlogImages,
@@ -8,12 +9,15 @@ import {
 } from './value-objects';
 import { InvalidBlogException } from './exceptions';
 import {
+  BlogCategoryUpdated,
+  BlogContentUpdated,
   BlogCreated,
   BlogDateUpdated,
   BlogImagesUpdated,
   BlogTagsUpdated,
   BlogTitleUpdated,
 } from './events';
+import { CategoryId } from '../../category/domain/value-objects/category-id';
 
 export class Blog extends AggregateRoot<BlogId> {
   private constructor(id: BlogId) {
@@ -27,19 +31,21 @@ export class Blog extends AggregateRoot<BlogId> {
   }
 
   private _date: BlogDate;
-  private _images: BlogImages;
-  private _tags: BlogTags;
+  private _images: BlogImages[];
+  private _tags: BlogTags[];
   private _title: BlogTitle;
+  private _category: CategoryId;
+  private _content: BlogContent;
 
   get date(): BlogDate {
     return this._date;
   }
 
-  get images(): BlogImages {
+  get images(): BlogImages[] {
     return this._images;
   }
 
-  get tags(): BlogTags {
+  get tags(): BlogTags[] {
     return this._tags;
   }
 
@@ -47,15 +53,23 @@ export class Blog extends AggregateRoot<BlogId> {
     return this._title;
   }
 
+  get category(): CategoryId {
+    return this._category;
+  }
+
+  get content(): BlogContent {
+    return this._content;
+  }
+
   updateDate(date: BlogDate): void {
     this.apply(BlogDateUpdated.createEvent(this.id, date));
   }
 
-  updateImages(images: BlogImages): void {
+  updateImages(images: BlogImages[]): void {
     this.apply(BlogImagesUpdated.createEvent(this.id, images));
   }
 
-  updateTags(tags: BlogTags): void {
+  updateTags(tags: BlogTags[]): void {
     this.apply(BlogTagsUpdated.createEvent(this.id, tags));
   }
 
@@ -63,13 +77,23 @@ export class Blog extends AggregateRoot<BlogId> {
     this.apply(BlogTitleUpdated.createEvent(this.id, title));
   }
 
+  updateCategory(category: CategoryId): void {
+    this.apply(BlogCategoryUpdated.createEvent(this.id, category));
+  }
+
+  updateContent(content: BlogContent): void {
+    this.apply(BlogContentUpdated.createEvent(this.id, content));
+  }
+
   static create(
     id: BlogId,
     data: {
       date: BlogDate;
-      images: BlogImages;
-      tags: BlogTags;
+      images: BlogImages[];
+      tags: BlogTags[];
       title: BlogTitle;
+      category: CategoryId;
+      content: BlogContent;
     },
   ): Blog {
     const blog = new Blog(id);
@@ -80,6 +104,8 @@ export class Blog extends AggregateRoot<BlogId> {
         data.images,
         data.tags,
         data.title,
+        data.category,
+        data.content,
       ),
     );
     return blog;
@@ -93,9 +119,11 @@ export class Blog extends AggregateRoot<BlogId> {
 
   [`on${BlogCreated.name}`](context: BlogCreated): void {
     this._date = new BlogDate(context.date);
-    this._images = new BlogImages(context.images);
-    this._tags = new BlogTags(context.tags);
+    this._images = context.images.map((image) => new BlogImages(image));
+    this._tags = context.tags.map((tag) => new BlogTags(tag));
     this._title = new BlogTitle(context.title);
+    this._category = new CategoryId(context.category);
+    this._content = new BlogContent(context.content);
   }
 
   [`on${BlogDateUpdated.name}`](context: BlogDateUpdated): void {
@@ -103,14 +131,22 @@ export class Blog extends AggregateRoot<BlogId> {
   }
 
   [`on${BlogImagesUpdated.name}`](context: BlogImagesUpdated): void {
-    this._images = new BlogImages(context.images);
+    this._images = context.images.map((image) => new BlogImages(image));
   }
 
   [`on${BlogTagsUpdated.name}`](context: BlogTagsUpdated): void {
-    this._tags = new BlogTags(context.tags);
+    this._tags = context.tags.map((tag) => new BlogTags(tag));
   }
 
   [`on${BlogTitleUpdated.name}`](context: BlogTitleUpdated): void {
     this._title = new BlogTitle(context.title);
+  }
+
+  [`on${BlogCategoryUpdated.name}`](context: BlogCategoryUpdated): void {
+    this._category = new CategoryId(context.category);
+  }
+
+  [`on${BlogContentUpdated.name}`](context: BlogContentUpdated): void {
+    this._content = new BlogContent(context.content);
   }
 }

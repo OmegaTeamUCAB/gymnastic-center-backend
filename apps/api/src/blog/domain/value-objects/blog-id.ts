@@ -10,7 +10,7 @@ export class BlogId implements ValueObject<BlogId> {
     return this._id;
   }
 
-  public equals(other: BlogId): boolean {
+  equals(other: BlogId): boolean {
     return this._id === other.value;
   }
 }

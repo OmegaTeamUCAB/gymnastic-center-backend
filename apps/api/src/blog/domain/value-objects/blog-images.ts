@@ -2,15 +2,15 @@ import { ValueObject } from '@app/core';
 import { InvalidBlogImagesException } from '../exceptions';
 
 export class BlogImages implements ValueObject<BlogImages> {
-  constructor(private readonly _images: string[]) {
-    if (_images.length < 0) throw new InvalidBlogImagesException();
+  constructor(private readonly _image: string) {
+    if (_image.length < 0) throw new InvalidBlogImagesException();
   }
 
-  get value(): string[] {
-    return this._images;
+  get value(): string {
+    return this._image;
   }
 
   equals(other: BlogImages): boolean {
-    return this._images === other.value;
+    return this._image === other.value;
   }
 }

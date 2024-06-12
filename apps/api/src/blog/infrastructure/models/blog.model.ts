@@ -13,51 +13,47 @@ export class MongoBlog {
   })
   aggregateId: string;
 
-  @Prop({ required: true })
-  imageUrl: string;
-
   @Prop({ required: true, minlength: 5 })
   title: string;
 
-  @Prop({ required: true, minlength: 5 })
+  @Prop({ required: true, minlength: 10 })
   description: string;
-
-  @Prop({ required: true })
-  content: string;
-
-  @Prop({ required: true })
-  uploadDate: Date;
 
   @Prop({
     required: true,
     default: [],
-    type: [
-      {
-        _id: false,
-        id: String,
-        userId: String,
-        blogId: String,
-        content: String,
-        postedAt: Date,
-      },
-    ],
+    type: [String],
   })
-  comments: {
-    id: string;
-    userId: string;
-    blogId: string;
-    content: string;
-    postedAt: Date;
-  }[];
+  images: string;
+
+  @Prop({ required: true })
+  uploadDate: Date;
+
+  // @Prop({
+  //   required: true,
+  //   default: [],
+  //   type: [
+  //     {
+  //       _id: false,
+  //       id: String,
+  //       userId: String,
+  //       blogId: String,
+  //       content: String,
+  //       postedAt: Date,
+  //     },
+  //   ],
+  // })
+  // comments: {
+  //   id: string;
+  //   userId: string;
+  //   blogId: string;
+  //   content: string;
+  //   postedAt: Date;
+  // }[];
 
   @Prop({ required: true, default: [], type: [String] })
   tags: string[];
 
-  @Prop({ required: true })
-  categoryId: string;
-
-  @Prop({ required: true })
-  instructorId: string;
 
   readonly createdAt: Date;
   readonly updatedAt: Date;

@@ -9,13 +9,13 @@ export class BlogTagsUpdated {
   tags: string[];
   static createEvent(
     dispatcher: BlogId,
-    blogTags: BlogTags,
+    blogTags: BlogTags[],
   ): BlogTagsUpdatedEvent {
     return DomainEventFactory<BlogTagsUpdated>({
       dispatcherId: dispatcher.value,
       name: BlogTagsUpdated.name,
       context: {
-        tags: blogTags.value,
+        tags: blogTags.map((tag) => tag.value),
       },
     });
   }

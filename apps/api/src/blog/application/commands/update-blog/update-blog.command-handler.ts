@@ -30,8 +30,10 @@ export class UpdateBlogCommandHandler
     if (events.length === 0) throw new BlogNotFoundException();
     const blog = Blog.loadFromHistory(new BlogId(command.id), events);
     if (command.date) blog.updateDate(new BlogDate(command.date));
-    if (command.images) blog.updateImages(new BlogImages(command.images));
-    if (command.tags) blog.updateTags(new BlogTags(command.tags));
+    if (command.images)
+      blog.updateImages(command.images.map((image) => new BlogImages(image)));
+    if (command.tags)
+      blog.updateTags(command.tags.map((tag) => new BlogTags(tag)));
     if (command.title) blog.updateTitle(new BlogTitle(command.title));
     const newEvents = blog.pullEvents();
     await this.eventStore.appendEvents(command.id, newEvents);

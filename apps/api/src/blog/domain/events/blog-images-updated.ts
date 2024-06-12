@@ -9,13 +9,13 @@ export class BlogImagesUpdated {
   images: string[];
   static createEvent(
     dispatcher: BlogId,
-    blogImages: BlogImages,
+    blogImages: BlogImages[],
   ): BlogImagesUpdatedEvent {
     return DomainEventFactory<BlogImagesUpdated>({
       dispatcherId: dispatcher.value,
       name: BlogImagesUpdated.name,
       context: {
-        images: blogImages.value,
+        images: blogImages.map((image) => image.value),
       },
     });
   }

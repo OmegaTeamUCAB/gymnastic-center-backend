@@ -112,9 +112,9 @@ export class Instructor extends AggregateRoot<InstructorId> {
     this._name = new InstructorName(context.name);
   }
 
-  // [`on${InstructorAddressUpdated.name}`](context: InstructorAddressUpdated): void {
-  //   this._address = new Address(context.country, context.city, context.direction);
-  // }
+  [`on${InstructorAddressUpdated.name}`](context: InstructorAddressUpdated): void {
+    this._address = new Address(context.country, context.city, context.direction);
+  }
 
   [`on${InstructorFollowersUpdated.name}`](
     context: InstructorFollowersUpdated,

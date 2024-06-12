@@ -1,12 +1,7 @@
-import { IsArray, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsArray, IsDate, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateBlogDto {
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty()
-  imageUrl: string;
-
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
@@ -17,21 +12,9 @@ export class CreateBlogDto {
   @ApiProperty()
   description: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty()
-  content: string;
-
-  @IsString()
-  @IsUUID()
-  categoryId: string;
-
-  @IsString()
-  @IsUUID()
-  instructorId: string;
-
   @IsArray()
   @IsString({ each: true })
+  @IsNotEmpty()
   @ApiProperty()
-  tags: string[];
+  images: string[];
 }

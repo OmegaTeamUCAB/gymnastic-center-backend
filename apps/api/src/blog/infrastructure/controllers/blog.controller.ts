@@ -1,103 +1,130 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
-  Param,
   Inject,
-  ParseUUIDPipe,
-  Query,
+  Param,
   ParseIntPipe,
+  ParseUUIDPipe,
+  Post,
+  Query,
 } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ClientProxy } from '@nestjs/microservices';
+import { Model } from 'mongoose';
 import {
-  CreateBlogCommand,
-  UpdateBlogCommand,
-} from '../../application';
-import { CreateBlogCommentDto, CreateBlogDto, UpdateBlogDto } from './dtos';
-import {
-  BLOG_CREATED,
-  BLOG_UPDATED,
-  EVENTS_QUEUE,
-  IdGenerator,
   IdResponse,
   UUIDGENERATOR,
+  IdGenerator,
+  EVENT_STORE,
+  EventStore,
+  LOCAL_EVENT_HANDLER,
+  EventHandler,
 } from '@app/core';
-import { BlogLeanResponse, BlogResponse } from './responses';
+import {
+  CreateBlogCommandHandler,
+  UpdateBlogCommandHandler,
+} from '../../application/commands';
+import { BlogResponse } from './responses';
+import { CreateBlogDto, UpdateBlogDto } from './dtos';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
+import {
+  BlogDocument,
+  MongoBlog,
+} from '../models/mongo-Blog.model';
+import { BlogNotFoundException } from '../../application/exceptions';
 
-@Controller('blog')
+@Controller('Blog')
 @ApiTags('Blogs')
 @Auth()
 export class BlogController {
   constructor(
     @Inject(UUIDGENERATOR)
     private readonly uuidGenerator: IdGenerator<string>,
-    @Inject(EVENTS_QUEUE)
-    private readonly rmqClient: ClientProxy,
+    @Inject(EVENT_STORE)
+    private readonly eventStore: EventStore,
+    @Inject(LOCAL_EVENT_HANDLER)
+    private readonly localEventHandler: EventHandler,
+    @InjectModel(MongoBlog.name)
+    private readonly BlogModel: Model<BlogDocument>,
   ) {}
 
+  @Get('many')
   @ApiResponse({
     status: 200,
     description: 'Blogs list',
-    type: [BlogLeanResponse],
+    type: [BlogResponse],
   })
-  @Get('many')
-  async getAllBlogs(
+  async getBlogs(
     @Query('page', ParseIntPipe) page: number,
-    @Query('perPage', ParseIntPipe) limit: number,
-    @Query('filter') filter?: 'POPULAR' | 'RECENT',
-    @Query('trainer') trainer?: string,
-    @Query('category') category?: string,
-  ) {
-
+    @Query('perPage', ParseIntPipe) perPage: number,
+  ): Promise<BlogResponse[]> {
+    const blogs = await this.BlogModel
+      .find()
+      .skip(page * perPage)
+      .limit(perPage);
+    return blogs.map((Blog) => ({
+      id: Blog.aggregateId,
+      name: Blog.name,
+      icon: Blog.icon,
+    }));
   }
 
+  @Get(':id')
   @ApiResponse({
     status: 200,
-    description: 'Blog details',
+    description: 'Blog found',
     type: BlogResponse,
   })
-  @Get('one/:id')
-  async getBlogById(@Param('id', ParseUUIDPipe) id: string) {
-
-
-  }
-
   @ApiResponse({
-    status: 200,
-    description: 'The blog has been successfully created',
-    type: IdResponse,
+    status: 404,
+    description: 'Blog not found',
   })
-  @Post()
-  async createBlog(@Body() createBlogDto: CreateBlogDto) {
-    const service = new CreateBlogCommand(this.repository, this.uuidGenerator);
-    const result = await service.execute(createBlogDto);
-    const response = result.unwrap();
-    this.rmqClient.emit(BLOG_CREATED, {
-      id: response.id,
-    });
-    return response;
-  }
-
-  @ApiResponse({
-    status: 200,
-    description: 'The blog has been successfully created',
-    type: IdResponse,
-  })
-  @Post(':id')
-  async updateBlog(
-    @Body() updateBlogDto: UpdateBlogDto,
+  async getBlogById(
     @Param('id', ParseUUIDPipe) id: string,
-  ) {
-    const service = new UpdateBlogCommand(this.repository);
-    const result = await service.execute({ ...updateBlogDto, id });
-    const response = result.unwrap();
-    this.rmqClient.emit(BLOG_UPDATED, {
-      id: response.id,
-      dto: updateBlogDto,
+  ): Promise<BlogResponse> {
+    const blog = await this.BlogModel.findOne({
+      aggregateId: id,
     });
-    return response;
+    if (!blog) throw new BlogNotFoundException();
+    return {
+      id: blog.aggregateId,
+      name: blog.name,
+      icon: blog.icon,
+    };
+  }
+
+  @Post()
+  @ApiResponse({
+    status: 200,
+    description: 'Blog created',
+    type: IdResponse,
+  })
+  async createBlog(@Body() createBlogDto: CreateBlogDto) {
+    const service = new CreateBlogCommandHandler(
+      this.uuidGenerator,
+      this.eventStore,
+      this.localEventHandler,
+    );
+    const result = await service.execute(createBlogDto);
+    return result.unwrap();
+  }
+
+  @Post(':id')
+  @ApiResponse({
+    status: 200,
+    description: 'Blog updated',
+    type: IdResponse,
+  })
+  async updateBlog(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateBlogDto: UpdateBlogDto,
+  ) {
+    const service = new UpdateBlogCommandHandler(
+      this.eventStore,
+      this.localEventHandler,
+    );
+    const result = await service.execute({ id, ...updateBlogDto });
+    return result.unwrap();
   }
 }

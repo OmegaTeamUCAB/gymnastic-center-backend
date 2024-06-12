@@ -5,34 +5,24 @@ import {
   Inject,
   Param,
   ParseIntPipe,
-  ParseUUIDPipe,
-  Post,
-  Query,
+  DefaultValuePipe,
+  NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Model } from 'mongoose';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
-  IdResponse,
-  UUIDGENERATOR,
-  IdGenerator,
-  EVENT_STORE,
-  EventStore,
-  LOCAL_EVENT_HANDLER,
-  EventHandler,
-} from '@app/core';
-import {
-  CreateBlogCommandHandler,
-  UpdateBlogCommandHandler,
-} from '../../application/commands';
-import { BlogResponse } from './responses';
-import { CreateBlogDto, UpdateBlogDto } from './dtos';
+  BlogNotFoundException,
+  CreateBlogCommand,
+  UpdateBlogCommand,
+} from '../../application';
+import { CreateBlogCommentDto, CreateBlogDto, UpdateBlogDto } from './dtos';
+import { IdGenerator, IdResponse, UUIDGENERATOR } from '@app/core';
+import { BlogLeanResponse, BlogResponse } from './responses';
+import { BlogRepository } from '../../domain';
+import { BLOG_REPOSITORY } from '../constants';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
-import {
-  BlogDocument,
-  MongoBlog,
-} from '../models/mongo-Blog.model';
-import { BlogNotFoundException } from '../../application/exceptions';
+import { InjectModel } from '@nestjs/mongoose';
+import { MongoBlog } from '../models';
+import { Model } from 'mongoose';
 
 @Controller('Blog')
 @ApiTags('Blogs')
@@ -41,32 +31,73 @@ export class BlogController {
   constructor(
     @Inject(UUIDGENERATOR)
     private readonly uuidGenerator: IdGenerator<string>,
-    @Inject(EVENT_STORE)
-    private readonly eventStore: EventStore,
-    @Inject(LOCAL_EVENT_HANDLER)
-    private readonly localEventHandler: EventHandler,
     @InjectModel(MongoBlog.name)
-    private readonly BlogModel: Model<BlogDocument>,
+    private readonly blogModel: Model<MongoBlog>,
   ) {}
 
   @Get('many')
+  @ApiQuery({
+    name: 'perPage',
+    required: false,
+    description:
+      'Number of results to return for each type of search. DEFAULT = 8',
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Number of . DEFAULT = 1',
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'filter',
+    required: false,
+    description: 'Blog Sorting',
+    type: String,
+    enum: ['POPULAR', 'RECENT'],
+  })
+  @ApiQuery({
+    name: 'trainer',
+    required: false,
+    description: 'Instructor id filter',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'category',
+    required: false,
+    description: 'Category id filter',
+    type: String,
+  })
   @ApiResponse({
     status: 200,
     description: 'Blogs list',
     type: [BlogResponse],
   })
-  async getBlogs(
-    @Query('page', ParseIntPipe) page: number,
-    @Query('perPage', ParseIntPipe) perPage: number,
-  ): Promise<BlogResponse[]> {
-    const blogs = await this.BlogModel
-      .find()
-      .skip(page * perPage)
-      .limit(perPage);
-    return blogs.map((Blog) => ({
-      id: Blog.aggregateId,
-      name: Blog.name,
-      icon: Blog.icon,
+  async getAllBlogs(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('perPage', new DefaultValuePipe(8), ParseIntPipe) perPage: number,
+    @Query('filter') filter?: 'POPULAR' | 'RECENT',
+    @Query('trainer') trainer?: string,
+    @Query('category') category?: string,
+  ): Promise<BlogLeanResponse[]> {
+    const blogs = await this.blogModel.find(
+      {
+        ...(trainer && { instructorId: trainer }),
+        ...(category && { categoryId: category }),
+      },
+      null,
+      {
+        skip: (page - 1) * perPage,
+        perPage,
+      },
+    );
+    return blogs.map((blog) => ({
+      id: blog.id,
+      title: blog.title,
+      image: blog.imageUrl,
+      trainer: blog.instructorId,
+      category: blog.categoryId,
+      date: blog.createdAt,
     }));
   }
 
@@ -76,40 +107,45 @@ export class BlogController {
     description: 'Blog found',
     type: BlogResponse,
   })
-  @ApiResponse({
-    status: 404,
-    description: 'Blog not found',
-  })
+  @Get('one/:id')
   async getBlogById(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<BlogResponse> {
-    const blog = await this.BlogModel.findOne({
-      aggregateId: id,
-    });
-    if (!blog) throw new BlogNotFoundException();
+    const blog = await this.blogModel.findOne({ aggregateId: id });
+    if (!blog) throw new NotFoundException(new BlogNotFoundException());
     return {
-      id: blog.aggregateId,
-      name: blog.name,
-      icon: blog.icon,
+      id: blog.id,
+      title: blog.title,
+      description: blog.content,
+      images: [blog.imageUrl],
+      trainer: {
+        id: blog.instructorId,
+        name: 'El Tigre',
+      },
+      category: blog.categoryId,
+      date: blog.createdAt,
+      tags: blog.tags,
     };
   }
 
-  @Post()
   @ApiResponse({
     status: 200,
-    description: 'Blog created',
+    description: 'The blog has been successfully created',
     type: IdResponse,
   })
+  @Post()
   async createBlog(@Body() createBlogDto: CreateBlogDto) {
-    const service = new CreateBlogCommandHandler(
-      this.uuidGenerator,
-      this.eventStore,
-      this.localEventHandler,
-    );
+    const service = new CreateBlogCommand(this.repository, this.uuidGenerator);
     const result = await service.execute(createBlogDto);
-    return result.unwrap();
+    const response = result.unwrap();
+    return response;
   }
 
+  @ApiResponse({
+    status: 200,
+    description: 'The blog has been successfully created',
+    type: IdResponse,
+  })
   @Post(':id')
   @ApiResponse({
     status: 200,
@@ -120,11 +156,9 @@ export class BlogController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateBlogDto: UpdateBlogDto,
   ) {
-    const service = new UpdateBlogCommandHandler(
-      this.eventStore,
-      this.localEventHandler,
-    );
-    const result = await service.execute({ id, ...updateBlogDto });
-    return result.unwrap();
+    const service = new UpdateBlogCommand(this.repository);
+    const result = await service.execute({ ...updateBlogDto, id });
+    const response = result.unwrap();
+    return response;
   }
 }

@@ -2,10 +2,6 @@ import { Controller, Get, Inject, Param, ParseUUIDPipe } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { InstructorResponse } from '../responses/instructor.response';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
-import { InjectModel } from '@nestjs/mongoose';
-import { MongoInstructor } from '../models/instructor.model';
-import { Model } from 'mongoose';
-import { InstructorNotFoundException } from '../../application/exceptions/instructor-not-found';
 
 @Controller('trainer')
 @ApiTags('Instructors')
@@ -26,11 +22,11 @@ export class InstructorsController {
     description: 'Instructor not found',
   })
   @Get('one/:id')
-  async getInstructorById(
-    @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<InstructorResponse> {
-    const instructor = await this.instructorModel.findOne({ aggregateId: id });
-    if (!instructor) throw new InstructorNotFoundException();
+  async findOneInstructor(@Param('id') id: string) {
+    const data: GetInstructorByIdDto = { id };
+    const getInstructorByIdQuery = new GetInstructorByIdQuery(this.repository);
+    const result = await getInstructorByIdQuery.execute(data);
+    const instructor = result.unwrap();
     return {
       id: instructor.aggregateId,
       name: instructor.name,

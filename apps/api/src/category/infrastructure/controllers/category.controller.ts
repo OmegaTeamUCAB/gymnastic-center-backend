@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Get,
   Inject,
+  NotFoundException,
   Param,
   ParseIntPipe,
   ParseUUIDPipe,
@@ -10,7 +12,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Model } from 'mongoose';
 import {
   IdResponse,
@@ -20,6 +22,7 @@ import {
   EventStore,
   LOCAL_EVENT_HANDLER,
   EventHandler,
+  MongoCategory,
 } from '@app/core';
 import {
   CreateCategoryCommandHandler,
@@ -28,10 +31,6 @@ import {
 import { CategoryResponse } from './responses';
 import { CreateCategoryDto, UpdateCategoryDto } from './dtos';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
-import {
-  CategoryDocument,
-  MongoCategory,
-} from '../models/mongo-category.model';
 import { CategoryNotFoundException } from '../../application/exceptions';
 
 @Controller('category')
@@ -46,25 +45,38 @@ export class CategoryController {
     @Inject(LOCAL_EVENT_HANDLER)
     private readonly localEventHandler: EventHandler,
     @InjectModel(MongoCategory.name)
-    private readonly categoryModel: Model<CategoryDocument>,
+    private readonly categoryModel: Model<MongoCategory>,
   ) {}
 
   @Get('many')
+  @ApiQuery({
+    name: 'perPage',
+    required: false,
+    description:
+      'Number of results to return for each type of search. DEFAULT = 8',
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Number of . DEFAULT = 1',
+    type: Number,
+  })
   @ApiResponse({
     status: 200,
     description: 'Categories list',
     type: [CategoryResponse],
   })
   async getCategories(
-    @Query('page', ParseIntPipe) page: number,
-    @Query('perPage', ParseIntPipe) perPage: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('perPage', new DefaultValuePipe(8), ParseIntPipe) perPage: number,
   ): Promise<CategoryResponse[]> {
-    const categories = await this.categoryModel
-      .find()
-      .skip(page * perPage)
-      .limit(perPage);
+    const categories = await this.categoryModel.find({}, null, {
+      skip: (page - 1) * perPage,
+      limit: perPage,
+    });
     return categories.map((category) => ({
-      id: category.aggregateId,
+      id: category.id,
       name: category.name,
       icon: category.icon,
     }));
@@ -84,11 +96,11 @@ export class CategoryController {
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<CategoryResponse> {
     const category = await this.categoryModel.findOne({
-      aggregateId: id,
+      id,
     });
-    if (!category) throw new CategoryNotFoundException();
+    if (!category) throw new NotFoundException(new CategoryNotFoundException());
     return {
-      id: category.aggregateId,
+      id: category.id,
       name: category.name,
       icon: category.icon,
     };

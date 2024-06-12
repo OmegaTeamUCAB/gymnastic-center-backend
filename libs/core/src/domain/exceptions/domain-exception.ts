@@ -3,9 +3,11 @@ export abstract class DomainException extends Error {
     super(message);
   }
 
-  static exceptionName = this.constructor.name;
-
   get name() {
     return this.constructor.name;
+  }
+
+  static get exceptionName() {
+    return this.prototype.constructor.name;
   }
 }

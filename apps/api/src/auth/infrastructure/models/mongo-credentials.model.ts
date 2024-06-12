@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, SchemaTypes } from 'mongoose';
 
 export type CredentialsDocument = HydratedDocument<MongoCredentials>;
 
@@ -10,6 +10,7 @@ export class MongoCredentials {
   @Prop({
     required: true,
     unique: true,
+    type: SchemaTypes.UUID,
   })
   userId: string;
 

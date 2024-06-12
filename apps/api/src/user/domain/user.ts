@@ -1,17 +1,27 @@
-import { AggregateRoot, DomainEvent } from "@app/core";
-import { InvalidUserException } from "./exceptions";
-import { UserEmail, UserId, UserImage, UserName, UserPhone } from "./value-objects";
-import { UserCreated, UserImageUpdated, UserNameUpdated, UserPhoneUpdated } from "./events";
+import { AggregateRoot, DomainEvent } from '@app/core';
+import { InvalidUserException } from './exceptions';
+import {
+  UserEmail,
+  UserId,
+  UserImage,
+  UserName,
+  UserPhone,
+} from './value-objects';
+import {
+  UserCreated,
+  UserImageUpdated,
+  UserNameUpdated,
+  UserPhoneUpdated,
+} from './events';
 
 export class User extends AggregateRoot<UserId> {
-  
   private constructor(id: UserId) {
     super(id);
   }
-  
+
   protected validateState(): void {
-    if (!this.id || !this._email || !this._name || !this._phone ) {
-    throw new InvalidUserException();
+    if (!this.id || !this._email || !this._name || !this._phone) {
+      throw new InvalidUserException();
     }
   }
 
@@ -19,7 +29,6 @@ export class User extends AggregateRoot<UserId> {
   private _email: UserEmail;
   private _phone: UserPhone;
   private _image?: UserImage;
-
 
   get name(): UserName {
     return this._name;
@@ -51,15 +60,15 @@ export class User extends AggregateRoot<UserId> {
 
   static create(
     id: UserId,
-    data: {    
-      name: UserName,
-      email: UserEmail,
-      phone: UserPhone,
-      image?: UserImage
-    }
+    data: {
+      name: UserName;
+      email: UserEmail;
+      phone: UserPhone;
+    },
   ): User {
     const user = new User(id);
-    user.apply(UserCreated.createEvent(id, data.name, data.email, data.phone, data.image));
+
+    user.apply(UserCreated.createEvent(id, data.name, data.email, data.phone));
     return user;
   }
 
@@ -73,7 +82,6 @@ export class User extends AggregateRoot<UserId> {
     this._name = new UserName(context.name);
     this._email = new UserEmail(context.email);
     this._phone = new UserPhone(context.phone);
-    this._image = new UserImage(context.image);
   }
 
   [`on${UserNameUpdated.name}`](context: UserNameUpdated): void {
@@ -87,5 +95,4 @@ export class User extends AggregateRoot<UserId> {
   [`on${UserImageUpdated.name}`](context: UserImageUpdated): void {
     this._image = new UserImage(context.image);
   }
-
 }

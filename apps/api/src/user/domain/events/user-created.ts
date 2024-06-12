@@ -12,14 +12,12 @@ export class UserCreated {
   name: string;
   email: string;
   phone: string;
-  image: string;
 
   static createEvent(
     dispatcher: UserId,
     userName: UserName,
     userEmail: UserEmail,
     userPhone: UserPhone,
-    userImage: UserImage
   ): UserCreatedEvent {
     return DomainEventFactory<UserCreated>({
         dispatcherId: dispatcher.value,
@@ -28,8 +26,7 @@ export class UserCreated {
             name: userName.value,
             email: userEmail.value,
             phone: userPhone.value,
-            ...(userImage && { image: userImage.value })
-        },
+            },
     })
   }
 }

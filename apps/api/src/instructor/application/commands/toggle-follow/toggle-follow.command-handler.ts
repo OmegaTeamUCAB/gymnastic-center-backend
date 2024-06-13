@@ -28,8 +28,8 @@ export class ToggleFollowCommandHandler
       events,
     );
     const user = new UserId(command.userId);
-    if (instructor.isFollowedBy(user)) instructor.unfollow(user);
-    else instructor.follow(user);
+    if (instructor.isFollowedBy(user)) instructor.removeFollower(user);
+    else instructor.addFollower(user);
     const newEvents = instructor.pullEvents();
     await this.eventStore.appendEvents(command.instructorId, newEvents);
     this.eventHandler.publishEvents(newEvents);

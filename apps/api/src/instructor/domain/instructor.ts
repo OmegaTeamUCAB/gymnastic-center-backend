@@ -34,12 +34,12 @@ export class Instructor extends AggregateRoot<InstructorId> {
     this.apply(InstructorNameUpdated.createEvent(this.id, name));
   }
 
-  follow(user: UserId) {
+  addFollower(user: UserId) {
     if (this.isFollowedBy(user)) throw new InstructorAlreadyFollowedException();
     this.apply(InstructorFollowed.createEvent(this.id, user));
   }
 
-  unfollow(user: UserId) {
+  removeFollower(user: UserId) {
     if (!this.isFollowedBy(user)) throw new InstructorNotFollowedException();
     this.apply(InstructorUnfollowed.createEvent(this.id, user));
   }

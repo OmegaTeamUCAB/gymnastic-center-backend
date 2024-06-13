@@ -21,7 +21,7 @@ export class UpdateUserDto {
   @ApiProperty({
     nullable: true,
   })
-  phoneNumber: string;
+  phone: string;
 
   @IsBase64()
   @IsOptional()

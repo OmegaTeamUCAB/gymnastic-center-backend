@@ -2,7 +2,7 @@ import { Controller } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { MongoCategory, RabbitMQService } from '@app/core';
+import { MongoCategory, MongoUser, RabbitMQService } from '@app/core';
 import { EventType } from './types';
 
 @Controller()
@@ -11,12 +11,76 @@ export class DatasyncController {
     private readonly rmqService: RabbitMQService,
     @InjectModel(MongoCategory.name)
     private readonly categoryModel: Model<MongoCategory>,
+    @InjectModel(MongoUser.name)
+    private readonly userModel: Model<MongoUser>,
   ) {}
 
   @EventPattern('health')
   async health(@Payload() data: any, @Ctx() context: RmqContext) {
     console.log('Health check received', data);
     this.rmqService.ack(context);
+  }
+
+  @EventPattern('UserCreated')
+  async onUserCreated(
+    @Payload()
+    data: EventType<{
+      name: string;
+      email: string;
+      phone: string;
+    }>,
+    @Ctx() context: RmqContext,
+  ){
+    try {
+      const { name, email, phone } = data.context;
+      await this.userModel.create({ id: data.dispatcherId, name, email, phone });
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('UserNameUpdated')
+  async onUserNameUpdated(
+    @Payload()
+    data: EventType<{
+      name: string;
+    }>,
+    @Ctx() context: RmqContext,
+  ){
+    try {
+      const { name } = data.context;
+      await this.userModel.updateOne({ id: data.dispatcherId }, { name });
+      this.rmqService.ack(context);
+    } catch (error) { }
+  }
+
+  @EventPattern('UserPhoneUpdated')
+  async onUserPhoneUpdated(
+    @Payload()
+    data: EventType<{
+      phone: string;
+    }>,
+    @Ctx() context: RmqContext,
+  ){
+    try {
+      const { phone } = data.context;
+      await this.userModel.updateOne({ id: data.dispatcherId }, { phone });
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('UserImageUpdated')
+  async onUserImageUpdated(
+    @Payload()
+    data: EventType<{
+      image: string;
+    }>,
+    @Ctx() context: RmqContext,
+  ){
+    try {
+      const { image } = data.context;
+      await this.userModel.updateOne({ id: data.dispatcherId }, { image });
+      this.rmqService.ack(context);
+    } catch (error) {}
   }
 
   @EventPattern('CategoryCreated')

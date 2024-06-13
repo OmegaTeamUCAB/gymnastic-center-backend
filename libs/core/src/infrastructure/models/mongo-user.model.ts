@@ -1,20 +1,23 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, SchemaTypes } from 'mongoose';
 
 export type UserDocument = HydratedDocument<MongoUser>;
 
 @Schema({ collection: 'users', timestamps: true, versionKey: false })
 export class MongoUser {
+  readonly _id: string;
+
   @Prop({
     required: true,
     unique: true,
+    type: SchemaTypes.UUID,
   })
   id: string;
 
   @Prop({
     required: true,
   })
-  fullName: string;
+  name: string;
 
   @Prop({
     required: true,
@@ -25,7 +28,7 @@ export class MongoUser {
   @Prop({
     required: true,
   })
-  phoneNumber: string;
+  phone: string;
 
   @Prop({
     required: false,

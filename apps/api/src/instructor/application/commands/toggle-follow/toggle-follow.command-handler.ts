@@ -4,14 +4,13 @@ import {
   EventStore,
   Result,
 } from '@app/core';
-import { UnfollowInstructorCommand, UnfollowInstructorResponse } from './types';
+import { ToggleFollowCommand, ToggleFollowResponse } from './types';
 import { Instructor } from 'apps/api/src/instructor/domain/instructor';
 import { InstructorId } from 'apps/api/src/instructor/domain/value-objects';
 import { UserId } from 'apps/api/src/user/domain/value-objects';
 
-export class UnfollowInstructorCommandHandler
-  implements
-    ApplicationService<UnfollowInstructorCommand, UnfollowInstructorResponse>
+export class ToggleFollowCommandHandler
+  implements ApplicationService<ToggleFollowCommand, ToggleFollowResponse>
 {
   constructor(
     private readonly eventStore: EventStore,
@@ -19,8 +18,8 @@ export class UnfollowInstructorCommandHandler
   ) {}
 
   async execute(
-    command: UnfollowInstructorCommand,
-  ): Promise<Result<UnfollowInstructorResponse>> {
+    command: ToggleFollowCommand,
+  ): Promise<Result<ToggleFollowResponse>> {
     const events = await this.eventStore.getEventsByStream(
       command.instructorId,
     );
@@ -28,11 +27,13 @@ export class UnfollowInstructorCommandHandler
       new InstructorId(command.instructorId),
       events,
     );
-    instructor.unfollow(new UserId(command.userId));
+    const user = new UserId(command.userId);
+    if (instructor.isFollowedBy(user)) instructor.unfollow(user);
+    else instructor.follow(user);
     const newEvents = instructor.pullEvents();
     await this.eventStore.appendEvents(command.instructorId, newEvents);
     this.eventHandler.publishEvents(newEvents);
-    return Result.success<UnfollowInstructorResponse>({
+    return Result.success<ToggleFollowResponse>({
       id: command.instructorId,
     });
   }

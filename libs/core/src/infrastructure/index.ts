@@ -6,3 +6,4 @@ export * from './uuid';
 export * from './searches';
 export * from './event-handler';
 export * from './models';
+export * from './performance';

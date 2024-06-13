@@ -10,11 +10,23 @@ export class CreateBlogDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  description: string;
+  content: string;
 
   @IsArray()
   @IsString({ each: true })
   @IsNotEmpty()
   @ApiProperty()
   images: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsNotEmpty()
+  @ApiProperty()
+  tags: string[];
+
+  @IsString()
+  @IsUUID()
+  @IsNotEmpty()
+  @ApiProperty()
+  category: string
 }

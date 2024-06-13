@@ -10,12 +10,14 @@ import { Address } from './entities/address-entity/address';
 import {
   InstructorNameUpdated,
   InstructorAddressUpdated,
-  InstructorFollowersUpdated,
+  InstructorFollowed,
+  InstructorUnfollowed,
 } from './events';
 import { InstructorCreated } from './events/instructor-created';
 import { InstructorUserFollowUpdated } from './events/instructor-user-follow-updated';
 import {
   AddressCity,
+  AddressCoordinates,
   AddressCountry,
 } from './entities/address-entity/value-objects';
 
@@ -27,7 +29,6 @@ export class Instructor extends AggregateRoot<InstructorId> {
   private _address: Address;
   //UserId[] -> para el tipo de dato de _followers
   private _followers: InstructorFollowers;
-  private _userFollow: InstructorUserFollow;
 
   protected validateState(): void {
     if (!this.id || this._name || this._address || this._followers) {
@@ -47,9 +48,6 @@ export class Instructor extends AggregateRoot<InstructorId> {
     return this._followers;
   }
 
-  get userFollow(): InstructorUserFollow {
-    return this._userFollow;
-  }
 
   updateName(name: InstructorName): void {
     this.apply(InstructorNameUpdated.createEvent(this.id, name));
@@ -59,35 +57,41 @@ export class Instructor extends AggregateRoot<InstructorId> {
     this.apply(InstructorAddressUpdated.createEvent(this.id, address));
   }
 
-  updateFollowers(followers: InstructorFollowers): void {
-    this.apply(InstructorFollowersUpdated.createEvent(this.id, followers));
+  //TODO: Cambiar string por UserId para follow y unfollow
+  follow(userFollowed: string){
+    this.apply(InstructorFollowed.createEvent(this.id, userFollowed));
   }
 
-  updateUserFollow(userFollow: InstructorUserFollow): void {
-    this.apply(InstructorUserFollowUpdated.createEvent(this.id, userFollow));
+  unfollow(userUnfollowed: string){
+    this.apply(InstructorUnfollowed.createEvent(this.id, userUnfollowed));
   }
+
 
   static create(
     id: InstructorId,
     data: {
       name: InstructorName;
-      city: AddressCity;
       country: AddressCountry;
+      city: AddressCity;
+      latitude: AddressCoordinates;
+      longitude: AddressCoordinates;
       followers: InstructorFollowers;
-      userFollow: InstructorUserFollow;
     },
   ): Instructor {
     const instructor = new Instructor(id);
+    console.log('SIII: ',id)
     instructor.apply(
       InstructorCreated.createEvent(
         id,
         data.name,
-        data.city,
         data.country,
+        data.city,
+        data.latitude,
+        data.longitude,
         data.followers,
-        data.userFollow,
       ),
     );
+    console.log('SALIENDO INSTRUCTOR ', instructor)
     return instructor;
   }
 
@@ -99,33 +103,30 @@ export class Instructor extends AggregateRoot<InstructorId> {
 
   [`on${InstructorCreated.name}`](context: InstructorCreated): void {
     this._name = new InstructorName(context.name);
+    //TODO: POR ESTO NO SE CREA EL INSTRUCTOR -> DE DONDE SACO ESA INFO?
     this._address = new Address(
       this.address.id,
       this.address.country,
       this.address.city,
+      this.address.coordinates,
     );
     this._followers = new InstructorFollowers(context.followers);
-    this._userFollow = new InstructorUserFollow(context.userFollow);
   }
 
   [`on${InstructorNameUpdated.name}`](context: InstructorNameUpdated): void {
     this._name = new InstructorName(context.name);
   }
 
-  [`on${InstructorAddressUpdated.name}`](context: InstructorAddressUpdated): void {
-    this._address = new Address(context.country, context.city, context.direction);
+  // TODO: Esta bien si aqui meto el ID??? *diria que si*
+  // [`on${InstructorAddressUpdated.name}`](context: InstructorAddressUpdated): void {
+  //   this._address = new Address(context.country, context.city, context.latitude, context.longitude);
+  // }
+
+  [`on${InstructorFollowed.name}`](): void {
+    this._followers = new InstructorFollowers(this.followers.value + 1);
   }
 
-  [`on${InstructorFollowersUpdated.name}`](
-    context: InstructorFollowersUpdated,
-  ): void {
-    //TODO: Cambiar el tipo de followers con lo de luis elian
-    this._followers = new InstructorFollowers(context.followers.value);
-  }
-
-  [`on${InstructorUserFollowUpdated.name}`](
-    context: InstructorUserFollowUpdated,
-  ): void {
-    this._userFollow = new InstructorUserFollow(context.userFollow);
-  }
+  [`on${InstructorUnfollowed.name}`](): void {
+    this._followers = new InstructorFollowers(this.followers.value - 1);
+  }  
 }

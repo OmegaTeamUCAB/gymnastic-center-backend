@@ -50,7 +50,7 @@ export class Category extends AggregateRoot<CategoryId> {
     category.apply(CategoryCreated.createEvent(id, data.name, data.icon));
     return category;
   }
-
+ 
   static loadFromHistory(id: CategoryId, events: DomainEvent[]): Category {
     const category = new Category(id);
     category.hydrate(events);

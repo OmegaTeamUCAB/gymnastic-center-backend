@@ -7,18 +7,21 @@ import {
   ParseIntPipe,
   DefaultValuePipe,
   NotFoundException,
+  ParseUUIDPipe,
+  Query,
+  Post,
 } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   BlogNotFoundException,
-  CreateBlogCommand,
-  UpdateBlogCommand,
+  CreateBlogCommandHandler,
+  UpdateBlogCommandHandler,
+
 } from '../../application';
 import { CreateBlogCommentDto, CreateBlogDto, UpdateBlogDto } from './dtos';
-import { IdGenerator, IdResponse, UUIDGENERATOR } from '@app/core';
+import { EVENT_STORE, EventHandler, EventStore, IdGenerator, IdResponse, LOCAL_EVENT_HANDLER, UUIDGENERATOR } from '@app/core';
 import { BlogLeanResponse, BlogResponse } from './responses';
-import { BlogRepository } from '../../domain';
-import { BLOG_REPOSITORY } from '../constants';
+
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
 import { InjectModel } from '@nestjs/mongoose';
 import { MongoBlog } from '../models';
@@ -31,6 +34,10 @@ export class BlogController {
   constructor(
     @Inject(UUIDGENERATOR)
     private readonly uuidGenerator: IdGenerator<string>,
+    @Inject(EVENT_STORE)
+    private readonly eventStore: EventStore,
+    @Inject(LOCAL_EVENT_HANDLER)
+    private readonly localEventHandler: EventHandler,
     @InjectModel(MongoBlog.name)
     private readonly blogModel: Model<MongoBlog>,
   ) {}
@@ -95,8 +102,8 @@ export class BlogController {
       id: blog.id,
       title: blog.title,
       image: blog.imageUrl,
-      trainer: blog.instructorId,
-      category: blog.categoryId,
+      trainer: blog.trainer,
+      category: blog.category,
       date: blog.createdAt,
     }));
   }
@@ -119,10 +126,10 @@ export class BlogController {
       description: blog.content,
       images: [blog.imageUrl],
       trainer: {
-        id: blog.instructorId,
+        id: blog.trainer,
         name: 'El Tigre',
       },
-      category: blog.categoryId,
+      category: blog.category,
       date: blog.createdAt,
       tags: blog.tags,
     };
@@ -135,10 +142,13 @@ export class BlogController {
   })
   @Post()
   async createBlog(@Body() createBlogDto: CreateBlogDto) {
-    const service = new CreateBlogCommand(this.repository, this.uuidGenerator);
-    const result = await service.execute(createBlogDto);
-    const response = result.unwrap();
-    return response;
+    const service = new CreateBlogCommandHandler(
+      this.uuidGenerator,
+      this.eventStore,
+      this.localEventHandler
+    );
+    const result = await service.execute({...createBlogDto , date: new Date()});
+    return result.unwrap();
   }
 
   @ApiResponse({
@@ -156,9 +166,11 @@ export class BlogController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateBlogDto: UpdateBlogDto,
   ) {
-    const service = new UpdateBlogCommand(this.repository);
-    const result = await service.execute({ ...updateBlogDto, id });
-    const response = result.unwrap();
-    return response;
+    const service = new UpdateBlogCommandHandler(
+      this.eventStore,
+      this.localEventHandler
+    );
+    const result = await service.execute({ id, ...updateBlogDto});
+    return result.unwrap();
   }
 }

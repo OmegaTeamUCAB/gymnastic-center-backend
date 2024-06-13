@@ -1,37 +1,23 @@
 import { AggregateRoot, DomainEvent } from '@app/core';
-import {
-  InstructorFollowers,
-  InstructorId,
-  InstructorName,
-  InstructorUserFollow,
-} from './value-objects';
+import { InstructorId, InstructorName } from './value-objects';
 import { InvalidInstructorException } from './exceptions/invalid-instructor.exception';
-import { Address } from './entities/address-entity/address';
-import {
-  InstructorNameUpdated,
-  InstructorAddressUpdated,
-  InstructorFollowed,
-  InstructorUnfollowed,
-} from './events';
 import { InstructorCreated } from './events/instructor-created';
-import { InstructorUserFollowUpdated } from './events/instructor-user-follow-updated';
-import {
-  AddressCity,
-  AddressCoordinates,
-  AddressCountry,
-} from './entities/address-entity/value-objects';
+import { UserId } from '../../user/domain/value-objects';
+import { InstructorAlreadyFollowedException } from './exceptions/instructor-already-followed.exception';
+import { InstructorNotFollowedException } from './exceptions/instructor-not-followed.exception';
+import { InstructorNameUpdated } from './events/instructor-name-updated';
+import { InstructorFollowed } from './events/instructor-followed';
+import { InstructorUnfollowed } from './events/instructor-unfollowed';
 
 export class Instructor extends AggregateRoot<InstructorId> {
   private constructor(id: InstructorId) {
     super(id);
   }
   private _name: InstructorName;
-  private _address: Address;
-  //UserId[] -> para el tipo de dato de _followers
-  private _followers: InstructorFollowers;
+  private _followers: UserId[];
 
   protected validateState(): void {
-    if (!this.id || this._name || this._address || this._followers) {
+    if (!this.id || !this._name || !this._followers) {
       throw new InvalidInstructorException();
     }
   }
@@ -40,58 +26,36 @@ export class Instructor extends AggregateRoot<InstructorId> {
     return this._name;
   }
 
-  get address(): Address {
-    return this._address;
-  }
-
-  get followers(): InstructorFollowers {
+  get followers(): UserId[] {
     return this._followers;
   }
-
 
   updateName(name: InstructorName): void {
     this.apply(InstructorNameUpdated.createEvent(this.id, name));
   }
 
-  updateAddress(address: Address): void {
-    this.apply(InstructorAddressUpdated.createEvent(this.id, address));
+  follow(user: UserId) {
+    if (this.isFollowedBy(user)) throw new InstructorAlreadyFollowedException();
+    this.apply(InstructorFollowed.createEvent(this.id, user));
   }
 
-  //TODO: Cambiar string por UserId para follow y unfollow
-  follow(userFollowed: string){
-    this.apply(InstructorFollowed.createEvent(this.id, userFollowed));
+  unfollow(user: UserId) {
+    if (!this.isFollowedBy(user)) throw new InstructorNotFollowedException();
+    this.apply(InstructorUnfollowed.createEvent(this.id, user));
   }
 
-  unfollow(userUnfollowed: string){
-    this.apply(InstructorUnfollowed.createEvent(this.id, userUnfollowed));
+  isFollowedBy(user: UserId): boolean {
+    return this._followers.some((follower) => follower.equals(user));
   }
-
 
   static create(
     id: InstructorId,
     data: {
       name: InstructorName;
-      country: AddressCountry;
-      city: AddressCity;
-      latitude: AddressCoordinates;
-      longitude: AddressCoordinates;
-      followers: InstructorFollowers;
     },
   ): Instructor {
     const instructor = new Instructor(id);
-    console.log('SIII: ',id)
-    instructor.apply(
-      InstructorCreated.createEvent(
-        id,
-        data.name,
-        data.country,
-        data.city,
-        data.latitude,
-        data.longitude,
-        data.followers,
-      ),
-    );
-    console.log('SALIENDO INSTRUCTOR ', instructor)
+    instructor.apply(InstructorCreated.createEvent(id, data.name));
     return instructor;
   }
 
@@ -103,30 +67,20 @@ export class Instructor extends AggregateRoot<InstructorId> {
 
   [`on${InstructorCreated.name}`](context: InstructorCreated): void {
     this._name = new InstructorName(context.name);
-    //TODO: POR ESTO NO SE CREA EL INSTRUCTOR -> DE DONDE SACO ESA INFO?
-    this._address = new Address(
-      this.address.id,
-      this.address.country,
-      this.address.city,
-      this.address.coordinates,
-    );
-    this._followers = new InstructorFollowers(context.followers);
+    this._followers = [];
   }
 
   [`on${InstructorNameUpdated.name}`](context: InstructorNameUpdated): void {
     this._name = new InstructorName(context.name);
   }
 
-  // TODO: Esta bien si aqui meto el ID??? *diria que si*
-  // [`on${InstructorAddressUpdated.name}`](context: InstructorAddressUpdated): void {
-  //   this._address = new Address(context.country, context.city, context.latitude, context.longitude);
-  // }
-
-  [`on${InstructorFollowed.name}`](): void {
-    this._followers = new InstructorFollowers(this.followers.value + 1);
+  [`on${InstructorFollowed.name}`](context: InstructorFollowed): void {
+    this._followers.push(new UserId(context.user));
   }
 
-  [`on${InstructorUnfollowed.name}`](): void {
-    this._followers = new InstructorFollowers(this.followers.value - 1);
-  }  
+  [`on${InstructorUnfollowed.name}`](context: InstructorUnfollowed): void {
+    this._followers = this._followers.filter((follower) =>
+      follower.equals(new UserId(context.user)),
+    );
+  }
 }

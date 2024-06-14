@@ -43,6 +43,12 @@ export class MongoCourse {
   @Prop({ required: true })
   instructorId: string;
 
+  @Prop({ required: true })
+  trainer: string;
+
+  @Prop({ required: true })
+  category: string;
+
   @Prop({
     type: [
       {

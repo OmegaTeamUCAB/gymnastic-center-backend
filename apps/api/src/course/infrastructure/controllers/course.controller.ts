@@ -97,8 +97,8 @@ export class CourseController {
       id: course.aggregateId,
       title: course.title,
       description: course.description,
-      category: course.categoryId,
-      trainer: course.instructorId,
+      category: course.category,
+      trainer: course.trainer,
       image: course.imageUrl,
       date: course.creationDate,
     }));
@@ -129,10 +129,10 @@ export class CourseController {
       durationWeeks: course.weeks,
       image: course.imageUrl,
       date: course.creationDate,
-      category: course.categoryId,
+      category: course.category,
       trainer: {
         id: course.instructorId,
-        name: 'John Doe',
+        name: course.trainer,
       },
       lessons: course.lessons.map((lesson) => ({
         id: lesson.entityId,

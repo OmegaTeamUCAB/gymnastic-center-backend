@@ -1,6 +1,6 @@
 import { DomainEvent } from '@app/core';
-import { InstructorId } from '../value-objects';
 import { DomainEventFactory } from '@app/core/domain/events/domain-event';
+import { InstructorId } from '../value-objects/instructor-id';
 import { UserId } from 'apps/api/src/user/domain/value-objects';
 
 export type InstructorFollowedEvent = DomainEvent<InstructorFollowed>;

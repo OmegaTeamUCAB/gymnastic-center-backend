@@ -6,7 +6,7 @@ import {
 } from '@app/core';
 import { ToggleFollowCommand, ToggleFollowResponse } from './types';
 import { Instructor } from 'apps/api/src/instructor/domain/instructor';
-import { InstructorId } from 'apps/api/src/instructor/domain/value-objects';
+import { InstructorId } from 'apps/api/src/instructor/domain/value-objects/instructor-id';
 import { UserId } from 'apps/api/src/user/domain/value-objects';
 
 export class ToggleFollowCommandHandler

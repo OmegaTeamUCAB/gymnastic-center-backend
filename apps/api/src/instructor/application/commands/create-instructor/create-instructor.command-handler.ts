@@ -7,10 +7,8 @@ import {
 } from '@app/core';
 import { CreateInstructorCommand, CreateInstructorResponse } from './types';
 import { Instructor } from 'apps/api/src/instructor/domain/instructor';
-import {
-  InstructorId,
-  InstructorName,
-} from 'apps/api/src/instructor/domain/value-objects';
+import { InstructorName } from '../../../domain/value-objects/instructor-name';
+import { InstructorId } from '../../../domain/value-objects/instructor-id';
 
 export class CreateInstructorCommandHandler
   implements

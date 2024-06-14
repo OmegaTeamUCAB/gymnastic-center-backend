@@ -1,5 +1,4 @@
 import { AggregateRoot, DomainEvent } from '@app/core';
-import { InstructorId, InstructorName } from './value-objects';
 import { InvalidInstructorException } from './exceptions/invalid-instructor.exception';
 import { InstructorCreated } from './events/instructor-created';
 import { UserId } from '../../user/domain/value-objects';
@@ -8,6 +7,8 @@ import { InstructorNotFollowedException } from './exceptions/instructor-not-foll
 import { InstructorNameUpdated } from './events/instructor-name-updated';
 import { InstructorFollowed } from './events/instructor-followed';
 import { InstructorUnfollowed } from './events/instructor-unfollowed';
+import { InstructorId } from './value-objects/instructor-id';
+import { InstructorName } from './value-objects/instructor-name';
 
 export class Instructor extends AggregateRoot<InstructorId> {
   private constructor(id: InstructorId) {

@@ -81,7 +81,7 @@ export class Instructor extends AggregateRoot<InstructorId> {
 
   [`on${InstructorUnfollowed.name}`](context: InstructorUnfollowed): void {
     this._followers = this._followers.filter((follower) =>
-      follower.equals(new UserId(context.user)),
+      !follower.equals(new UserId(context.user)),
     );
   }
 }

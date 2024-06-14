@@ -1,4 +1,4 @@
-import { ApplicationService, CryptoService, Result } from '@app/core';
+import { ApplicationService, Result } from '@app/core';
 import { CheckVerificationCodeDto } from './types';
 import { CredentialsRepository } from '../../repositories/credentials.repository';
 import {
@@ -27,9 +27,6 @@ export class CheckVerificationCodeCommand
       credentials.codeExpirationDate < new Date()
     )
       return Result.failure(new CodeExpiredException());
-    credentials.verificationCode = null;
-    credentials.codeExpirationDate = null;
-    await this.credentialsRepository.saveCredentials(credentials);
     return Result.success(null);
   }
 }

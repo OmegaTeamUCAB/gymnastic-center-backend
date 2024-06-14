@@ -3,7 +3,7 @@ import { HydratedDocument, SchemaTypes } from 'mongoose';
 
 export type InstructorDocument = HydratedDocument<MongoInstructor>;
 
-@Schema({ collection: 'instructors', timestamps: true, versionKey: false })
+@Schema({ collection: 'instructors', timestamps: false, versionKey: false })
 export class MongoInstructor {
   readonly _id: string;
 

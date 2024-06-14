@@ -33,7 +33,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { MongoBlog } from '../models';
 import { Model } from 'mongoose';
 
-@Controller('Blog')
+@Controller('blog')
 @ApiTags('Blogs')
 @Auth()
 export class BlogController {
@@ -114,7 +114,7 @@ export class BlogController {
     }));
   }
 
-  @Get(':id')
+  @Get('one/:id')
   @ApiResponse({
     status: 200,
     description: 'Blog found',

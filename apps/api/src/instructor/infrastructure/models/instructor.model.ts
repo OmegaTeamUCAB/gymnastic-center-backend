@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, SchemaTypes } from 'mongoose';
 
 export type InstructorDocument = HydratedDocument<MongoInstructor>;
 
@@ -8,6 +8,7 @@ export class MongoInstructor {
   readonly _id: string;
 
   @Prop({
+    type: SchemaTypes.UUID,
     required: true,
     unique: true,
   })
@@ -16,17 +17,11 @@ export class MongoInstructor {
   @Prop({ required: true, minlength: 1 })
   name: string;
 
-  @Prop({ required: true, minlength: 1 })
-  city: string;
-
-  @Prop({ required: true, minlength: 1 })
-  country: string;
-
   @Prop({ required: true })
-  followers: number;
+  followerCount: number;
 
-  @Prop({ required: true })
-  userFollow: boolean;
+  @Prop({ type: [SchemaTypes.UUID], required: true })
+  followers: string[];
 }
 
 export const InstructorSchema = SchemaFactory.createForClass(MongoInstructor);

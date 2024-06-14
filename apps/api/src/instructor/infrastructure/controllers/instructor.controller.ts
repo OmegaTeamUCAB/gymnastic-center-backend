@@ -23,16 +23,18 @@ import {
   LOCAL_EVENT_HANDLER,
   EventHandler,
 } from '@app/core';
-
-import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
+import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import { MongoInstructor } from '../models/instructor.model';
 import { InstructorResponse } from '../responses/instructor.response';
 import { CreateInstructorDto, UpdateInstructorDto } from './dtos';
 import { InstructorNotFoundException } from '../../application/exceptions/instructor-not-found';
-import { CreateInstructorCommandHandler } from '../../application/commands/create-instructor/create-instructor.command-handler';
-// import { UpdateInstructorCommandHandler } from '../../application/commands/update-instructor/update-instructor.command-handler';
+import {
+  CreateInstructorCommandHandler,
+  ToggleFollowCommandHandler,
+} from '../../application/commands';
+import { Credentials } from 'apps/api/src/auth/application/models/credentials.model';
 
-@Controller('Instructor')
+@Controller('trainer')
 @ApiTags('instructors')
 @Auth()
 export class InstructorController {
@@ -44,7 +46,7 @@ export class InstructorController {
     @Inject(LOCAL_EVENT_HANDLER)
     private readonly localEventHandler: EventHandler,
     @InjectModel(MongoInstructor.name)
-    private readonly InstructorModel: Model<MongoInstructor>,
+    private readonly instructorModel: Model<MongoInstructor>,
   ) {}
 
   @Get('many')
@@ -69,22 +71,22 @@ export class InstructorController {
   async getInstructors(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('perPage', new DefaultValuePipe(8), ParseIntPipe) perPage: number,
+    @CurrentUser() credentials: Credentials,
   ): Promise<InstructorResponse[]> {
-    const instructors = await this.InstructorModel.find({}, null, {
+    const instructors = await this.instructorModel.find({}, null, {
       skip: (page - 1) * perPage,
       limit: perPage,
     });
     return instructors.map((instructor) => ({
       id: instructor.id,
       name: instructor.name,
-      city: instructor.city,
-      country: instructor.country,
-      followers: instructor.followers,
-      userFollow: instructor.userFollow,
+      followers: instructor.followerCount,
+      userFollow: instructor.followers.includes(credentials.userId),
+      location: 'Caracas, Venezuela',
     }));
   }
 
-  @Get(':id')
+  @Get('one/:id')
   @ApiResponse({
     status: 200,
     description: 'Instructor found',
@@ -96,19 +98,41 @@ export class InstructorController {
   })
   async getInstructorById(
     @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() credentials: Credentials,
   ): Promise<InstructorResponse> {
-    const instructor = await this.InstructorModel.findOne({
+    const instructor = await this.instructorModel.findOne({
       id,
     });
-    if (!instructor) throw new NotFoundException(new InstructorNotFoundException());
+    if (!instructor)
+      throw new NotFoundException(new InstructorNotFoundException());
     return {
       id: instructor.id,
       name: instructor.name,
-      city: instructor.city,
-      country: instructor.country,
-      followers: instructor.followers,
-      userFollow: instructor.userFollow,
+      followers: instructor.followerCount,
+      userFollow: instructor.followers.includes(credentials.userId),
+      location: 'Caracas, Venezuela',
     };
+  }
+
+  @Post('toggle/follow/:id')
+  @ApiResponse({
+    status: 200,
+    description: 'Instructor followed/unfollowed',
+    type: IdResponse,
+  })
+  async toggleFollow(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() credentials: Credentials,
+  ) {
+    const service = new ToggleFollowCommandHandler(
+      this.eventStore,
+      this.localEventHandler,
+    );
+    const result = await service.execute({
+      instructorId: id,
+      userId: credentials.userId,
+    });
+    return result.unwrap();
   }
 
   @Post()
@@ -126,22 +150,4 @@ export class InstructorController {
     const result = await service.execute(createInstructorDto);
     return result.unwrap();
   }
-
-  // @Post(':id')
-  // @ApiResponse({
-  //   status: 200,
-  //   description: 'Instructor updated',
-  //   type: IdResponse,
-  // })
-  // async updateInstructor(
-  //   @Param('id', ParseUUIDPipe) id: string,
-  //   @Body() updateInstructorDto: UpdateInstructorDto,
-  // ) {
-  //   const service = new UpdateInstructorCommandHandler(
-  //     this.eventStore,
-  //     this.localEventHandler,
-  //   );
-  //   const result = await service.execute({ id, ...updateInstructorDto });
-  //   return result.unwrap();
-  // }
 }

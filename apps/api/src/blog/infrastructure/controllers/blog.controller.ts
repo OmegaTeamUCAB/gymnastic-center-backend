@@ -16,12 +16,18 @@ import {
   BlogNotFoundException,
   CreateBlogCommandHandler,
   UpdateBlogCommandHandler,
-
 } from '../../application';
-import { CreateBlogCommentDto, CreateBlogDto, UpdateBlogDto } from './dtos';
-import { EVENT_STORE, EventHandler, EventStore, IdGenerator, IdResponse, LOCAL_EVENT_HANDLER, UUIDGENERATOR } from '@app/core';
+import { CreateBlogDto, UpdateBlogDto } from './dtos';
+import {
+  EVENT_STORE,
+  EventHandler,
+  EventStore,
+  IdGenerator,
+  IdResponse,
+  LOCAL_EVENT_HANDLER,
+  UUIDGENERATOR,
+} from '@app/core';
 import { BlogLeanResponse, BlogResponse } from './responses';
-
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
 import { InjectModel } from '@nestjs/mongoose';
 import { MongoBlog } from '../models';
@@ -89,7 +95,7 @@ export class BlogController {
   ): Promise<BlogLeanResponse[]> {
     const blogs = await this.blogModel.find(
       {
-        ...(trainer && { instructorId: trainer }),
+        ...(trainer && { trainerId: trainer }),
         ...(category && { categoryId: category }),
       },
       null,
@@ -99,11 +105,11 @@ export class BlogController {
       },
     );
     return blogs.map((blog) => ({
-      id: blog.id,
+      id: blog.aggregateId,
       title: blog.title,
       image: blog.imageUrl,
-      trainer: blog.trainer,
-      category: blog.category,
+      trainer: blog.trainer.name,
+      category: blog.category.name,
       date: blog.createdAt,
     }));
   }
@@ -121,15 +127,15 @@ export class BlogController {
     const blog = await this.blogModel.findOne({ aggregateId: id });
     if (!blog) throw new NotFoundException(new BlogNotFoundException());
     return {
-      id: blog.id,
+      id: blog.aggregateId,
       title: blog.title,
       description: blog.content,
       images: [blog.imageUrl],
       trainer: {
-        id: blog.trainer,
-        name: 'El Tigre',
+        id: blog.trainer.id,
+        name: blog.trainer.name,
       },
-      category: blog.category,
+      category: blog.category.name,
       date: blog.createdAt,
       tags: blog.tags,
     };
@@ -145,9 +151,12 @@ export class BlogController {
     const service = new CreateBlogCommandHandler(
       this.uuidGenerator,
       this.eventStore,
-      this.localEventHandler
+      this.localEventHandler,
     );
-    const result = await service.execute({...createBlogDto , date: new Date()});
+    const result = await service.execute({
+      ...createBlogDto,
+      date: new Date(),
+    });
     return result.unwrap();
   }
 
@@ -168,9 +177,9 @@ export class BlogController {
   ) {
     const service = new UpdateBlogCommandHandler(
       this.eventStore,
-      this.localEventHandler
+      this.localEventHandler,
     );
-    const result = await service.execute({ id, ...updateBlogDto});
+    const result = await service.execute({ id, ...updateBlogDto });
     return result.unwrap();
   }
 }

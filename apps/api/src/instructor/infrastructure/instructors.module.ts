@@ -1,9 +1,14 @@
 import { Module } from '@nestjs/common';
-import { MongoInstructor, InstructorSchema } from './models/instructor.model';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from '../../auth/infrastructure';
 import { InstructorController } from './controllers/instructor.controller';
-import { EventHandlerModule, EventStoreModule, UUIDModule } from '@app/core';
+import {
+  EventHandlerModule,
+  EventStoreModule,
+  UUIDModule,
+  MongoInstructor,
+  InstructorSchema,
+} from '@app/core';
 
 @Module({
   imports: [

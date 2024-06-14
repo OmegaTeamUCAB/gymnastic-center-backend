@@ -2,7 +2,12 @@ import { Controller } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { MongoCategory, MongoUser, RabbitMQService } from '@app/core';
+import {
+  MongoCategory,
+  MongoInstructor,
+  MongoUser,
+  RabbitMQService,
+} from '@app/core';
 import { EventType } from './types';
 
 @Controller()
@@ -13,6 +18,8 @@ export class DatasyncController {
     private readonly categoryModel: Model<MongoCategory>,
     @InjectModel(MongoUser.name)
     private readonly userModel: Model<MongoUser>,
+    @InjectModel(MongoInstructor.name)
+    private readonly instructorModel: Model<MongoInstructor>,
   ) {}
 
   @EventPattern('health')
@@ -30,10 +37,15 @@ export class DatasyncController {
       phone: string;
     }>,
     @Ctx() context: RmqContext,
-  ){
+  ) {
     try {
       const { name, email, phone } = data.context;
-      await this.userModel.create({ id: data.dispatcherId, name, email, phone });
+      await this.userModel.create({
+        id: data.dispatcherId,
+        name,
+        email,
+        phone,
+      });
       this.rmqService.ack(context);
     } catch (error) {}
   }
@@ -45,12 +57,12 @@ export class DatasyncController {
       name: string;
     }>,
     @Ctx() context: RmqContext,
-  ){
+  ) {
     try {
       const { name } = data.context;
       await this.userModel.updateOne({ id: data.dispatcherId }, { name });
       this.rmqService.ack(context);
-    } catch (error) { }
+    } catch (error) {}
   }
 
   @EventPattern('UserPhoneUpdated')
@@ -60,7 +72,7 @@ export class DatasyncController {
       phone: string;
     }>,
     @Ctx() context: RmqContext,
-  ){
+  ) {
     try {
       const { phone } = data.context;
       await this.userModel.updateOne({ id: data.dispatcherId }, { phone });
@@ -75,7 +87,7 @@ export class DatasyncController {
       image: string;
     }>,
     @Ctx() context: RmqContext,
-  ){
+  ) {
     try {
       const { image } = data.context;
       await this.userModel.updateOne({ id: data.dispatcherId }, { image });
@@ -125,6 +137,77 @@ export class DatasyncController {
     try {
       const { icon } = data.context;
       await this.categoryModel.updateOne({ id: data.dispatcherId }, { icon });
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('InstructorCreated')
+  async onInstructorCreated(
+    @Payload()
+    data: EventType<{
+      name: string;
+    }>,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const { name } = data.context;
+      await this.instructorModel.create({
+        id: data.dispatcherId,
+        name,
+        followerCount: 0,
+        followers: [],
+      });
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('InstructorNameUpdated')
+  async onInstructorNameUpdated(
+    @Payload()
+    data: EventType<{
+      name: string;
+    }>,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const { name } = data.context;
+      await this.instructorModel.updateOne({ id: data.dispatcherId }, { name });
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('InstructorFollowed')
+  async onInstructorFollowed(
+    @Payload()
+    data: EventType<{
+      user: string;
+    }>,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const { user } = data.context;
+      await this.instructorModel.updateOne(
+        { id: data.dispatcherId },
+        { $push: { followers: user }, $inc: { followerCount: 1 } },
+      );
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('InstructorUnfollowed')
+  async onInstructorUnfollowed(
+    @Payload()
+    data: EventType<{
+      user: string;
+    }>,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const { user } = data.context;
+      await this.instructorModel.updateOne(
+        { id: data.dispatcherId },
+        { $pull: { followers: user }, $inc: { followerCount: -1 } },
+      );
       this.rmqService.ack(context);
     } catch (error) {}
   }

@@ -22,9 +22,9 @@ import {
   EventStore,
   LOCAL_EVENT_HANDLER,
   EventHandler,
+  MongoInstructor,
 } from '@app/core';
 import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
-import { MongoInstructor } from '../models/instructor.model';
 import { InstructorResponse } from '../responses/instructor.response';
 import { CreateInstructorDto, UpdateInstructorDto } from './dtos';
 import { InstructorNotFoundException } from '../../application/exceptions/instructor-not-found';

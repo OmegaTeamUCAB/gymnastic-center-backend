@@ -4,6 +4,7 @@ import {
   Body,
   Inject,
   Put,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
@@ -58,16 +59,20 @@ export class AuthController {
   async requestVerificationCode(
     @Body() requestVerificationCodeDto: RequestVerificationCodeDto,
   ) {
-    const service = new RequestVerificationCodeCommand(
-      this.repository,
-      this.verificationEmailHandler,
-      this.codeGenerator,
-    );
-    const result = await service.execute(requestVerificationCodeDto);
-    result.unwrap();
-    return {
-      date: new Date(),
-    };
+    try {
+      const service = new RequestVerificationCodeCommand(
+        this.repository,
+        this.verificationEmailHandler,
+        this.codeGenerator,
+      );
+      const result = await service.execute(requestVerificationCodeDto);
+      result.unwrap();
+      return {
+        date: new Date(),
+      };
+    } catch (error) {
+      throw new UnauthorizedException(error.message);
+    }
   }
 
   @Post('code/validate')
@@ -79,12 +84,16 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid code' })
   @ApiResponse({ status: 400, description: 'Code expired' })
   async checkVerificationCode(@Body() checkCodeDto: CheckCodeDto) {
-    const service = new CheckVerificationCodeCommand(this.repository);
-    const result = await service.execute(checkCodeDto);
-    result.unwrap();
-    return {
-      success: true,
-    };
+    try {
+      const service = new CheckVerificationCodeCommand(this.repository);
+      const result = await service.execute(checkCodeDto);
+      result.unwrap();
+      return {
+        success: true,
+      };
+    } catch (error) {
+      throw new UnauthorizedException(error.message);
+    }
   }
 
   @Put('change/password')
@@ -97,18 +106,22 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid code' })
   @ApiResponse({ status: 400, description: 'Code expired' })
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    const service = new ResetPasswordCommand(
-      this.repository,
-      this.bcryptService,
-    );
-    const result = await service.execute({
-      email: resetPasswordDto.email,
-      newPassword: resetPasswordDto.password,
-      code: resetPasswordDto.code,
-    });
-    result.unwrap();
-    return {
-      success: true,
-    };
+    try {
+      const service = new ResetPasswordCommand(
+        this.repository,
+        this.bcryptService,
+      );
+      const result = await service.execute({
+        email: resetPasswordDto.email,
+        newPassword: resetPasswordDto.password,
+        code: resetPasswordDto.code,
+      });
+      result.unwrap();
+      return {
+        success: true,
+      };
+    } catch (error) {
+      throw new UnauthorizedException(error.message);
+    }
   }
 }

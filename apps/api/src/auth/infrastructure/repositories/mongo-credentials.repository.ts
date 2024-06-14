@@ -36,6 +36,12 @@ export class MongoCredentialsRepository implements CredentialsRepository {
     if (!user) {
       return null;
     }
-    return new Credentials(user.userId, user.email, user.password);
+    return new Credentials(
+      user.userId,
+      user.email,
+      user.password,
+      user.verificationCode,
+      user.codeExpirationDate,
+    );
   }
 }

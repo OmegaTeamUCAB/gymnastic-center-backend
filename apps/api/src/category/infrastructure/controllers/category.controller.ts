@@ -1,54 +1,85 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Get,
   Inject,
+  NotFoundException,
   Param,
   ParseIntPipe,
   ParseUUIDPipe,
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { IdResponse, UUIDGENERATOR, IdGenerator } from '@app/core';
-import { CATEGORY_REPOSITORY } from '../constants';
-import { CategoryRepository } from '../../domain';
+import { InjectModel } from '@nestjs/mongoose';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Model } from 'mongoose';
 import {
-  GetCategoriesQuery,
-  GetCategoryByIdQuery,
-} from '../../application/queries';
+  IdResponse,
+  UUIDGENERATOR,
+  IdGenerator,
+  EVENT_STORE,
+  EventStore,
+  LOCAL_EVENT_HANDLER,
+  EventHandler,
+  MongoCategory,
+} from '@app/core';
 import {
-  CreateCategoryCommand,
-  UpdateCategoryCommand,
+  CreateCategoryCommandHandler,
+  UpdateCategoryCommandHandler,
 } from '../../application/commands';
 import { CategoryResponse } from './responses';
 import { CreateCategoryDto, UpdateCategoryDto } from './dtos';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
+import { CategoryNotFoundException } from '../../application/exceptions';
 
 @Controller('category')
 @ApiTags('Categories')
 @Auth()
 export class CategoryController {
   constructor(
-    @Inject(CATEGORY_REPOSITORY)
-    private readonly categoryRepository: CategoryRepository,
     @Inject(UUIDGENERATOR)
     private readonly uuidGenerator: IdGenerator<string>,
+    @Inject(EVENT_STORE)
+    private readonly eventStore: EventStore,
+    @Inject(LOCAL_EVENT_HANDLER)
+    private readonly localEventHandler: EventHandler,
+    @InjectModel(MongoCategory.name)
+    private readonly categoryModel: Model<MongoCategory>,
   ) {}
 
   @Get('many')
+  @ApiQuery({
+    name: 'perPage',
+    required: false,
+    description:
+      'Number of results to return for each type of search. DEFAULT = 8',
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Number of . DEFAULT = 1',
+    type: Number,
+  })
   @ApiResponse({
     status: 200,
     description: 'Categories list',
     type: [CategoryResponse],
   })
   async getCategories(
-    @Query('page', ParseIntPipe) page: number,
-    @Query('perPage', ParseIntPipe) limit: number,
-  ) {
-    const service = new GetCategoriesQuery(this.categoryRepository);
-    const result = await service.execute();
-    return result.unwrap();
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('perPage', new DefaultValuePipe(8), ParseIntPipe) perPage: number,
+  ): Promise<CategoryResponse[]> {
+    const categories = await this.categoryModel.find({}, null, {
+      skip: (page - 1) * perPage,
+      limit: perPage,
+    });
+    return categories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      icon: category.icon,
+    }));
   }
 
   @Get(':id')
@@ -61,10 +92,18 @@ export class CategoryController {
     status: 404,
     description: 'Category not found',
   })
-  async getCategoryById(@Param('id', ParseUUIDPipe) id: string) {
-    const service = new GetCategoryByIdQuery(this.categoryRepository);
-    const result = await service.execute({ id });
-    return result.unwrap();
+  async getCategoryById(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<CategoryResponse> {
+    const category = await this.categoryModel.findOne({
+      id,
+    });
+    if (!category) throw new NotFoundException(new CategoryNotFoundException());
+    return {
+      id: category.id,
+      name: category.name,
+      icon: category.icon,
+    };
   }
 
   @Post()
@@ -74,9 +113,10 @@ export class CategoryController {
     type: IdResponse,
   })
   async createCategory(@Body() createCategoryDto: CreateCategoryDto) {
-    const service = new CreateCategoryCommand(
-      this.categoryRepository,
+    const service = new CreateCategoryCommandHandler(
       this.uuidGenerator,
+      this.eventStore,
+      this.localEventHandler,
     );
     const result = await service.execute(createCategoryDto);
     return result.unwrap();
@@ -92,7 +132,10 @@ export class CategoryController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
   ) {
-    const service = new UpdateCategoryCommand(this.categoryRepository);
+    const service = new UpdateCategoryCommandHandler(
+      this.eventStore,
+      this.localEventHandler,
+    );
     const result = await service.execute({ id, ...updateCategoryDto });
     return result.unwrap();
   }

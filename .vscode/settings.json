@@ -1,3 +1,9 @@
 {
-  "conventionalCommits.scopes": ["domain", "application", "infrastructure"]
+  "conventionalCommits.scopes": ["domain", "application", "infrastructure"],
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "prettier.singleQuote": true,
+  "prettier.useTabs": false,
+  "prettier.trailingComma": "all",
 }

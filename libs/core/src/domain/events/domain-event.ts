@@ -5,11 +5,13 @@ export interface DomainEvent<T extends object = object> {
   readonly context: T;
 }
 
-export const DomainEventFactory =
-  <T extends object>(name: string) =>
-  (dispatcherId: string, context: T): DomainEvent<T> => ({
-    dispatcherId,
-    name,
-    timestamp: new Date(),
-    context,
-  });
+export const DomainEventFactory = <T extends object>({
+  name,
+  dispatcherId,
+  context,
+}: Omit<DomainEvent<T>, 'timestamp'>): DomainEvent<T> => ({
+  dispatcherId,
+  name,
+  timestamp: new Date(),
+  context,
+});

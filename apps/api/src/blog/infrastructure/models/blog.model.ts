@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, SchemaTypes } from 'mongoose';
 
 export type MongoBlogDocument = HydratedDocument<MongoBlog>;
 
@@ -7,11 +7,15 @@ export type MongoBlogDocument = HydratedDocument<MongoBlog>;
 export class MongoBlog {
   readonly _id: string;
 
+  @Prop({ required: true })
+  readonly aggregateId: string;
+
   @Prop({
     required: true,
     unique: true,
+    type: SchemaTypes.UUID,
   })
-  aggregateId: string;
+  id: string;
 
   @Prop({ required: true })
   imageUrl: string;
@@ -53,11 +57,17 @@ export class MongoBlog {
   @Prop({ required: true, default: [], type: [String] })
   tags: string[];
 
-  @Prop({ required: true })
+  @Prop({ type: { id: SchemaTypes.UUID, name: String }, required: true })
+  category: { id: string; name: string };
+
+  @Prop({ type: { id: SchemaTypes.UUID, name: String }, required: true })
+  trainer: { id: string; name: string };
+
+  @Prop()
   categoryId: string;
 
-  @Prop({ required: true })
-  instructorId: string;
+  @Prop()
+  trainerId: string;
 
   readonly createdAt: Date;
   readonly updatedAt: Date;

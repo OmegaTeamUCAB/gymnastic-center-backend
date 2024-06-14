@@ -1,17 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  OnApplicationBootstrap,
+  OnApplicationShutdown,
+} from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { EventStore } from '@app/core/application/event-store/event-store';
+import { Model, mongo } from 'mongoose';
+import { EventStore } from '@app/core/application';
 import { DomainEvent } from '@app/core/domain';
 import { MongoEvent } from '../models/mongo-event.model';
 import { Result } from '@app/core/utils';
+import { EVENTS_QUEUE } from '../../rabbitmq';
 
 @Injectable()
-export class MongoEventStore implements EventStore {
+export class MongoEventStore
+  implements EventStore, OnApplicationBootstrap, OnApplicationShutdown
+{
   constructor(
     @InjectModel(MongoEvent.name)
     private readonly eventStore: Model<MongoEvent>,
+    @Inject(EVENTS_QUEUE)
+    private readonly rmqClient: ClientProxy,
   ) {}
+
+  private changeStream: mongo.ChangeStream;
 
   async appendEvents(
     stream: string,
@@ -42,22 +55,20 @@ export class MongoEventStore implements EventStore {
     }
   }
 
-  async getEventsByStream(stream: string): Promise<Result<DomainEvent[]>> {
+  async getEventsByStream(stream: string): Promise<DomainEvent[]> {
     const events = await this.eventStore.find({ stream }).sort({ date: 1 });
-    return Result.success(
-      events.map((event) => ({
-        dispatcherId: event.stream,
-        name: event.type,
-        timestamp: event.date,
-        context: event.context,
-      })),
-    );
+    return events.map((event) => ({
+      dispatcherId: event.stream,
+      name: event.type,
+      timestamp: event.date,
+      context: event.context,
+    }));
   }
 
   async getEventsByDateRange(
     from?: Date,
     until: Date = new Date(),
-  ): Promise<Result<DomainEvent[]>> {
+  ): Promise<DomainEvent[]> {
     const events = await this.eventStore
       .find({
         date: {
@@ -66,13 +77,27 @@ export class MongoEventStore implements EventStore {
         },
       })
       .sort({ date: 1 });
-    return Result.success(
-      events.map((event) => ({
-        dispatcherId: event.stream,
-        name: event.type,
-        timestamp: event.date,
-        context: event.context,
-      })),
-    );
+    return events.map((event) => ({
+      dispatcherId: event.stream,
+      name: event.type,
+      timestamp: event.date,
+      context: event.context,
+    }));
+  }
+
+  onApplicationBootstrap() {
+    this.changeStream = this.eventStore.watch().on('change', (change) => {
+      if (change.operationType === 'insert') {
+        const event: MongoEvent = change.fullDocument;
+        this.rmqClient.emit(event.type, {
+          dispatcherId: event.stream,
+          context: event.context,
+        });
+      }
+    });
+  }
+
+  onApplicationShutdown() {
+    return this.changeStream.close();
   }
 }

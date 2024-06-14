@@ -2,10 +2,13 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UUIDModule } from '@app/core/infrastructure/uuid/uuid.module';
 import { CategoryController } from './controllers/category.controller';
-import { CategorySchema, MongoCategory } from './models/mongo-category.model';
-import { MongoCategoryRepository } from './repositories/mongo-category.repository';
-import { CATEGORY_REPOSITORY } from './constants';
 import { AuthModule } from '../../auth/infrastructure';
+import {
+  EventHandlerModule,
+  EventStoreModule,
+  CategorySchema,
+  MongoCategory,
+} from '@app/core';
 
 @Module({
   imports: [
@@ -16,14 +19,11 @@ import { AuthModule } from '../../auth/infrastructure';
       },
     ]),
     AuthModule,
-    UUIDModule
+    UUIDModule,
+    EventStoreModule,
+    EventHandlerModule,
   ],
   controllers: [CategoryController],
-  providers: [
-    {
-      provide: CATEGORY_REPOSITORY,
-      useClass: MongoCategoryRepository,
-    },
-  ],
+  providers: [],
 })
 export class CategoryModule {}

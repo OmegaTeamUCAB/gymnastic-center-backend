@@ -1,37 +1,28 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Get,
   Inject,
+  NotFoundException,
   Param,
   ParseIntPipe,
   ParseUUIDPipe,
   Post,
   Query,
 } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import {
-  COURSE_CREATED,
-  COURSE_UPDATED,
-  EVENTS_QUEUE,
-  IdGenerator,
-  IdResponse,
-  UUIDGENERATOR,
-} from '@app/core';
+import { InjectModel } from '@nestjs/mongoose';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Model } from 'mongoose';
+import { IdGenerator, IdResponse, UUIDGENERATOR } from '@app/core';
 import { COURSE_REPOSITORY } from '../constants';
 import { CourseRepository } from '../../domain';
-import {
-  CreateCourseCommand,
-  GetCourseByIdQuery,
-  GetCoursesByCategoryQuery,
-  GetCoursesByInstructorQuery,
-  GetCoursesQuery,
-  UpdateCourseCommand,
-} from '../../application';
+import { CreateCourseCommand, UpdateCourseCommand } from '../../application';
 import { CreateCourseDto, UpdateCourseDto } from './dtos';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
 import { CourseLeanResponse, CourseResponse } from './responses';
+import { MongoCourse } from '../models/mongo-course.model';
+import { CourseNotFoundException } from '../../application/exceptions';
 
 @Controller('course')
 @ApiTags('Courses')
@@ -42,38 +33,75 @@ export class CourseController {
     private readonly courseRepository: CourseRepository,
     @Inject(UUIDGENERATOR)
     private readonly uuidGenerator: IdGenerator<string>,
-    @Inject(EVENTS_QUEUE)
-    private readonly rmqClient: ClientProxy,
+    @InjectModel(MongoCourse.name)
+    private readonly courseModel: Model<MongoCourse>,
   ) {}
 
   @Get('many')
+  @ApiQuery({
+    name: 'perPage',
+    required: false,
+    description:
+      'Number of results to return for each type of search. DEFAULT = 8',
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Number of . DEFAULT = 1',
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'filter',
+    required: false,
+    description: 'Course Sorting',
+    type: String,
+    enum: ['POPULAR', 'RECENT'],
+  })
+  @ApiQuery({
+    name: 'trainer',
+    required: false,
+    description: 'Instructor id filter',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'category',
+    required: false,
+    description: 'Category id filter',
+    type: String,
+  })
   @ApiResponse({
     status: 200,
     description: 'Courses list',
     type: [CourseLeanResponse],
   })
   async getCourses(
-    @Query('page', ParseIntPipe) page: number,
-    @Query('perPage', ParseIntPipe) limit: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('perPage', new DefaultValuePipe(8), ParseIntPipe) perPage: number,
     @Query('filter') filter?: 'POPULAR' | 'RECENT',
-    @Query('trainer') trainer?: string,
-    @Query('category') category?: string,
-  ) {
-    const byCategory = !!category;
-    const byTrainer = !!trainer;
-    if (byCategory) {
-      const service = new GetCoursesByCategoryQuery(this.courseRepository);
-      const result = await service.execute({ categoryId: category });
-      return result.unwrap();
-    }
-    if (byTrainer) {
-      const service = new GetCoursesByInstructorQuery(this.courseRepository);
-      const result = await service.execute({ instructorId: trainer });
-      return result.unwrap();
-    }
-    const service = new GetCoursesQuery(this.courseRepository);
-    const result = await service.execute();
-    return result.unwrap();
+    @Query('trainer') instructorId?: string,
+    @Query('category') categoryId?: string,
+  ): Promise<CourseLeanResponse[]> {
+    const courses = await this.courseModel.find(
+      {
+        ...(instructorId && { instructorId }),
+        ...(categoryId && { categoryId }),
+      },
+      null,
+      {
+        skip: (page - 1) * perPage,
+        limit: perPage,
+      },
+    );
+    return courses.map((course) => ({
+      id: course.aggregateId,
+      title: course.title,
+      description: course.description,
+      category: course.category,
+      trainer: course.trainer,
+      image: course.imageUrl,
+      date: course.creationDate,
+    }));
   }
 
   @Get('one/:id')
@@ -86,10 +114,33 @@ export class CourseController {
     status: 404,
     description: 'Course not found',
   })
-  async getCourseById(@Param('id', ParseUUIDPipe) id: string) {
-    const service = new GetCourseByIdQuery(this.courseRepository);
-    const result = await service.execute({ id });
-    return result.unwrap();
+  async getCourseById(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<CourseResponse> {
+    const course = await this.courseModel.findOne({ aggregateId: id });
+    if (!course) throw new NotFoundException(new CourseNotFoundException());
+    return {
+      id: course.aggregateId,
+      title: course.title,
+      description: course.description,
+      level: course.level,
+      tags: course.tags,
+      durationMinutes: course.minutes,
+      durationWeeks: course.weeks,
+      image: course.imageUrl,
+      date: course.creationDate,
+      category: course.category,
+      trainer: {
+        id: course.instructorId,
+        name: course.trainer,
+      },
+      lessons: course.lessons.map((lesson) => ({
+        id: lesson.entityId,
+        title: lesson.title,
+        content: lesson.content,
+        video: lesson.videoUrl,
+      })),
+    };
   }
 
   @Post()
@@ -105,9 +156,6 @@ export class CourseController {
     );
     const result = await service.execute(createCourseDto);
     const response = result.unwrap();
-    this.rmqClient.emit(COURSE_CREATED, {
-      id: response.id,
-    });
     return response;
   }
 
@@ -124,10 +172,6 @@ export class CourseController {
     const service = new UpdateCourseCommand(this.courseRepository);
     const result = await service.execute({ id, ...updateCourseDto });
     const response = result.unwrap();
-    this.rmqClient.emit(COURSE_UPDATED, {
-      id,
-      dto: updateCourseDto,
-    });
     return response;
   }
 }

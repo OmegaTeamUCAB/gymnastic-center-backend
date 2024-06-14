@@ -1,27 +1,31 @@
 import {
   Controller,
   Body,
-  Delete,
   Inject,
   Put,
   Post,
   UnauthorizedException,
   Get,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { USER_REPOSITORY } from '../constants';
-import { UserRepository } from '../../domain/repositories';
-import { UpdateUserCommand } from '../../application/commands/update-user-by-id/update-user-by-id.command';
 import { UpdateUserDto, LoginDto, SignUpDto } from './dtos';
 import {
   BCRYPT_SERVICE,
   CryptoService,
+  EVENT_STORE,
+  EventStore,
   IdGenerator,
   IdResponse,
+  LOCAL_EVENT_HANDLER,
+  MongoUser,
   UUIDGENERATOR,
 } from '@app/core';
-import { DeleteUserCommand } from '../../application/commands/delete-user-by-id';
-import { Auth, UserIdReq } from 'apps/api/src/auth/infrastructure/decorators';
+
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+
+import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import {
   CredentialsRepository,
   LoginCommand,
@@ -33,16 +37,28 @@ import {
   JWT_SERVICE,
 } from 'apps/api/src/auth/infrastructure/constants';
 import { AuthResponse } from 'apps/api/src/auth/infrastructure/controllers/responses';
-import { GetUserByIdQuery } from '../../application/queries/get-user-by-id';
-import { CreateUserCommand } from '../../application/commands/create-user';
+
 import { UserResponse } from './responses';
+import { Credentials } from 'apps/api/src/auth/application/models/credentials.model';
+import { LocalEventHandler } from '@app/core/infrastructure/event-handler/providers/local-event-handler';
+import { CreateUserCommandHandler } from '../../application/commands/create-user';
+import {
+  UserAlreadyExistsException,
+  UserNotFoundException,
+} from 'apps/api/src/auth/application/exceptions';
+import { UpdateUserCommandHandler } from '../../application/commands/update-user-by-id';
+import { UserCreated, UserCreatedEvent } from '../../domain/events';
 
 @Controller()
 @ApiTags('Users & Auth')
 export class UserController {
   constructor(
-    @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository,
+    @Inject(EVENT_STORE)
+    private readonly eventStore: EventStore,
+    @Inject(LOCAL_EVENT_HANDLER)
+    private readonly localEventHandler: LocalEventHandler,
+    @InjectModel(MongoUser.name)
+    private readonly userModel: Model<MongoUser>,
     @Inject(AUTH_REPOSITORY)
     private readonly repository: CredentialsRepository,
     @Inject(UUIDGENERATOR)
@@ -69,9 +85,21 @@ export class UserController {
       );
       const loginResult = await loginService.execute(loginDto);
       const { token, id } = loginResult.unwrap();
-      const service = new GetUserByIdQuery(this.userRepository);
-      const result = await service.execute({ id });
-      return { token, user: result.unwrap() };
+      const user = await this.userModel.findOne({
+        id,
+      });
+      if (!user) throw new NotFoundException(new UserNotFoundException());
+
+      return {
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          image: user.image,
+        },
+      };
     } catch (error) {
       throw new UnauthorizedException(error.message);
     }
@@ -85,22 +113,34 @@ export class UserController {
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async signUp(@Body() signUpDto: SignUpDto) {
-    //TODO: make SignUpCommand react to UserCreated event
     try {
+      if (await this.repository.findCredentialsByEmail(signUpDto.email))
+        throw new UserAlreadyExistsException(signUpDto.email);
+
       const signUpService = new SignUpCommand(
         this.repository,
         this.jwtService,
         this.bcryptService,
       );
-      const service = new CreateUserCommand(
-        this.userRepository,
+      const suscription = this.localEventHandler.subscribe(
+        UserCreated.name,
+        async (event: UserCreatedEvent) => {
+          await signUpService.execute({
+            id: event.dispatcherId,
+            email: event.context.email,
+            password: signUpDto.password,
+          });
+        },
+      );
+
+      const service = new CreateUserCommandHandler(
         this.uuidGenerator,
+        this.eventStore,
+        this.localEventHandler,
       );
       const result = await service.execute({ ...signUpDto });
-      const id = result.unwrap().id;
-      const signUpResult = await signUpService.execute({ id, ...signUpDto });
-      signUpResult.unwrap();
-      return { id };
+      suscription.unsubscribe();
+      return result.unwrap();
     } catch (error) {
       throw new UnauthorizedException(error.message);
     }
@@ -114,10 +154,18 @@ export class UserController {
     type: UserResponse,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async currentUser(@UserIdReq() id: string) {
-    const service = new GetUserByIdQuery(this.userRepository);
-    const result = await service.execute({ id });
-    return result.unwrap();
+  async currentUser(@CurrentUser() credentials: Credentials) {
+    const user = await this.userModel.findOne({
+      id: credentials.userId,
+    });
+    if (!user) throw new NotFoundException(new UserNotFoundException());
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      image: user.image,
+    };
   }
 
   @Put('user/update')
@@ -128,24 +176,17 @@ export class UserController {
     type: IdResponse,
   })
   async updateUserById(
-    @UserIdReq() id: string,
+    @CurrentUser() credentials: Credentials,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    const service = new UpdateUserCommand(this.userRepository);
-    const result = await service.execute({ id, ...updateUserDto });
-    return result.unwrap();
-  }
-
-  @Delete('user')
-  @Auth()
-  @ApiResponse({
-    status: 200,
-    description: 'User deleted',
-    type: IdResponse,
-  })
-  async deleteUserById(@UserIdReq() id: string) {
-    const service = new DeleteUserCommand(this.userRepository);
-    const result = await service.execute({ id });
+    const service = new UpdateUserCommandHandler(
+      this.eventStore,
+      this.localEventHandler,
+    );
+    const result = await service.execute({
+      id: credentials.userId,
+      ...updateUserDto,
+    });
     return result.unwrap();
   }
 }

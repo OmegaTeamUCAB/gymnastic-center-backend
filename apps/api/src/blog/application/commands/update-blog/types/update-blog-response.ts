@@ -1,3 +1,3 @@
 export type UpdateBlogResponse = {
-    id: string;
-}
+  id: string;
+};

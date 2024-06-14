@@ -1,11 +1,17 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserController } from './controllers/user.controller';
-import { USER_REPOSITORY } from './constants';
-import { MongoUserRepository } from './repositories';
-import { MongoUser, UserSchema } from './models/mongo-user.model';
+import { UserController } from './controllers';
+import {
+  MongoUser,
+  UserSchema,
+} from '../../../../../libs/core/src/infrastructure/models';
 import { AuthModule } from '../../auth/infrastructure';
-import { BcryptModule, UUIDModule } from '@app/core';
+import {
+  BcryptModule,
+  EventHandlerModule,
+  EventStoreModule,
+  UUIDModule,
+} from '@app/core';
 
 @Module({
   imports: [
@@ -18,14 +24,10 @@ import { BcryptModule, UUIDModule } from '@app/core';
     AuthModule,
     BcryptModule,
     UUIDModule,
+    EventStoreModule,
+    EventHandlerModule,
   ],
   controllers: [UserController],
-  providers: [
-    {
-      provide: USER_REPOSITORY,
-      useClass: MongoUserRepository,
-    },
-  ],
-  exports: [USER_REPOSITORY],
+  providers: [],
 })
 export class UserModule {}

@@ -1,42 +1,153 @@
-import { Controller, Get, Inject, Param } from '@nestjs/common';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { GetInstructorByIdQuery } from '../../application/queries/get-instructor-by-id/get-instructor-by-id.query';
-import { GetInstructorByIdDto } from '../../application/queries/get-instructor-by-id/types/get-instructor-by-id.dto';
+import {
+  Body,
+  Controller,
+  DefaultValuePipe,
+  Get,
+  Inject,
+  NotFoundException,
+  Param,
+  ParseIntPipe,
+  ParseUUIDPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Model } from 'mongoose';
+import {
+  IdResponse,
+  UUIDGENERATOR,
+  IdGenerator,
+  EVENT_STORE,
+  EventStore,
+  LOCAL_EVENT_HANDLER,
+  EventHandler,
+  MongoInstructor,
+} from '@app/core';
+import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import { InstructorResponse } from '../responses/instructor.response';
-import { InstructorRepository } from '../../domain/repositories/instructor.repository.interface';
-import { INSTRUCTORS_REPOSITORY } from '../constants';
-import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
+import { CreateInstructorDto, UpdateInstructorDto } from './dtos';
+import { InstructorNotFoundException } from '../../application/exceptions/instructor-not-found';
+import {
+  CreateInstructorCommandHandler,
+  ToggleFollowCommandHandler,
+} from '../../application/commands';
+import { Credentials } from 'apps/api/src/auth/application/models/credentials.model';
 
 @Controller('trainer')
-@ApiTags('Instructors')
+@ApiTags('instructors')
 @Auth()
-export class InstructorsController {
+export class InstructorController {
   constructor(
-    @Inject(INSTRUCTORS_REPOSITORY)
-    private readonly repository: InstructorRepository,
+    @Inject(UUIDGENERATOR)
+    private readonly uuidGenerator: IdGenerator<string>,
+    @Inject(EVENT_STORE)
+    private readonly eventStore: EventStore,
+    @Inject(LOCAL_EVENT_HANDLER)
+    private readonly localEventHandler: EventHandler,
+    @InjectModel(MongoInstructor.name)
+    private readonly instructorModel: Model<MongoInstructor>,
   ) {}
 
+  @Get('many')
+  @ApiQuery({
+    name: 'perPage',
+    required: false,
+    description:
+      'Number of results to return for each type of search. DEFAULT = 8',
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Number of . DEFAULT = 1',
+    type: Number,
+  })
   @ApiResponse({
     status: 200,
-    description: 'The instructor has been successfully found',
+    description: 'instructors list',
     type: [InstructorResponse],
+  })
+  async getInstructors(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('perPage', new DefaultValuePipe(8), ParseIntPipe) perPage: number,
+    @CurrentUser() credentials: Credentials,
+  ): Promise<InstructorResponse[]> {
+    const instructors = await this.instructorModel.find({}, null, {
+      skip: (page - 1) * perPage,
+      limit: perPage,
+    });
+    return instructors.map((instructor) => ({
+      id: instructor.id,
+      name: instructor.name,
+      followers: instructor.followerCount,
+      userFollow: instructor.followers.includes(credentials.userId),
+      location: 'Caracas, Venezuela',
+    }));
+  }
+
+  @Get('one/:id')
+  @ApiResponse({
+    status: 200,
+    description: 'Instructor found',
+    type: InstructorResponse,
   })
   @ApiResponse({
     status: 404,
     description: 'Instructor not found',
   })
-  @Get('one/:id')
-  async findOneInstructor(@Param('id') id: string) {
-    const data: GetInstructorByIdDto = { id };
-    const getInstructorByIdQuery = new GetInstructorByIdQuery(this.repository);
-    const result = await getInstructorByIdQuery.execute(data);
-    const instructor = result.unwrap();
+  async getInstructorById(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() credentials: Credentials,
+  ): Promise<InstructorResponse> {
+    const instructor = await this.instructorModel.findOne({
+      id,
+    });
+    if (!instructor)
+      throw new NotFoundException(new InstructorNotFoundException());
     return {
       id: instructor.id,
       name: instructor.name,
-      followers: 100,
-      userFollow: false,
+      followers: instructor.followerCount,
+      userFollow: instructor.followers.includes(credentials.userId),
       location: 'Caracas, Venezuela',
     };
+  }
+
+  @Post('toggle/follow/:id')
+  @ApiResponse({
+    status: 200,
+    description: 'Instructor followed/unfollowed',
+    type: IdResponse,
+  })
+  async toggleFollow(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() credentials: Credentials,
+  ) {
+    const service = new ToggleFollowCommandHandler(
+      this.eventStore,
+      this.localEventHandler,
+    );
+    const result = await service.execute({
+      instructorId: id,
+      userId: credentials.userId,
+    });
+    return result.unwrap();
+  }
+
+  @Post()
+  @ApiResponse({
+    status: 200,
+    description: 'Instructor created',
+    type: IdResponse,
+  })
+  async createInstructor(@Body() createInstructorDto: CreateInstructorDto) {
+    const service = new CreateInstructorCommandHandler(
+      this.uuidGenerator,
+      this.eventStore,
+      this.localEventHandler,
+    );
+    const result = await service.execute(createInstructorDto);
+    return result.unwrap();
   }
 }

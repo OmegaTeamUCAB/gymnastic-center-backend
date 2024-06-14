@@ -1,2 +1,2 @@
 export * from './response.type'
-export * from './update-user-by-id.dto';
+export * from './command.type';

@@ -1,1 +1,0 @@
-export const BLOG_REPOSITORY = 'BLOG_REPOSITORY';

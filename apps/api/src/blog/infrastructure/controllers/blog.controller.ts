@@ -1,41 +1,49 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
-  Param,
   Inject,
-  ParseUUIDPipe,
-  Query,
+  Param,
   ParseIntPipe,
   DefaultValuePipe,
   NotFoundException,
+  ParseUUIDPipe,
+  Query,
+  Post,
 } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   BlogNotFoundException,
-  CreateBlogCommand,
-  UpdateBlogCommand,
+  CreateBlogCommandHandler,
+  UpdateBlogCommandHandler,
 } from '../../application';
-import { CreateBlogCommentDto, CreateBlogDto, UpdateBlogDto } from './dtos';
-import { IdGenerator, IdResponse, UUIDGENERATOR } from '@app/core';
+import { CreateBlogDto, UpdateBlogDto } from './dtos';
+import {
+  EVENT_STORE,
+  EventHandler,
+  EventStore,
+  IdGenerator,
+  IdResponse,
+  LOCAL_EVENT_HANDLER,
+  UUIDGENERATOR,
+} from '@app/core';
 import { BlogLeanResponse, BlogResponse } from './responses';
-import { BlogRepository } from '../../domain';
-import { BLOG_REPOSITORY } from '../constants';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
 import { InjectModel } from '@nestjs/mongoose';
 import { MongoBlog } from '../models';
 import { Model } from 'mongoose';
 
-@Controller('blog')
+@Controller('Blog')
 @ApiTags('Blogs')
 @Auth()
 export class BlogController {
   constructor(
-    @Inject(BLOG_REPOSITORY)
-    private readonly repository: BlogRepository,
     @Inject(UUIDGENERATOR)
     private readonly uuidGenerator: IdGenerator<string>,
+    @Inject(EVENT_STORE)
+    private readonly eventStore: EventStore,
+    @Inject(LOCAL_EVENT_HANDLER)
+    private readonly localEventHandler: EventHandler,
     @InjectModel(MongoBlog.name)
     private readonly blogModel: Model<MongoBlog>,
   ) {}
@@ -76,7 +84,7 @@ export class BlogController {
   @ApiResponse({
     status: 200,
     description: 'Blogs list',
-    type: [BlogLeanResponse],
+    type: [BlogResponse],
   })
   async getAllBlogs(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -87,7 +95,7 @@ export class BlogController {
   ): Promise<BlogLeanResponse[]> {
     const blogs = await this.blogModel.find(
       {
-        ...(trainer && { instructorId: trainer }),
+        ...(trainer && { trainerId: trainer }),
         ...(category && { categoryId: category }),
       },
       null,
@@ -97,18 +105,19 @@ export class BlogController {
       },
     );
     return blogs.map((blog) => ({
-      id: blog.id,
+      id: blog.aggregateId,
       title: blog.title,
       image: blog.imageUrl,
-      trainer: blog.instructorId,
-      category: blog.categoryId,
+      trainer: blog.trainer.name,
+      category: blog.category.name,
       date: blog.createdAt,
     }));
   }
 
+  @Get(':id')
   @ApiResponse({
     status: 200,
-    description: 'Blog details',
+    description: 'Blog found',
     type: BlogResponse,
   })
   @Get('one/:id')
@@ -118,15 +127,15 @@ export class BlogController {
     const blog = await this.blogModel.findOne({ aggregateId: id });
     if (!blog) throw new NotFoundException(new BlogNotFoundException());
     return {
-      id: blog.id,
+      id: blog.aggregateId,
       title: blog.title,
       description: blog.content,
       images: [blog.imageUrl],
       trainer: {
-        id: blog.instructorId,
-        name: 'El Tigre',
+        id: blog.trainer.id,
+        name: blog.trainer.name,
       },
-      category: blog.categoryId,
+      category: blog.category.name,
       date: blog.createdAt,
       tags: blog.tags,
     };
@@ -139,10 +148,16 @@ export class BlogController {
   })
   @Post()
   async createBlog(@Body() createBlogDto: CreateBlogDto) {
-    const service = new CreateBlogCommand(this.repository, this.uuidGenerator);
-    const result = await service.execute(createBlogDto);
-    const response = result.unwrap();
-    return response;
+    const service = new CreateBlogCommandHandler(
+      this.uuidGenerator,
+      this.eventStore,
+      this.localEventHandler,
+    );
+    const result = await service.execute({
+      ...createBlogDto,
+      date: new Date(),
+    });
+    return result.unwrap();
   }
 
   @ApiResponse({
@@ -151,13 +166,20 @@ export class BlogController {
     type: IdResponse,
   })
   @Post(':id')
+  @ApiResponse({
+    status: 200,
+    description: 'Blog updated',
+    type: IdResponse,
+  })
   async updateBlog(
-    @Body() updateBlogDto: UpdateBlogDto,
     @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateBlogDto: UpdateBlogDto,
   ) {
-    const service = new UpdateBlogCommand(this.repository);
-    const result = await service.execute({ ...updateBlogDto, id });
-    const response = result.unwrap();
-    return response;
+    const service = new UpdateBlogCommandHandler(
+      this.eventStore,
+      this.localEventHandler,
+    );
+    const result = await service.execute({ id, ...updateBlogDto });
+    return result.unwrap();
   }
 }

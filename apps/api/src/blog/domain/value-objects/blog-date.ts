@@ -1,7 +1,7 @@
 import { ValueObject } from '@app/core';
 import { InvalidBlogDateException } from '../exceptions';
 
-export class BlogDate implements ValueObject<BlogDate> {
+export class BlogCreationDate implements ValueObject<BlogCreationDate> {
   constructor(private readonly _date: Date) {
     if (this._date > new Date()) throw new InvalidBlogDateException();
   }
@@ -10,7 +10,7 @@ export class BlogDate implements ValueObject<BlogDate> {
     return this._date;
   }
 
-  equals(other: BlogDate): boolean {
+  equals(other: BlogCreationDate): boolean {
     return this._date === other.value;
   }
 }

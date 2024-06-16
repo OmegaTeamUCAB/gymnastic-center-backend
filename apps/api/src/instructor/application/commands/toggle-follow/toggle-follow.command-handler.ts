@@ -8,6 +8,7 @@ import { ToggleFollowCommand, ToggleFollowResponse } from './types';
 import { Instructor } from 'apps/api/src/instructor/domain/instructor';
 import { InstructorId } from 'apps/api/src/instructor/domain/value-objects/instructor-id';
 import { UserId } from 'apps/api/src/user/domain/value-objects';
+import { InstructorNotFoundException } from '../../exceptions';
 
 export class ToggleFollowCommandHandler
   implements ApplicationService<ToggleFollowCommand, ToggleFollowResponse>
@@ -23,6 +24,8 @@ export class ToggleFollowCommandHandler
     const events = await this.eventStore.getEventsByStream(
       command.instructorId,
     );
+    if (events.length === 0)
+      return Result.failure(new InstructorNotFoundException());
     const instructor = Instructor.loadFromHistory(
       new InstructorId(command.instructorId),
       events,

@@ -27,7 +27,7 @@ import {
 import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import { InstructorResponse } from '../responses/instructor.response';
 import { CreateInstructorDto, UpdateInstructorDto } from './dtos';
-import { InstructorNotFoundException } from '../../application/exceptions/instructor-not-found';
+import { InstructorNotFoundException } from '../../application/exceptions/instructor-not-found.exception';
 import {
   CreateInstructorCommandHandler,
   ToggleFollowCommandHandler,

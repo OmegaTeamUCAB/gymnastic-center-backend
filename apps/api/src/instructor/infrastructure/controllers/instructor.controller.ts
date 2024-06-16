@@ -63,20 +63,34 @@ export class InstructorController {
     description: 'Number of . DEFAULT = 1',
     type: Number,
   })
+  @ApiQuery({
+    name: 'filter',
+    required: false,
+    description: 'Instructor filtering',
+    type: String,
+    enum: ['FOLLOWING'],
+  })
   @ApiResponse({
     status: 200,
     description: 'instructors list',
     type: [InstructorResponse],
   })
   async getInstructors(
+    @CurrentUser() credentials: Credentials,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('perPage', new DefaultValuePipe(8), ParseIntPipe) perPage: number,
-    @CurrentUser() credentials: Credentials,
+    @Query('filter') filter?: 'FOLLOWING',
   ): Promise<InstructorResponse[]> {
-    const instructors = await this.instructorModel.find({}, null, {
-      skip: (page - 1) * perPage,
-      limit: perPage,
-    });
+    const instructors = await this.instructorModel.find(
+      {
+        ...(filter === 'FOLLOWING' && { followers: credentials.userId }),
+      },
+      null,
+      {
+        skip: (page - 1) * perPage,
+        limit: perPage,
+      },
+    );
     return instructors.map((instructor) => ({
       id: instructor.id,
       name: instructor.name,

@@ -102,6 +102,7 @@ export class BlogController {
       {
         skip: (page - 1) * perPage,
         perPage,
+        sort: filter === 'POPULAR' ? { comments: -1 } : { uploadDate: -1 },
       },
     );
     return blogs.map((blog) => ({

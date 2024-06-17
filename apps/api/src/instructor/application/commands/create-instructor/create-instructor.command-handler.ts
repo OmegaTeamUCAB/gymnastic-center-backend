@@ -9,6 +9,7 @@ import { CreateInstructorCommand, CreateInstructorResponse } from './types';
 import { Instructor } from 'apps/api/src/instructor/domain/instructor';
 import { InstructorName } from '../../../domain/value-objects/instructor-name';
 import { InstructorId } from '../../../domain/value-objects/instructor-id';
+import { InstructorImage } from '../../../domain/value-objects/instructor-image';
 
 export class CreateInstructorCommandHandler
   implements
@@ -26,6 +27,7 @@ export class CreateInstructorCommandHandler
     const id = this.idGenerator.generateId();
     const data = {
       name: new InstructorName(command.name),
+      image: new InstructorImage(command.image),
     };
     const instructor = Instructor.create(new InstructorId(id), data);
     const events = instructor.pullEvents();

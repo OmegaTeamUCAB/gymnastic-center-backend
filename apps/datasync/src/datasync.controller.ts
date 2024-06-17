@@ -149,14 +149,16 @@ export class DatasyncController {
     @Payload()
     data: EventType<{
       name: string;
+      image: string;
     }>,
     @Ctx() context: RmqContext,
   ) {
     try {
-      const { name } = data.context;
+      const { name, image } = data.context;
       await this.instructorModel.create({
         id: data.dispatcherId,
         name,
+        image,
         followerCount: 0,
         followers: [],
       });
@@ -175,6 +177,21 @@ export class DatasyncController {
     try {
       const { name } = data.context;
       await this.instructorModel.updateOne({ id: data.dispatcherId }, { name });
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('InstructorImageUpdated')
+  async onInstructorImageUpdated(
+    @Payload()
+    data: EventType<{
+      image: string;
+    }>,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const { image } = data.context;
+      await this.instructorModel.updateOne({ id: data.dispatcherId }, { image });
       this.rmqService.ack(context);
     } catch (error) {}
   }

@@ -40,8 +40,8 @@ export class Course extends AggregateRoot<CourseId> {
       !this._tags ||
       !this._weeks ||
       !this._minutes ||
-      !this._images ||
-      this._images.length === 0 ||
+      !this._image ||
+      this._image.value.length === 0 ||
       !this._categoryId ||
       !this._instructorId
     ) {
@@ -55,7 +55,7 @@ export class Course extends AggregateRoot<CourseId> {
   private _tags: CourseTag[];
   private _weeks: CourseWeek;
   private _minutes: CourseMinute;
-  private _images: CourseImage[];
+  private _image: CourseImage;
   private _categoryId: CategoryId;
   private _instructorId: InstructorId;
   // private _lessons: Lesson[]
@@ -84,8 +84,8 @@ export class Course extends AggregateRoot<CourseId> {
     return this._minutes;
   }
 
-  get images(): CourseImage[] {
-    return this._images;
+  get images(): CourseImage {
+    return this._image;
   }
 
   get categoryId(): CategoryId {
@@ -124,8 +124,8 @@ export class Course extends AggregateRoot<CourseId> {
     this.apply(CourseMinutesUpdated.createEvent(this.id, minutes));
   }
 
-  updateImages(imageUrl: CourseImage[]): void {
-    this.apply(CourseImageUpdated.createEvent(this.id, imageUrl));
+  updateImages(image: CourseImage): void {
+    this.apply(CourseImageUpdated.createEvent(this.id, image));
   }
 
   updateCategory(categoryId: CategoryId): void {
@@ -149,9 +149,9 @@ export class Course extends AggregateRoot<CourseId> {
       tags: CourseTag[];
       weeks: CourseWeek;
       minutes: CourseMinute;
-      images: CourseImage[];
-      categoryId: CategoryId;
-      instructorId: InstructorId;
+      image: CourseImage;
+      category: CategoryId;
+      instructor: InstructorId;
     },
   ): Course {
     const course = new Course(id);
@@ -164,9 +164,9 @@ export class Course extends AggregateRoot<CourseId> {
         data.tags,
         data.weeks,
         data.minutes,
-        data.images,
-        data.categoryId,
-        data.instructorId,
+        data.image,
+        data.category,
+        data.instructor,
       ),
     );
     return course;
@@ -185,7 +185,7 @@ export class Course extends AggregateRoot<CourseId> {
     this._tags = context.tags.map((tag) => new CourseTag(tag));
     this._weeks = new CourseWeek(context.weeks);
     this._minutes = new CourseMinute(context.minutes);
-    this._images = context.images.map((image) => new CourseImage(image));
+    this._image =  new CourseImage(context.image);
     this._categoryId = new CategoryId(context.category);
     this._instructorId = new InstructorId(context.instructor);
   }
@@ -217,7 +217,7 @@ export class Course extends AggregateRoot<CourseId> {
   }
 
   [`on${CourseImageUpdated.name}`](context: CourseImageUpdated): void {
-    this._images = context.image.map((image) => new CourseImage(image));
+    this._image = new CourseImage(context.image);
   }
 
   [`on${CourseCategoryUpdated.name}`](context: CourseCategoryUpdated): void {

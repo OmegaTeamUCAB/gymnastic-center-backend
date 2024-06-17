@@ -25,7 +25,7 @@ export class CourseCreated {
   tags: string[];
   weeks: number;
   minutes: number;
-  images: string[];
+  image: string;
   category: string;
   instructor: string;
   static createEvent(
@@ -36,7 +36,7 @@ export class CourseCreated {
     courseTags: CourseTag[],
     courseWeeks: CourseWeek,
     courseMinutes: CourseMinute,
-    courseImages: CourseImage[],
+    courseImage: CourseImage,
     courseCategory: CategoryId,
     courseInstructor: InstructorId,
   ): CourseCreatedEvent {
@@ -50,7 +50,7 @@ export class CourseCreated {
         tags: courseTags.map((tag) => tag.value),
         weeks: courseWeeks.value,
         minutes: courseMinutes.value,
-        images: courseImages.map((image) => image.value),
+        image: courseImage.value,
         category: courseCategory.value,
         instructor: courseInstructor.value,
       },

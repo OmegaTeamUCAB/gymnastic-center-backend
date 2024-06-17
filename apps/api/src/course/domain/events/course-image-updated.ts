@@ -8,16 +8,16 @@ export type CourseImageUpdatedEvent = DomainEvent<CourseImageUpdated>;
 
 export class CourseImageUpdated {
   private constructor() {}
-  image: string[];
+  image: string;
   static createEvent(
     dispatcher: CourseId,
-    courseImages: CourseImage[],
+    courseImage: CourseImage,
   ): CourseImageUpdatedEvent {
     return DomainEventFactory<CourseImageUpdated>({
       dispatcherId: dispatcher.value,
       name: CourseImageUpdated.name,
       context: {
-        image: courseImages.map((image) => image.value),
+        image: courseImage.value,
       },
     });
   }

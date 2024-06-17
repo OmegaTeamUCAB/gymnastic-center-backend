@@ -1,11 +1,11 @@
-export type UpdateCourseDto = {
-  id: string
-  title?: string;
+export type UpdateCourseCommand = {
+  id: string;
+  name?: string;
   description?: string;
   level?: number;
   tags?: string[];
   weeks?: number;
   minutes?: number;
-  imageUrl?: string;
+  image?: string;
   categoryId?: string;
 };

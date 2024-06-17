@@ -238,13 +238,7 @@ export class DatasyncController {
         this.rmqService.nack(context);
         return;
       }
-      const {
-        title,
-        content,
-        creationDate,
-        images,
-        tags,
-      } = data.context;
+      const { title, content, creationDate, images, tags } = data.context;
       await this.blogModel.create({
         id: data.dispatcherId,
         title,
@@ -253,7 +247,7 @@ export class DatasyncController {
         images,
         tags,
         category: { id: category.id, name: category.name },
-        trainer: { id: instructor.id, name: category.name },
+        trainer: { id: instructor.id, name: instructor.name },
         categoryId: category,
         trainerId: instructor,
       });
@@ -330,8 +324,22 @@ export class DatasyncController {
     @Ctx() context: RmqContext,
   ) {
     try {
-      const { category } = data.context;
-      await this.blogModel.updateOne({ id: data.dispatcherId }, { category });
+      const category = await this.categoryModel.findOne({
+        id: data.context.category,
+      });
+      if (!category) {
+        this.rmqService.nack(context);
+        return;
+      }
+      await this.blogModel.updateOne(
+        { id: data.dispatcherId },
+        {
+          category: {
+            id: category.id,
+            name: category.name,
+          },
+        },
+      );
       this.rmqService.ack(context);
     } catch (error) {}
   }

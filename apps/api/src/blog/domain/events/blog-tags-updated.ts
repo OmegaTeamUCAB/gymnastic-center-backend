@@ -1,5 +1,5 @@
 import { DomainEvent } from '@app/core';
-import { BlogId, BlogTags } from '../value-objects';
+import { BlogId, BlogTag } from '../value-objects';
 import { DomainEventFactory } from '@app/core/domain/events/domain-event';
 
 export type BlogTagsUpdatedEvent = DomainEvent<BlogTagsUpdated>;
@@ -9,7 +9,7 @@ export class BlogTagsUpdated {
   tags: string[];
   static createEvent(
     dispatcher: BlogId,
-    blogTags: BlogTags[],
+    blogTags: BlogTag[],
   ): BlogTagsUpdatedEvent {
     return DomainEventFactory<BlogTagsUpdated>({
       dispatcherId: dispatcher.value,

@@ -7,9 +7,6 @@ export type MongoBlogDocument = HydratedDocument<MongoBlog>;
 export class MongoBlog {
   readonly _id: string;
 
-  @Prop({ required: true })
-  readonly aggregateId: string;
-
   @Prop({
     required: true,
     unique: true,
@@ -17,42 +14,21 @@ export class MongoBlog {
   })
   id: string;
 
-  @Prop({ required: true })
-  imageUrl: string;
+  @Prop({
+    required: true,
+    default: [],
+    type: [String],
+  })
+  images: string[];
 
   @Prop({ required: true, minlength: 5 })
   title: string;
-
-  @Prop({ required: true, minlength: 5 })
-  description: string;
 
   @Prop({ required: true })
   content: string;
 
   @Prop({ required: true })
   uploadDate: Date;
-
-  @Prop({
-    required: true,
-    default: [],
-    type: [
-      {
-        _id: false,
-        id: String,
-        userId: String,
-        blogId: String,
-        content: String,
-        postedAt: Date,
-      },
-    ],
-  })
-  comments: {
-    id: string;
-    userId: string;
-    blogId: string;
-    content: string;
-    postedAt: Date;
-  }[];
 
   @Prop({ required: true, default: [], type: [String] })
   tags: string[];
@@ -63,10 +39,10 @@ export class MongoBlog {
   @Prop({ type: { id: SchemaTypes.UUID, name: String }, required: true })
   trainer: { id: string; name: string };
 
-  @Prop()
+  @Prop({ type: SchemaTypes.UUID, required: true })
   categoryId: string;
 
-  @Prop()
+  @Prop({ type: SchemaTypes.UUID, required: true })
   trainerId: string;
 
   readonly createdAt: Date;

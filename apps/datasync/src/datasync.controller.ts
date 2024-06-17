@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Inject } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -9,6 +9,7 @@ import {
   RabbitMQService,
 } from '@app/core';
 import { EventType } from './types';
+import { MongoBlog } from '@app/core/infrastructure/models/mongo-blog.model';
 
 @Controller()
 export class DatasyncController {
@@ -20,6 +21,8 @@ export class DatasyncController {
     private readonly userModel: Model<MongoUser>,
     @InjectModel(MongoInstructor.name)
     private readonly instructorModel: Model<MongoInstructor>,
+    @InjectModel(MongoBlog.name)
+    private readonly blogModel: Model<MongoBlog>,
   ) {}
 
   @EventPattern('health')
@@ -208,6 +211,121 @@ export class DatasyncController {
         { id: data.dispatcherId },
         { $pull: { followers: user }, $inc: { followerCount: -1 } },
       );
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('BlogCreated')
+  async onBlogCreated(
+    @Payload()
+    data: EventType<{
+      title: string;
+      content: string;
+      creationDate: Date;
+      images: string[];
+      tags: string[];
+      category: string;
+      instructor: string;
+    }>,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const {
+        title,
+        content,
+        creationDate,
+        images,
+        tags,
+        category,
+        instructor,
+      } = data.context;
+      await this.blogModel.create({
+        id: data.dispatcherId,
+        title,
+        content,
+        uploadDate: creationDate,
+        images,
+        tags,
+        category: { id: category, name: 'Programming' },
+        trainer: { id: instructor, name: 'Calo' },
+        categoryId: category,
+        trainerId: instructor,
+      });
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('BlogTitleUpdated')
+  async onBlogTitleUpdated(
+    @Payload()
+    data: EventType<{
+      title: string;
+    }>,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const { title } = data.context;
+      await this.blogModel.updateOne({ id: data.dispatcherId }, { title });
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('BlogContentUpdated')
+  async onBlogContentUpdated(
+    @Payload()
+    data: EventType<{
+      content: string;
+    }>,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const { content } = data.context;
+      await this.blogModel.updateOne({ id: data.dispatcherId }, { content });
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('BlogImagesUpdated')
+  async onBlogImagesUpdated(
+    @Payload()
+    data: EventType<{
+      images: string[];
+    }>,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const { images } = data.context;
+      await this.blogModel.updateOne({ id: data.dispatcherId }, { images });
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('BlogTagsUpdated')
+  async onBlogTagsUpdated(
+    @Payload()
+    data: EventType<{
+      tags: string[];
+    }>,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const { tags } = data.context;
+      await this.blogModel.updateOne({ id: data.dispatcherId }, { tags });
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('BlogCategoryUpdated')
+  async onBlogCategoryUpdated(
+    @Payload()
+    data: EventType<{
+      category: string;
+    }>,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const { category } = data.context;
+      await this.blogModel.updateOne({ id: data.dispatcherId }, { category });
       this.rmqService.ack(context);
     } catch (error) {}
   }

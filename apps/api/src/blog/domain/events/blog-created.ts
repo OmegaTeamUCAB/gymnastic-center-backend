@@ -2,43 +2,47 @@ import { DomainEvent } from '@app/core';
 import { DomainEventFactory } from '@app/core/domain/events/domain-event';
 import {
   BlogContent,
-  BlogDate,
+  BlogCreationDate,
   BlogId,
   BlogImages,
-  BlogTags,
+  BlogTag,
   BlogTitle,
 } from '../value-objects';
 import { CategoryId } from 'apps/api/src/category/domain/value-objects/category-id';
+import { InstructorId } from 'apps/api/src/instructor/domain/value-objects/instructor-id';
 
 export type BlogCreatedEvent = DomainEvent<BlogCreated>;
 
 export class BlogCreated {
   private constructor() {}
-  date: Date;
+  title: string;
+  content: string;
+  creationDate: Date;
   images: string[];
   tags: string[];
-  title: string;
   category: string;
-  content: string;
+  instructor: string;
   static createEvent(
     dispatcher: BlogId,
-    blogDate: BlogDate,
-    blogImage: BlogImages[],
-    blogTag: BlogTags[],
     blogTitle: BlogTitle,
+    blogContent: BlogContent,
+    blogCreationDate: BlogCreationDate,
+    blogImage: BlogImages[],
+    blogTag: BlogTag[],
     blogCategory: CategoryId,
-    blogContent: BlogContent
+    blogInstructor: InstructorId,
   ): BlogCreatedEvent {
     return DomainEventFactory<BlogCreated>({
       dispatcherId: dispatcher.value,
       name: BlogCreated.name,
       context: {
-        date: blogDate.value,
-        images: blogImage.map( image => image.value  ),
-        tags: blogTag.map( tag => tag.value ),
         title: blogTitle.value,
-        category: blogCategory.value,
         content: blogContent.value,
+        creationDate: blogCreationDate.value,
+        images: blogImage.map((image) => image.value),
+        tags: blogTag.map((tag) => tag.value),
+        category: blogCategory.value,
+        instructor: blogInstructor.value,
       },
     });
   }

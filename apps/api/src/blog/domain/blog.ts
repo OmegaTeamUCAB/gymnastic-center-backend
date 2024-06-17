@@ -17,6 +17,7 @@ import {
   BlogTitleUpdated,
 } from './events';
 import { CategoryId } from '../../category/domain/value-objects/category-id';
+import { InstructorId } from '../../instructor/domain/value-objects/instructor-id';
 
 export class Blog extends AggregateRoot<BlogId> {
   private constructor(id: BlogId) {
@@ -24,7 +25,16 @@ export class Blog extends AggregateRoot<BlogId> {
   }
 
   protected validateState(): void {
-    if (!this._creationDate || !this._images || this.images.length === 0 || !this._tags || !this.title) {
+    if (
+      !this._creationDate ||
+      !this._images ||
+      this.images.length === 0 ||
+      !this._tags ||
+      !this._title ||
+      !this._category ||
+      !this._content ||
+      !this._instructor
+    ) {
       throw new InvalidBlogException();
     }
   }
@@ -35,6 +45,7 @@ export class Blog extends AggregateRoot<BlogId> {
   private _title: BlogTitle;
   private _category: CategoryId;
   private _content: BlogContent;
+  private _instructor: InstructorId;
 
   get creationDate(): BlogCreationDate {
     return this._creationDate;
@@ -60,6 +71,10 @@ export class Blog extends AggregateRoot<BlogId> {
     return this._content;
   }
 
+  get instructor(): InstructorId {
+    return this._instructor;
+  }
+
   updateImages(images: BlogImages[]): void {
     this.apply(BlogImagesUpdated.createEvent(this.id, images));
   }
@@ -83,24 +98,26 @@ export class Blog extends AggregateRoot<BlogId> {
   static create(
     id: BlogId,
     data: {
+      title: BlogTitle;
+      content: BlogContent;
       creationDate: BlogCreationDate;
       images: BlogImages[];
       tags: BlogTag[];
-      title: BlogTitle;
       category: CategoryId;
-      content: BlogContent;
+      instructor: InstructorId;
     },
   ): Blog {
     const blog = new Blog(id);
     blog.apply(
       BlogCreated.createEvent(
         id,
+        data.title,
+        data.content,
         data.creationDate,
         data.images,
         data.tags,
-        data.title,
         data.category,
-        data.content,
+        data.instructor,
       ),
     );
     return blog;
@@ -113,12 +130,13 @@ export class Blog extends AggregateRoot<BlogId> {
   }
 
   [`on${BlogCreated.name}`](context: BlogCreated): void {
-    this._creationDate = new BlogCreationDate(context.date);
+    this._title = new BlogTitle(context.title);
+    this._content = new BlogContent(context.content);
+    this._creationDate = new BlogCreationDate(context.creationDate);
     this._images = context.images.map((image) => new BlogImages(image));
     this._tags = context.tags.map((tag) => new BlogTag(tag));
-    this._title = new BlogTitle(context.title);
     this._category = new CategoryId(context.category);
-    this._content = new BlogContent(context.content);
+    this._instructor = new InstructorId(context.instructor);
   }
 
   [`on${BlogImagesUpdated.name}`](context: BlogImagesUpdated): void {

@@ -25,12 +25,12 @@ import {
   IdGenerator,
   IdResponse,
   LOCAL_EVENT_HANDLER,
+  MongoBlog,
   UUIDGENERATOR,
 } from '@app/core';
 import { BlogLeanResponse, BlogResponse } from './responses';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
 import { InjectModel } from '@nestjs/mongoose';
-import { MongoBlog } from '../models';
 import { Model } from 'mongoose';
 
 @Controller('blog')
@@ -105,9 +105,9 @@ export class BlogController {
       },
     );
     return blogs.map((blog) => ({
-      id: blog.aggregateId,
+      id: blog.id,
       title: blog.title,
-      image: blog.imageUrl,
+      images: blog.images,
       trainer: blog.trainer.name,
       category: blog.category.name,
       date: blog.createdAt,
@@ -127,10 +127,10 @@ export class BlogController {
     const blog = await this.blogModel.findOne({ aggregateId: id });
     if (!blog) throw new NotFoundException(new BlogNotFoundException());
     return {
-      id: blog.aggregateId,
+      id: blog.id,
       title: blog.title,
       description: blog.content,
-      images: [blog.imageUrl],
+      images: blog.images,
       trainer: {
         id: blog.trainer.id,
         name: blog.trainer.name,
@@ -155,7 +155,7 @@ export class BlogController {
     );
     const result = await service.execute({
       ...createBlogDto,
-      date: new Date(),
+      creationDate: new Date(),
     });
     return result.unwrap();
   }

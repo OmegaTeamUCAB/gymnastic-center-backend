@@ -3,8 +3,10 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import * as Joi from 'joi';
 import {
+  BlogSchema,
   CategorySchema,
   InstructorSchema,
+  MongoBlog,
   MongoCategory,
   MongoInstructor,
   MongoUser,
@@ -38,6 +40,10 @@ import { DatasyncController } from './datasync.controller';
       {
         name: MongoInstructor.name,
         schema: InstructorSchema,
+      },
+      {
+        name: MongoBlog.name,
+        schema: BlogSchema,
       },
     ]),
   ],

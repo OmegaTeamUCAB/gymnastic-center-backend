@@ -1,8 +1,9 @@
 export type CreateBlogCommand = {
-  date: Date;
+  creationDate: Date;
   images: string[];
   tags: string[];
   title: string;
-  category: string,
+  category: string;
   content: string;
+  instructor: string;
 };

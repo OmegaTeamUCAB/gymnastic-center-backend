@@ -1,4 +1,4 @@
-import { Controller, Inject } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -235,7 +235,7 @@ export class DatasyncController {
         this.instructorModel.findOne({ id: data.context.instructor }),
       ]);
       if (!category || !instructor) {
-        //this.rmqService.nack(context);
+        this.rmqService.nack(context);
         return;
       }
       const {

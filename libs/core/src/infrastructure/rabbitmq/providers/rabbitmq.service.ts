@@ -25,4 +25,10 @@ export class RabbitMQService {
     const originalMsg = context.getMessage();
     channel.ack(originalMsg);
   }
+
+  nack(context: RmqContext) {
+    const channel = context.getChannelRef();
+    const originalMsg = context.getMessage();
+    channel.nack(originalMsg, false, false);
+  }
 }

@@ -17,6 +17,9 @@ export class MongoInstructor {
   @Prop({ required: true, minlength: 1 })
   name: string;
 
+  @Prop({ required: true, minlength: 1 })
+  image: string;
+
   @Prop({ default: 0 })
   followerCount: number;
 

@@ -1,26 +1,21 @@
 import { DomainEvent } from '@app/core';
 import { InstructorId } from '../value-objects/instructor-id';
 import { DomainEventFactory } from '@app/core/domain/events/domain-event';
-import { InstructorName } from '../value-objects/instructor-name';
 import { InstructorImage } from '../value-objects/instructor-image';
 
-export type InstructorCreatedEvent = DomainEvent<InstructorCreated>;
+export type InstructorImageUpdatedEvent = DomainEvent<InstructorImageUpdated>;
 
-export class InstructorCreated {
+export class InstructorImageUpdated {
   private constructor() {}
-  name: string;
   image: string;
   static createEvent(
     dispatcher: InstructorId,
-    instructorName: InstructorName,
-    instructorImage: InstructorImage
-  ): InstructorCreatedEvent {
-    console.log('DISPATCHER: ', dispatcher.value);
-    return DomainEventFactory<InstructorCreated>({
+    instructorImage: InstructorImage,
+  ): InstructorImageUpdatedEvent {
+    return DomainEventFactory<InstructorImageUpdated>({
       dispatcherId: dispatcher.value,
-      name: InstructorCreated.name,
+      name: InstructorImageUpdated.name,
       context: {
-        name: instructorName.value,
         image: instructorImage.value,
       },
     });

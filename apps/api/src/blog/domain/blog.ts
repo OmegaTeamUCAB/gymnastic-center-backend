@@ -100,7 +100,6 @@ export class Blog extends AggregateRoot<BlogId> {
     data: {
       title: BlogTitle;
       content: BlogContent;
-      creationDate: BlogPublishDate;
       images: BlogImage[];
       tags: BlogTag[];
       category: CategoryId;
@@ -113,7 +112,7 @@ export class Blog extends AggregateRoot<BlogId> {
         id,
         data.title,
         data.content,
-        data.creationDate,
+        new BlogPublishDate(new Date()),
         data.images,
         data.tags,
         data.category,

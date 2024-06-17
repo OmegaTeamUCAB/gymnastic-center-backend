@@ -156,7 +156,6 @@ export class BlogController {
     );
     const result = await service.execute({
       ...createBlogDto,
-      creationDate: new Date(),
     });
     return result.unwrap();
   }

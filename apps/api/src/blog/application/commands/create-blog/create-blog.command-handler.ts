@@ -9,9 +9,9 @@ import { CreateBlogCommand, CreateBlogResponse } from './types';
 import { Blog } from '../../../domain/blog';
 import {
   BlogContent,
-  BlogCreationDate,
+  BlogImage,
   BlogId,
-  BlogImages,
+  BlogPublishDate,
   BlogTag,
   BlogTitle,
 } from '../../../domain/value-objects';
@@ -32,8 +32,8 @@ export class CreateBlogCommandHandler
   ): Promise<Result<CreateBlogResponse>> {
     const id = this.idGenerator.generateId();
     const data = {
-      creationDate: new BlogCreationDate(command.creationDate),
-      images: command.images.map((image) => new BlogImages(image)),
+      creationDate: new BlogPublishDate(command.creationDate),
+      images: command.images.map((image) => new BlogImage(image)),
       tags: command.tags.map((tag) => new BlogTag(tag)),
       title: new BlogTitle(command.title),
       category: new CategoryId(command.category),

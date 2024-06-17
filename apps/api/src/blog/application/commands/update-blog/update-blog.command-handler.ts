@@ -9,7 +9,7 @@ import { BlogNotFoundException } from '../../exceptions';
 import {
   BlogContent,
   BlogId,
-  BlogImages,
+  BlogImage,
   BlogTag,
   BlogTitle,
 } from '../../../domain/value-objects';
@@ -31,7 +31,7 @@ export class UpdateBlogCommandHandler
     if (events.length === 0) throw new BlogNotFoundException();
     const blog = Blog.loadFromHistory(new BlogId(command.id), events);
     if (command.images)
-      blog.updateImages(command.images.map((image) => new BlogImages(image)));
+      blog.updateImages(command.images.map((image) => new BlogImage(image)));
     if (command.tags)
       blog.updateTags(command.tags.map((tag) => new BlogTag(tag)));
     if (command.title) blog.updateTitle(new BlogTitle(command.title));

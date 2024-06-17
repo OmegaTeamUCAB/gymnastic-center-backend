@@ -14,10 +14,10 @@ export class MongoInstructor {
   })
   id: string;
 
-  @Prop({ required: true, minlength: 1 })
+  @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true, minlength: 1 })
+  @Prop({ required: true })
   image: string;
 
   @Prop({ default: 0 })
@@ -28,3 +28,5 @@ export class MongoInstructor {
 }
 
 export const InstructorSchema = SchemaFactory.createForClass(MongoInstructor);
+InstructorSchema.index({ id: 1 });
+InstructorSchema.index({ followerCount: -1 });

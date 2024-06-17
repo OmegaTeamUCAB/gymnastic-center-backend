@@ -1,13 +1,12 @@
 import { ApplicationService, Result } from '@app/core';
 import { CreateCourseDto, CreateCourseResponse } from './types';
-import { Course, CourseRepository, Lesson } from '../../../domain';
+import { Course, Lesson } from '../../../domain';
 import { IdGenerator } from '@app/core/application/id/id-generator.interface';
 
 export class CreateCourseCommand
   implements ApplicationService<CreateCourseDto, CreateCourseResponse>
 {
   constructor(
-    private readonly courseRepository: CourseRepository,
     private readonly idGenerator: IdGenerator<string>,
   ) {}
 
@@ -40,8 +39,7 @@ export class CreateCourseCommand
       new Date(),
       new Date(),
     );
-    await this.courseRepository.saveCourse(course);
-    return Result.success<CreateCourseResponse>({
+      return Result.success<CreateCourseResponse>({
       id,
     });
   }

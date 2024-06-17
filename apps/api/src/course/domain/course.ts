@@ -3,19 +3,22 @@ import {
   InvalidLessonQuantityException,
   InvalidVideoQuantityException,
 } from './exceptions';
+import { CourseDescription, CourseId, CourseImage, CourseLevel, CourseMinute, CourseName, CourseTag, CourseWeek } from './value-objects';
+import { CategoryId } from '../../category/domain/value-objects/category-id';
+import { InstructorId } from '../../instructor/domain/value-objects/instructor-id';
 
 export class Course {
   constructor(
-    public id: string,
-    public name: string,
-    public description: string,
-    public level: number,
-    public tags: string[],
-    public weeks: number,
-    public minutes: number,
-    public imageUrl: string,
-    public categoryId: string,
-    public instructorId: string,
+    public id: CourseId,
+    public name: CourseName,
+    public description: CourseDescription,
+    public level: CourseLevel,
+    public tags: CourseTag[],
+    public weeks: CourseWeek,
+    public minutes: CourseMinute,
+    public imageUrl: CourseImage,
+    public categoryId: CategoryId,
+    public instructorId: InstructorId,
     public lessons: Lesson[],
     public createdAt: Date,
     public updatedAt: Date,

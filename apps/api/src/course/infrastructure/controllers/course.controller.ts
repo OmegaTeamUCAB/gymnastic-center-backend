@@ -16,7 +16,6 @@ import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Model } from 'mongoose';
 import { IdGenerator, IdResponse, UUIDGENERATOR } from '@app/core';
 import { COURSE_REPOSITORY } from '../constants';
-import { CourseRepository } from '../../domain';
 import { CreateCourseCommand, UpdateCourseCommand } from '../../application';
 import { CreateCourseDto, UpdateCourseDto } from './dtos';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
@@ -29,8 +28,6 @@ import { CourseNotFoundException } from '../../application/exceptions';
 @Auth()
 export class CourseController {
   constructor(
-    @Inject(COURSE_REPOSITORY)
-    private readonly courseRepository: CourseRepository,
     @Inject(UUIDGENERATOR)
     private readonly uuidGenerator: IdGenerator<string>,
     @InjectModel(MongoCourse.name)
@@ -151,7 +148,6 @@ export class CourseController {
   })
   async createCourse(@Body() createCourseDto: CreateCourseDto) {
     const service = new CreateCourseCommand(
-      this.courseRepository,
       this.uuidGenerator,
     );
     const result = await service.execute(createCourseDto);
@@ -169,7 +165,7 @@ export class CourseController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCourseDto: UpdateCourseDto,
   ) {
-    const service = new UpdateCourseCommand(this.courseRepository);
+    const service = new UpdateCourseCommand();
     const result = await service.execute({ id, ...updateCourseDto });
     const response = result.unwrap();
     return response;

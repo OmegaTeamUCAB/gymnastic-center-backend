@@ -3,7 +3,7 @@ import { HydratedDocument, SchemaTypes } from 'mongoose';
 
 export type MongoBlogDocument = HydratedDocument<MongoBlog>;
 
-@Schema({ collection: 'blogs', timestamps: true, versionKey: false })
+@Schema({ collection: 'blogs', timestamps: false, versionKey: false })
 export class MongoBlog {
   readonly _id: string;
 
@@ -21,7 +21,7 @@ export class MongoBlog {
   })
   images: string[];
 
-  @Prop({ required: true, minlength: 5 })
+  @Prop({ required: true })
   title: string;
 
   @Prop({ required: true })
@@ -39,14 +39,13 @@ export class MongoBlog {
   @Prop({ type: { id: SchemaTypes.UUID, name: String }, required: true })
   trainer: { id: string; name: string };
 
-  @Prop({ type: SchemaTypes.UUID, required: true })
-  categoryId: string;
-
-  @Prop({ type: SchemaTypes.UUID, required: true })
-  trainerId: string;
-
-  readonly createdAt: Date;
-  readonly updatedAt: Date;
+  @Prop({ required: true, default: 0 })
+  comments: number;
 }
 
 export const BlogSchema = SchemaFactory.createForClass(MongoBlog);
+BlogSchema.index({ id: 1 });
+BlogSchema.index({ 'category.id': 1 });
+BlogSchema.index({ 'trainer.id': 1 });
+BlogSchema.index({ comments: -1 });
+BlogSchema.index({ uploadDate: -1 });

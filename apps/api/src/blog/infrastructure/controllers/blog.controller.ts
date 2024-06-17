@@ -95,8 +95,8 @@ export class BlogController {
   ): Promise<BlogLeanResponse[]> {
     const blogs = await this.blogModel.find(
       {
-        ...(trainer && { trainerId: trainer }),
-        ...(category && { categoryId: category }),
+        ...(trainer && { 'trainer.id': trainer }),
+        ...(category && { 'category.id': category }),
       },
       null,
       {
@@ -110,7 +110,7 @@ export class BlogController {
       images: blog.images,
       trainer: blog.trainer.name,
       category: blog.category.name,
-      date: blog.createdAt,
+      date: blog.uploadDate,
     }));
   }
 
@@ -136,8 +136,9 @@ export class BlogController {
         name: blog.trainer.name,
       },
       category: blog.category.name,
-      date: blog.createdAt,
+      date: blog.uploadDate,
       tags: blog.tags,
+      comments: blog.comments,
     };
   }
 

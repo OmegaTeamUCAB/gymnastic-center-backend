@@ -1,0 +1,9 @@
+export { CourseNameUpdated } from './course-name-updated';
+export { CourseDescriptionUpdated } from './course-description-updated';
+export { CourseLevelUpdated } from './course-level-updated';
+export { CourseTagsUpdated } from './course-tags-updated';
+export { CourseWeeksUpdated } from './course-weeks-updated';
+export { CourseMinutesUpdated } from './course-minutes-updated';
+export { CourseImageUpdated } from './course-image-updated';
+export { CourseCategoryUpdated } from './course-category-updated';
+export { CourseInstructorUpdated } from './course-instructor-updated';

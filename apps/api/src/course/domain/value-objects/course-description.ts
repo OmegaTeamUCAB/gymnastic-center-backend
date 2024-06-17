@@ -2,7 +2,7 @@ import { ValueObject } from '@app/core';
 import { InvalidCourseDescriptionException } from '../exceptions';
 
 export class CourseDescription implements ValueObject<CourseDescription> {
-  private constructor(private _description: string) {
+  constructor(private _description: string) {
     if (_description.length < 10) throw new InvalidCourseDescriptionException();
   }
 

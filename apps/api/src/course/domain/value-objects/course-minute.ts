@@ -2,7 +2,7 @@ import { ValueObject } from '@app/core';
 import { InvalidCourseMinuteException } from '../exceptions';
 
 export class CourseMinute implements ValueObject<CourseMinute> {
-  private constructor(private _minutes: number) {
+  constructor(private _minutes: number) {
     if (_minutes <= 0) throw new InvalidCourseMinuteException();
   }
 

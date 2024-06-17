@@ -2,7 +2,7 @@ import { ValueObject } from '@app/core';
 import { InvalidCourseTagException } from '../exceptions';
 
 export class CourseTag implements ValueObject<CourseTag> {
-  private constructor(private _tag: string) {
+  constructor(private _tag: string) {
     if (_tag.length < 0) throw new InvalidCourseTagException();
   }
 

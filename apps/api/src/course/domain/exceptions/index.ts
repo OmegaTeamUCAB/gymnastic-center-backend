@@ -8,3 +8,4 @@ export { InvalidCourseTagException } from './invalid-course-tag.exception';
 export { InvalidCourseWeekException } from './invalid-course-week.exception';
 export { InvalidCourseMinuteException } from './invalid-course-minute.exception';
 export { InvalidCourseImageException } from './invalid-course-image.exception';
+export { InvalidCourseException } from './invalid-course.exception';

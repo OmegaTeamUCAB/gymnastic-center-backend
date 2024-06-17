@@ -230,14 +230,20 @@ export class DatasyncController {
     @Ctx() context: RmqContext,
   ) {
     try {
+      const [category, instructor] = await Promise.all([
+        this.categoryModel.findOne({ id: data.context.category }),
+        this.instructorModel.findOne({ id: data.context.instructor }),
+      ]);
+      if (!category || !instructor) {
+        //this.rmqService.nack(context);
+        return;
+      }
       const {
         title,
         content,
         creationDate,
         images,
         tags,
-        category,
-        instructor,
       } = data.context;
       await this.blogModel.create({
         id: data.dispatcherId,
@@ -246,8 +252,8 @@ export class DatasyncController {
         uploadDate: creationDate,
         images,
         tags,
-        category: { id: category, name: 'Programming' },
-        trainer: { id: instructor, name: 'Calo' },
+        category: { id: category.id, name: category.name },
+        trainer: { id: instructor.id, name: category.name },
         categoryId: category,
         trainerId: instructor,
       });

@@ -1,16 +1,16 @@
-import { ValueObject } from "@app/core";
-import { InvalidCourseTagException } from "../exceptions";
+import { ValueObject } from '@app/core';
+import { InvalidCourseTagException } from '../exceptions';
 
 export class CourseTag implements ValueObject<CourseTag> {
-    private constructor(private _tag: string){
-        if(_tag.length < 0) throw new InvalidCourseTagException();
-    }
+  private constructor(private _tag: string) {
+    if (_tag.length < 0) throw new InvalidCourseTagException();
+  }
 
-    get value(): string {
-        return this._tag;
-    }
+  get value(): string {
+    return this._tag;
+  }
 
-    equals(other: CourseTag): boolean {
-        return this._tag === other.value;
-    }
+  equals(other: CourseTag): boolean {
+    return this._tag === other.value;
+  }
 }

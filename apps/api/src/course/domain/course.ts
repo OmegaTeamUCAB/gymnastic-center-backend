@@ -3,7 +3,16 @@ import {
   InvalidLessonQuantityException,
   InvalidVideoQuantityException,
 } from './exceptions';
-import { CourseDescription, CourseId, CourseImage, CourseLevel, CourseMinute, CourseName, CourseTag, CourseWeek } from './value-objects';
+import {
+  CourseDescription,
+  CourseId,
+  CourseImage,
+  CourseLevel,
+  CourseMinute,
+  CourseName,
+  CourseTag,
+  CourseWeek,
+} from './value-objects';
 import { CategoryId } from '../../category/domain/value-objects/category-id';
 import { InstructorId } from '../../instructor/domain/value-objects/instructor-id';
 

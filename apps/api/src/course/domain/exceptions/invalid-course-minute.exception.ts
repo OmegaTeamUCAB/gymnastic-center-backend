@@ -1,4 +1,4 @@
-import { DomainException } from "@app/core";
+import { DomainException } from '@app/core';
 
 export class InvalidCourseMinuteException extends DomainException {
   constructor() {

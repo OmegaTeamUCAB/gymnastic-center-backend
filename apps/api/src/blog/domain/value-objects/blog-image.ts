@@ -1,7 +1,7 @@
 import { ValueObject } from '@app/core';
 import { InvalidBlogImagesException } from '../exceptions';
 
-export class BlogImages implements ValueObject<BlogImages> {
+export class BlogImage implements ValueObject<BlogImage> {
   constructor(private readonly _image: string) {
     if (_image.length < 0) throw new InvalidBlogImagesException();
   }
@@ -10,7 +10,7 @@ export class BlogImages implements ValueObject<BlogImages> {
     return this._image;
   }
 
-  equals(other: BlogImages): boolean {
+  equals(other: BlogImage): boolean {
     return this._image === other.value;
   }
 }

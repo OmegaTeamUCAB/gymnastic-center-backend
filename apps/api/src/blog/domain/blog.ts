@@ -1,9 +1,9 @@
 import { AggregateRoot, DomainEvent } from '@app/core';
 import {
   BlogContent,
-  BlogCreationDate,
+  BlogPublishDate,
   BlogId,
-  BlogImages,
+  BlogImage,
   BlogTag,
   BlogTitle,
 } from './value-objects';
@@ -26,32 +26,32 @@ export class Blog extends AggregateRoot<BlogId> {
 
   protected validateState(): void {
     if (
-      !this._creationDate ||
+      !this._publishDate ||
       !this._images ||
-      this.images.length === 0 ||
       !this._tags ||
       !this._title ||
       !this._category ||
       !this._content ||
-      !this._instructor
+      !this._instructor ||
+      this.images.length === 0
     ) {
       throw new InvalidBlogException();
     }
   }
 
-  private _creationDate: BlogCreationDate;
-  private _images: BlogImages[];
-  private _tags: BlogTag[];
   private _title: BlogTitle;
-  private _category: CategoryId;
   private _content: BlogContent;
+  private _publishDate: BlogPublishDate;
+  private _images: BlogImage[];
+  private _tags: BlogTag[];
+  private _category: CategoryId;
   private _instructor: InstructorId;
 
-  get creationDate(): BlogCreationDate {
-    return this._creationDate;
+  get publishDate(): BlogPublishDate {
+    return this._publishDate;
   }
 
-  get images(): BlogImages[] {
+  get images(): BlogImage[] {
     return this._images;
   }
 
@@ -75,7 +75,7 @@ export class Blog extends AggregateRoot<BlogId> {
     return this._instructor;
   }
 
-  updateImages(images: BlogImages[]): void {
+  updateImages(images: BlogImage[]): void {
     this.apply(BlogImagesUpdated.createEvent(this.id, images));
   }
 
@@ -100,8 +100,8 @@ export class Blog extends AggregateRoot<BlogId> {
     data: {
       title: BlogTitle;
       content: BlogContent;
-      creationDate: BlogCreationDate;
-      images: BlogImages[];
+      creationDate: BlogPublishDate;
+      images: BlogImage[];
       tags: BlogTag[];
       category: CategoryId;
       instructor: InstructorId;
@@ -132,15 +132,15 @@ export class Blog extends AggregateRoot<BlogId> {
   [`on${BlogCreated.name}`](context: BlogCreated): void {
     this._title = new BlogTitle(context.title);
     this._content = new BlogContent(context.content);
-    this._creationDate = new BlogCreationDate(context.creationDate);
-    this._images = context.images.map((image) => new BlogImages(image));
+    this._publishDate = new BlogPublishDate(context.creationDate);
+    this._images = context.images.map((image) => new BlogImage(image));
     this._tags = context.tags.map((tag) => new BlogTag(tag));
     this._category = new CategoryId(context.category);
     this._instructor = new InstructorId(context.instructor);
   }
 
   [`on${BlogImagesUpdated.name}`](context: BlogImagesUpdated): void {
-    this._images = context.images.map((image) => new BlogImages(image));
+    this._images = context.images.map((image) => new BlogImage(image));
   }
 
   [`on${BlogTagsUpdated.name}`](context: BlogTagsUpdated): void {

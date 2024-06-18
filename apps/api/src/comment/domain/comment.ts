@@ -1,0 +1,154 @@
+import { AggregateRoot, DomainEvent } from '@app/core';
+import { CommentContent, CommentDate, CommentId } from './value-objects';
+import { UserId } from '../../user/domain/value-objects';
+import {
+  CommentAlreadyDislikedByException,
+  CommentAlreadyLikedByException,
+  CommentIsntPublishedByException,
+  InvalidCommentException,
+} from './exceptions';
+import {
+  CommentCreated,
+  CommentDeleted,
+  CommentDislikeRemoved,
+  CommentDisliked,
+  CommentLikeRemoved,
+  CommentLiked,
+} from './events';
+
+export class Comment extends AggregateRoot<CommentId> {
+  private constructor(id: CommentId) {
+    super(id);
+  }
+  private _content: CommentContent;
+  private _publisher: UserId;
+  private _publishDate: CommentDate;
+  private _likes: UserId[];
+  private _dislikes: UserId[];
+  private _isActive: boolean;
+
+  protected validateState(): void {
+    if (
+      !this.id ||
+      !this._content ||
+      !this._publisher ||
+      !this._publishDate ||
+      !this._likes ||
+      !this._dislikes
+    )
+      throw new InvalidCommentException();
+  }
+
+  get content(): CommentContent {
+    return this._content;
+  }
+
+  get publisher(): UserId {
+    return this._publisher;
+  }
+
+  get likes(): UserId[] {
+    return this._likes;
+  }
+
+  get dislikes(): UserId[] {
+    return this._dislikes;
+  }
+
+  isLikedBy(_user: UserId): boolean {
+    return this._likes.some((user) => user.equals(_user));
+  }
+
+  isDislikedBy(_user: UserId): boolean {
+    return this._dislikes.some((user) => user.equals(_user));
+  }
+
+  isActive(): boolean {
+    return this._isActive;
+  }
+
+  addLike(_user: UserId): void {
+    if (this.isLikedBy(_user)) throw new CommentAlreadyLikedByException();
+    if (this.isDislikedBy(_user)) this.removeDislike(_user);
+    this.apply(CommentLiked.createEvent(this.id, _user));
+  }
+
+  removeLike(_user: UserId): void {
+    this.apply(CommentLikeRemoved.createEvent(this.id, _user));
+  }
+
+  addDislike(_user: UserId): void {
+    if (this.isDislikedBy(_user)) throw new CommentAlreadyDislikedByException();
+    if (this.isLikedBy(_user)) this.removeLike(_user);
+    this.apply(CommentDisliked.createEvent(this.id, _user));
+  }
+
+  removeDislike(_user: UserId): void {
+    this.apply(CommentDislikeRemoved.createEvent(this.id, _user));
+  }
+
+  delete(id: CommentId, user: UserId): void {
+    if (!this._publisher.equals(user))
+      throw new CommentIsntPublishedByException();
+    this.apply(CommentDeleted.createEvent(id));
+  }
+
+  static create(
+    id: CommentId,
+    data: {
+      content: CommentContent;
+      publisher: UserId;
+      publishDate: CommentDate;
+    },
+  ): Comment {
+    const comment = new Comment(id);
+    comment.apply(
+      CommentCreated.createEvent(
+        id,
+        data.content,
+        data.publisher,
+        data.publishDate,
+      ),
+    );
+    return comment;
+  }
+
+  static loadFromHistory(id: CommentId, events: DomainEvent[]): Comment {
+    const comment = new Comment(id);
+    comment.hydrate(events);
+    return comment;
+  }
+
+  [`on${CommentCreated.name}`](context: CommentCreated): void {
+    this._content = new CommentContent(context.content);
+    this._publisher = new UserId(context.publisher);
+    this._publishDate = new CommentDate(context.publishDate);
+    this._likes = [];
+    this._dislikes = [];
+    this._isActive = true;
+  }
+
+  [`on${CommentLiked.name}`](context: CommentLiked): void {
+    this._likes.push(new UserId(context.user));
+  }
+
+  [`on${CommentDisliked.name}`](context: CommentDisliked): void {
+    this._dislikes.push(new UserId(context.user));
+  }
+
+  [`on${CommentLikeRemoved.name}`](context: CommentLikeRemoved): void {
+    this._likes = this._likes.filter(
+      (user) => !user.equals(new UserId(context.user)),
+    );
+  }
+
+  [`on${CommentDislikeRemoved.name}`](context: CommentDislikeRemoved): void {
+    this._dislikes = this._dislikes.filter(
+      (user) => !user.equals(new UserId(context.user)),
+    );
+  }
+
+  [`on${CommentDeleted.name}`](): void {
+    this._isActive = false;
+  }
+}

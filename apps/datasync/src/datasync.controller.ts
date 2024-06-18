@@ -10,6 +10,7 @@ import {
 } from '@app/core';
 import { EventType } from './types';
 import { MongoBlog } from '@app/core/infrastructure/models/mongo-blog.model';
+import { MongoCourse } from '@app/core/infrastructure/models/mongo-course.model';
 
 @Controller()
 export class DatasyncController {
@@ -23,6 +24,8 @@ export class DatasyncController {
     private readonly instructorModel: Model<MongoInstructor>,
     @InjectModel(MongoBlog.name)
     private readonly blogModel: Model<MongoBlog>,
+    @InjectModel(MongoCourse.name)
+    private readonly courseModel: Model<MongoCourse>,
   ) {}
 
   @EventPattern('health')
@@ -329,4 +332,169 @@ export class DatasyncController {
       this.rmqService.ack(context);
     } catch (error) {}
   }
+
+
+  @EventPattern('CourseCreated')
+  async onCourseCreated(
+    @Payload()
+    data: EventType<{
+      title: string;
+      description: string;
+      level: number;
+      tags: string[];
+      weeks: number;
+      minutes: number;
+      imageUrl: string;
+      categoryId: string;
+      instructorId: string;
+      lessons: {
+        id: string;
+        title: string;
+        video: string;
+        description: string;
+      }[];
+    }>,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const {
+        title,
+        description,
+        level,
+        tags,
+        weeks,
+        minutes,
+        imageUrl,
+        categoryId,
+        instructorId,
+        lessons,
+      } = data.context;
+      await this.courseModel.create({
+        id: data.dispatcherId,
+        title,
+        description,
+        level,
+        tags,
+        weeks,
+        minutes,
+        imageUrl,
+        categoryId,
+        instructorId,
+        lessons,
+      });
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+   @EventPattern('CourseNameUpdated')
+  async onCourseNameUpdated(
+    @Payload()
+    data: EventType<{
+      title: string;
+    }>,
+    @Ctx() context: RmqContext,){
+    try {
+      const { title } = data.context;
+      await this.courseModel.updateOne({ id: data.dispatcherId }, { title });
+      this.rmqService.ack(context);
+    } catch (error) {}
+    }
+
+  @EventPattern('CourseDescriptionUpdated')
+  async onCourseDescriptionUpdated(
+    @Payload()
+    data: EventType<{
+      description: string;
+    }>,
+    @Ctx() context: RmqContext,){
+    try {
+      const { description } = data.context;
+      await this.courseModel.updateOne({ id: data.dispatcherId }, { description });
+      this.rmqService.ack(context);
+    } catch (error) {}
+    }
+
+  @EventPattern('CourseLevelUpdated')
+  async onCourseLevelUpdated(
+    @Payload()
+    data: EventType<{
+      level: number;
+    }>,
+    @Ctx() context: RmqContext,){
+    try {
+      const { level } = data.context;
+      await this.courseModel.updateOne({ id: data.dispatcherId }, { level });
+      this.rmqService.ack(context);
+    } catch (error) {}
+    }
+
+  @EventPattern('CourseTagsUpdated')
+  async onCourseTagsUpdated(
+    @Payload()
+    data: EventType<{
+      tags: string[];
+    }>,
+    @Ctx() context: RmqContext,){
+    try {
+      const { tags } = data.context;
+      await this.courseModel.updateOne({ id: data.dispatcherId }, { tags });
+      this.rmqService.ack(context);
+    } catch (error) {}
+    }
+
+  @EventPattern('CourseWeeksUpdated')
+  async onCourseWeeksUpdated(
+    @Payload()
+    data: EventType<{
+      weeks: number;
+    }>,
+    @Ctx() context: RmqContext,){
+    try {
+      const { weeks } = data.context;
+      await this.courseModel.updateOne({ id: data.dispatcherId }, { weeks });
+      this.rmqService.ack(context);
+    } catch (error) {}
+    }
+
+  @EventPattern('CourseMinutesUpdated')
+  async onCourseMinutesUpdated(
+    @Payload()
+    data: EventType<{
+      minutes: number;
+    }>,
+    @Ctx() context: RmqContext,){
+    try {
+      const { minutes } = data.context;
+      await this.courseModel.updateOne({ id: data.dispatcherId }, { minutes });
+      this.rmqService.ack(context);
+    } catch (error) {}
+    }
+
+  @EventPattern('CourseImageUpdated')
+  async onCourseImageUpdated(
+    @Payload()
+    data: EventType<{
+      imageUrl: string;
+    }>,
+    @Ctx() context: RmqContext,){
+    try {
+      const { imageUrl } = data.context;
+      await this.courseModel.updateOne({ id: data.dispatcherId }, { imageUrl });
+      this.rmqService.ack(context);
+    } catch (error) {}
+    }
+
+  @EventPattern('CourseCategoryUpdated')
+  async onCourseCategoryUpdated(
+    @Payload()
+    data: EventType<{
+      categoryId: string;
+    }>,
+    @Ctx() context: RmqContext,){
+    try {
+      const { categoryId } = data.context;
+      await this.courseModel.updateOne({ id: data.dispatcherId }, { categoryId });
+      this.rmqService.ack(context);
+    } catch (error) {}
+    }
 }

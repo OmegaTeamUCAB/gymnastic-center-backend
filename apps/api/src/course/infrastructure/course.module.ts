@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CourseController } from './controllers/course.controller';
-import { CourseSchema, MongoCourse } from './models/mongo-course.model';
-import { COURSE_REPOSITORY } from './constants';
-import { UUIDModule } from '@app/core';
+import {
+  CourseSchema,
+  MongoCourse,
+} from '../../../../../libs/core/src/infrastructure/models/mongo-course.model';
+import { EventHandlerModule, EventStoreModule, UUIDModule } from '@app/core';
 import { AuthModule } from '../../auth/infrastructure';
 
 @Module({
@@ -16,6 +18,8 @@ import { AuthModule } from '../../auth/infrastructure';
     ]),
     AuthModule,
     UUIDModule,
+    EventStoreModule,
+    EventHandlerModule,
   ],
   providers: [],
   controllers: [CourseController],

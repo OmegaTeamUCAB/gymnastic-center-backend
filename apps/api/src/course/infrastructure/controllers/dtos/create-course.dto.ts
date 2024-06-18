@@ -1,11 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, IsUrl, Min, ValidateNested } from 'class-validator';
+import {
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsUrl,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 
 export class CreateCourseDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  title: string;
+  name: string;
 
   @IsString()
   @IsNotEmpty()
@@ -34,7 +43,7 @@ export class CreateCourseDto {
 
   @IsUrl()
   @ApiProperty()
-  imageUrl: string;
+  image: string;
 
   @IsString()
   @IsUUID()

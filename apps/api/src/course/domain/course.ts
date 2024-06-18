@@ -1,30 +1,28 @@
-import { Lesson } from './lessons/lesson';
 import { InvalidCourseException } from './exceptions';
 import {
   CourseDescription,
+  CourseDuration,
   CourseId,
   CourseImage,
   CourseLevel,
-  CourseMinute,
   CourseName,
   CourseTag,
-  CourseWeek,
 } from './value-objects';
 import { CategoryId } from '../../category/domain/value-objects/category-id';
 import { InstructorId } from '../../instructor/domain/value-objects/instructor-id';
 import { AggregateRoot, DomainEvent } from '@app/core';
+import { Lesson } from './entities/lessons/lesson';
 import {
   CourseCategoryUpdated,
+  CourseCreated,
   CourseDescriptionUpdated,
+  CourseDurationUpdated,
   CourseImageUpdated,
-  CourseInstructorUpdated,
   CourseLevelUpdated,
-  CourseMinutesUpdated,
   CourseNameUpdated,
   CourseTagsUpdated,
-  CourseWeeksUpdated,
 } from './events';
-import { CourseCreated } from './events/course-created';
+import { CourseLessonUpdated } from './events/course-lesson-updated';
 
 export class Course extends AggregateRoot<CourseId> {
   private constructor(id: CourseId) {
@@ -38,10 +36,9 @@ export class Course extends AggregateRoot<CourseId> {
       !this._description ||
       !this._level ||
       !this._tags ||
-      !this._weeks ||
-      !this._minutes ||
       !this._image ||
-      this._image.value.length === 0 ||
+      this._lessons.length === 0 ||
+      !this._duration ||
       !this._categoryId ||
       !this._instructorId
     ) {
@@ -53,12 +50,12 @@ export class Course extends AggregateRoot<CourseId> {
   private _description: CourseDescription;
   private _level: CourseLevel;
   private _tags: CourseTag[];
-  private _weeks: CourseWeek;
-  private _minutes: CourseMinute;
+  private _duration: CourseDuration;
+
   private _image: CourseImage;
   private _categoryId: CategoryId;
   private _instructorId: InstructorId;
-  // private _lessons: Lesson[]
+  private _lessons: Lesson[];
 
   get name(): CourseName {
     return this._name;
@@ -76,14 +73,6 @@ export class Course extends AggregateRoot<CourseId> {
     return this._tags;
   }
 
-  get weeks(): CourseWeek {
-    return this._weeks;
-  }
-
-  get minutes(): CourseMinute {
-    return this._minutes;
-  }
-
   get images(): CourseImage {
     return this._image;
   }
@@ -96,9 +85,13 @@ export class Course extends AggregateRoot<CourseId> {
     return this._instructorId;
   }
 
-  // get lessons(): Lesson[] {
-  //   return this._lessons;
-  // }
+  get duration(): CourseDuration {
+    return this._duration;
+  }
+
+  get lessons(): Lesson[] {
+    return this._lessons;
+  }
 
   updateName(name: CourseName): void {
     this.apply(CourseNameUpdated.createEvent(this.id, name));
@@ -116,14 +109,6 @@ export class Course extends AggregateRoot<CourseId> {
     this.apply(CourseTagsUpdated.createEvent(this.id, tags));
   }
 
-  updateWeeks(weeks: CourseWeek): void {
-    this.apply(CourseWeeksUpdated.createEvent(this.id, weeks));
-  }
-
-  updateMinutes(minutes: CourseMinute): void {
-    this.apply(CourseMinutesUpdated.createEvent(this.id, minutes));
-  }
-
   updateImages(image: CourseImage): void {
     this.apply(CourseImageUpdated.createEvent(this.id, image));
   }
@@ -132,13 +117,20 @@ export class Course extends AggregateRoot<CourseId> {
     this.apply(CourseCategoryUpdated.createEvent(this.id, categoryId));
   }
 
-  updateInstructor(instructorId: InstructorId): void {
-    this.apply(CourseInstructorUpdated.createEvent(this.id, instructorId));
+  updateDuration(duration: CourseDuration): void {
+    this.apply(CourseDurationUpdated.createEvent(this.id, duration));
   }
 
-  // updateLessons(lesson: Lesson): void {
-  //   this.apply(LessonAdded.createEvent(this.id, lesson));
-  // }
+  updateLessons(lesson: Lesson): void {
+    this.apply(
+      CourseLessonUpdated.createEvent(
+        this.id,
+        lesson.title,
+        lesson.description,
+        lesson.video,
+      ),
+    );
+  }
 
   static create(
     id: CourseId,
@@ -147,8 +139,8 @@ export class Course extends AggregateRoot<CourseId> {
       description: CourseDescription;
       level: CourseLevel;
       tags: CourseTag[];
-      weeks: CourseWeek;
-      minutes: CourseMinute;
+      duration: CourseDuration;
+      lessons: Lesson[];
       image: CourseImage;
       category: CategoryId;
       instructor: InstructorId;
@@ -162,11 +154,11 @@ export class Course extends AggregateRoot<CourseId> {
         data.description,
         data.level,
         data.tags,
-        data.weeks,
-        data.minutes,
+        data.duration,
         data.image,
         data.category,
         data.instructor,
+        data.lessons,
       ),
     );
     return course;
@@ -183,9 +175,7 @@ export class Course extends AggregateRoot<CourseId> {
     this._description = new CourseDescription(context.description);
     this._level = new CourseLevel(context.level);
     this._tags = context.tags.map((tag) => new CourseTag(tag));
-    this._weeks = new CourseWeek(context.weeks);
-    this._minutes = new CourseMinute(context.minutes);
-    this._image =  new CourseImage(context.image);
+    this._image = new CourseImage(context.image);
     this._categoryId = new CategoryId(context.category);
     this._instructorId = new InstructorId(context.instructor);
   }
@@ -208,25 +198,11 @@ export class Course extends AggregateRoot<CourseId> {
     this._tags = context.tags.map((tag) => new CourseTag(tag));
   }
 
-  [`on${CourseWeeksUpdated.name}`](context: CourseWeeksUpdated): void {
-    this._weeks = new CourseWeek(context.weeks);
-  }
-
-  [`on${CourseMinutesUpdated.name}`](context: CourseMinutesUpdated): void {
-    this._minutes = new CourseMinute(context.minutes);
-  }
-
   [`on${CourseImageUpdated.name}`](context: CourseImageUpdated): void {
     this._image = new CourseImage(context.image);
   }
 
   [`on${CourseCategoryUpdated.name}`](context: CourseCategoryUpdated): void {
     this._categoryId = new CategoryId(context.category);
-  }
-
-  [`on${CourseInstructorUpdated.name}`](
-    context: CourseInstructorUpdated,
-  ): void {
-    this._instructorId = new InstructorId(context.instructor);
   }
 }

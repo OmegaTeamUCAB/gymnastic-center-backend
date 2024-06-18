@@ -1,6 +1,7 @@
 import { InstructorId } from 'apps/api/src/instructor/domain/value-objects/instructor-id';
 import {
   CourseDescription,
+  CourseDuration,
   CourseId,
   CourseImage,
   CourseLevel,
@@ -14,6 +15,7 @@ import {
   DomainEventFactory,
 } from '@app/core/domain/events/domain-event';
 import { CategoryId } from 'apps/api/src/category/domain/value-objects/category-id';
+import { Lesson } from '../entities/lessons/lesson';
 
 export type CourseCreatedEvent = DomainEvent<CourseCreated>;
 
@@ -28,17 +30,24 @@ export class CourseCreated {
   image: string;
   category: string;
   instructor: string;
+  lessons: {
+    id: string;
+    title: string;
+    description: string;
+    video: string;
+  }[];
+
   static createEvent(
     dispatcher: CourseId,
     courseName: CourseName,
     courseDescription: CourseDescription,
     courseLevel: CourseLevel,
     courseTags: CourseTag[],
-    courseWeeks: CourseWeek,
-    courseMinutes: CourseMinute,
+    courseDuration: CourseDuration,
     courseImage: CourseImage,
     courseCategory: CategoryId,
     courseInstructor: InstructorId,
+    courseLesson: Lesson[],
   ): CourseCreatedEvent {
     return DomainEventFactory<CourseCreated>({
       dispatcherId: dispatcher.value,
@@ -48,11 +57,17 @@ export class CourseCreated {
         description: courseDescription.value,
         level: courseLevel.value,
         tags: courseTags.map((tag) => tag.value),
-        weeks: courseWeeks.value,
-        minutes: courseMinutes.value,
+        weeks: courseDuration.weeks,
+        minutes: courseDuration.minutes,
         image: courseImage.value,
         category: courseCategory.value,
         instructor: courseInstructor.value,
+        lessons: courseLesson.map((lesson) => ({
+          id: lesson.id.value,
+          title: lesson.title.value,
+          description: lesson.description.value,
+          video: lesson.video.value,
+        })),
       },
     });
   }

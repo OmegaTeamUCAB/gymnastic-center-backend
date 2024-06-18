@@ -14,14 +14,24 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Model } from 'mongoose';
-import { IdGenerator, IdResponse, UUIDGENERATOR } from '@app/core';
-import { COURSE_REPOSITORY } from '../constants';
-import { CreateCourseCommand, UpdateCourseCommand } from '../../application';
+import {
+  EVENT_STORE,
+  EventHandler,
+  EventStore,
+  IdGenerator,
+  IdResponse,
+  LOCAL_EVENT_HANDLER,
+  UUIDGENERATOR,
+} from '@app/core';
 import { CreateCourseDto, UpdateCourseDto } from './dtos';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
 import { CourseLeanResponse, CourseResponse } from './responses';
-import { MongoCourse } from '../models/mongo-course.model';
+import { MongoCourse } from '../../../../../../libs/core/src/infrastructure/models/mongo-course.model';
 import { CourseNotFoundException } from '../../application/exceptions';
+import {
+  CreateCourseCommandHandler,
+  UpdateCourseCommandHandler,
+} from '../../application';
 
 @Controller('course')
 @ApiTags('Courses')
@@ -30,6 +40,10 @@ export class CourseController {
   constructor(
     @Inject(UUIDGENERATOR)
     private readonly uuidGenerator: IdGenerator<string>,
+    @Inject(EVENT_STORE)
+    private readonly eventStore: EventStore,
+    @Inject(LOCAL_EVENT_HANDLER)
+    private readonly localEventHandler: EventHandler,
     @InjectModel(MongoCourse.name)
     private readonly courseModel: Model<MongoCourse>,
   ) {}
@@ -147,12 +161,13 @@ export class CourseController {
     type: IdResponse,
   })
   async createCourse(@Body() createCourseDto: CreateCourseDto) {
-    const service = new CreateCourseCommand(
+    const service = new CreateCourseCommandHandler(
       this.uuidGenerator,
+      this.eventStore,
+      this.localEventHandler,
     );
-    const result = await service.execute(createCourseDto);
-    const response = result.unwrap();
-    return response;
+    const result = await service.execute({ ...createCourseDto });
+    return result.unwrap();
   }
 
   @Post(':id')
@@ -165,7 +180,10 @@ export class CourseController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCourseDto: UpdateCourseDto,
   ) {
-    const service = new UpdateCourseCommand();
+    const service = new UpdateCourseCommandHandler(
+      this.eventStore,
+      this.localEventHandler,
+    );
     const result = await service.execute({ id, ...updateCourseDto });
     const response = result.unwrap();
     return response;

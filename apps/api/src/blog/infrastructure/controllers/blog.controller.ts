@@ -125,7 +125,7 @@ export class BlogController {
   async getBlogById(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<BlogResponse> {
-    const blog = await this.blogModel.findOne({ aggregateId: id });
+    const blog = await this.blogModel.findOne({ id });
     if (!blog) throw new NotFoundException(new BlogNotFoundException());
     return {
       id: blog.id,

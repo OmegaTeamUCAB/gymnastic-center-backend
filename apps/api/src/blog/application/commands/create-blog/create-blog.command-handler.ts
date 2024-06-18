@@ -9,13 +9,14 @@ import { CreateBlogCommand, CreateBlogResponse } from './types';
 import { Blog } from '../../../domain/blog';
 import {
   BlogContent,
-  BlogDate,
+  BlogImage,
   BlogId,
-  BlogImages,
-  BlogTags,
+  BlogPublishDate,
+  BlogTag,
   BlogTitle,
 } from '../../../domain/value-objects';
 import { CategoryId } from 'apps/api/src/category/domain/value-objects/category-id';
+import { InstructorId } from 'apps/api/src/instructor/domain/value-objects/instructor-id';
 
 export class CreateBlogCommandHandler
   implements ApplicationService<CreateBlogCommand, CreateBlogResponse>
@@ -31,12 +32,12 @@ export class CreateBlogCommandHandler
   ): Promise<Result<CreateBlogResponse>> {
     const id = this.idGenerator.generateId();
     const data = {
-      date: new BlogDate(command.date),
-      images: command.images.map(image => new BlogImages(image)),
-      tags: command.tags.map(tag => new BlogTags(tag)),
+      images: command.images.map((image) => new BlogImage(image)),
+      tags: command.tags.map((tag) => new BlogTag(tag)),
       title: new BlogTitle(command.title),
       category: new CategoryId(command.category),
       content: new BlogContent(command.content),
+      instructor: new InstructorId(command.instructor),
     };
     const blog = Blog.create(new BlogId(id), data);
     const events = blog.pullEvents();

@@ -3,12 +3,9 @@ import { HydratedDocument, SchemaTypes } from 'mongoose';
 
 export type MongoBlogDocument = HydratedDocument<MongoBlog>;
 
-@Schema({ collection: 'blogs', timestamps: true, versionKey: false })
+@Schema({ collection: 'blogs', timestamps: false, versionKey: false })
 export class MongoBlog {
   readonly _id: string;
-
-  @Prop({ required: true })
-  readonly aggregateId: string;
 
   @Prop({
     required: true,
@@ -17,42 +14,21 @@ export class MongoBlog {
   })
   id: string;
 
+  @Prop({
+    required: true,
+    default: [],
+    type: [String],
+  })
+  images: string[];
+
   @Prop({ required: true })
-  imageUrl: string;
-
-  @Prop({ required: true, minlength: 5 })
   title: string;
-
-  @Prop({ required: true, minlength: 5 })
-  description: string;
 
   @Prop({ required: true })
   content: string;
 
   @Prop({ required: true })
   uploadDate: Date;
-
-  @Prop({
-    required: true,
-    default: [],
-    type: [
-      {
-        _id: false,
-        id: String,
-        userId: String,
-        blogId: String,
-        content: String,
-        postedAt: Date,
-      },
-    ],
-  })
-  comments: {
-    id: string;
-    userId: string;
-    blogId: string;
-    content: string;
-    postedAt: Date;
-  }[];
 
   @Prop({ required: true, default: [], type: [String] })
   tags: string[];
@@ -63,14 +39,13 @@ export class MongoBlog {
   @Prop({ type: { id: SchemaTypes.UUID, name: String }, required: true })
   trainer: { id: string; name: string };
 
-  @Prop()
-  categoryId: string;
-
-  @Prop()
-  trainerId: string;
-
-  readonly createdAt: Date;
-  readonly updatedAt: Date;
+  @Prop({ required: true, default: 0 })
+  comments: number;
 }
 
 export const BlogSchema = SchemaFactory.createForClass(MongoBlog);
+BlogSchema.index({ id: 1 });
+BlogSchema.index({ 'category.id': 1 });
+BlogSchema.index({ 'trainer.id': 1 });
+BlogSchema.index({ comments: -1 });
+BlogSchema.index({ uploadDate: -1 });

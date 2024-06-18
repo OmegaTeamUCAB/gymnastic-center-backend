@@ -8,6 +8,9 @@ export class InstructorResponse {
   name: string;
 
   @ApiProperty()
+  image: string;
+
+  @ApiProperty()
   followers: number;
 
   @ApiProperty()

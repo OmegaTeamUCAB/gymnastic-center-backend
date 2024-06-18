@@ -1,5 +1,6 @@
 import { AggregateRoot, DomainEvent } from '@app/core';
 import { CommentContent, CommentDate, CommentId } from './value-objects';
+import { BlogId } from '../../blog/domain/value-objects';
 import { UserId } from '../../user/domain/value-objects';
 import {
   CommentAlreadyDislikedByException,
@@ -21,6 +22,7 @@ export class Comment extends AggregateRoot<CommentId> {
     super(id);
   }
   private _content: CommentContent;
+  private _blog: BlogId;
   private _publisher: UserId;
   private _publishDate: CommentDate;
   private _likes: UserId[];
@@ -31,6 +33,7 @@ export class Comment extends AggregateRoot<CommentId> {
     if (
       !this.id ||
       !this._content ||
+      !this._blog ||
       !this._publisher ||
       !this._publishDate ||
       !this._likes ||
@@ -41,6 +44,10 @@ export class Comment extends AggregateRoot<CommentId> {
 
   get content(): CommentContent {
     return this._content;
+  }
+
+  get blog(): BlogId {
+    return this._blog;
   }
 
   get publisher(): UserId {
@@ -97,6 +104,7 @@ export class Comment extends AggregateRoot<CommentId> {
     id: CommentId,
     data: {
       content: CommentContent;
+      blog: BlogId;
       publisher: UserId;
       publishDate: CommentDate;
     },
@@ -106,6 +114,7 @@ export class Comment extends AggregateRoot<CommentId> {
       CommentCreated.createEvent(
         id,
         data.content,
+        data.blog,
         data.publisher,
         data.publishDate,
       ),
@@ -121,6 +130,7 @@ export class Comment extends AggregateRoot<CommentId> {
 
   [`on${CommentCreated.name}`](context: CommentCreated): void {
     this._content = new CommentContent(context.content);
+    this._blog = new BlogId(context.blog);
     this._publisher = new UserId(context.publisher);
     this._publishDate = new CommentDate(context.publishDate);
     this._likes = [];

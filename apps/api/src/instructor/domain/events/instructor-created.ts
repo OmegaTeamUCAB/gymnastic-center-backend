@@ -15,7 +15,6 @@ export class InstructorCreated {
     instructorName: InstructorName,
     instructorImage: InstructorImage
   ): InstructorCreatedEvent {
-    console.log('DISPATCHER: ', dispatcher.value);
     return DomainEventFactory<InstructorCreated>({
       dispatcherId: dispatcher.value,
       name: InstructorCreated.name,

@@ -7,6 +7,7 @@ import {
   IsUUID,
   IsUrl,
   Min,
+  ValidateNested,
 } from 'class-validator';
 
 export class UpdateCourseDto {
@@ -34,17 +35,12 @@ export class UpdateCourseDto {
   @ApiProperty()
   tags?: string[];
 
-  @IsInt()
-  @Min(1)
+  @ApiProperty({
+    type: () => DurationDto,
+  })
+  @ValidateNested()
   @IsOptional()
-  @ApiProperty()
-  weeks?: number;
-
-  @IsInt()
-  @Min(1)
-  @IsOptional()
-  @ApiProperty()
-  minutes?: number;
+  duration?: DurationDto;
 
   @IsUrl()
   @IsOptional()
@@ -56,4 +52,16 @@ export class UpdateCourseDto {
   @IsOptional()
   @ApiProperty()
   categoryId?: string;
+}
+
+export class DurationDto {
+  @IsInt()
+  @Min(1)
+  @ApiProperty()
+  weeks?: number;
+
+  @IsInt()
+  @Min(1)
+  @ApiProperty()
+  minutes?: number;
 }

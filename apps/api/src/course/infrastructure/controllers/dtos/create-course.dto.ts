@@ -72,21 +72,12 @@ export class CreateLessonDto {
   @IsNotEmpty()
   @IsOptional()
   @ApiProperty({
-    nullable: true,
   })
-  content: string;
+  description: string;
 
   @IsUrl()
   @IsOptional()
   @ApiProperty({
-    nullable: true,
   })
-  videoUrl: string;
-
-  @IsUrl()
-  @IsOptional()
-  @ApiProperty({
-    nullable: true,
-  })
-  imageUrl: string;
+  video: string;
 }

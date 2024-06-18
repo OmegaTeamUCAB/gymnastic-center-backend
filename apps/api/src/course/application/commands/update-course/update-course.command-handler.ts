@@ -9,13 +9,12 @@ import { CourseNotFoundException } from '../../exceptions';
 import { Course } from '../../../domain';
 import {
   CourseDescription,
+  CourseDuration,
   CourseId,
   CourseImage,
   CourseLevel,
-  CourseMinute,
   CourseName,
   CourseTag,
-  CourseWeek,
 } from '../../../domain/value-objects';
 import { CategoryId } from 'apps/api/src/category/domain/value-objects/category-id';
 
@@ -39,9 +38,7 @@ export class UpdateCourseCommandHandler
     if (command.level) course.updateLevel(new CourseLevel(command.level));
     if (command.tags)
       course.updateTags(command.tags.map((tag) => new CourseTag(tag)));
-    if (command.weeks) course.updateWeeks(new CourseWeek(command.weeks));
-    if (command.minutes)
-      course.updateMinutes(new CourseMinute(command.minutes));
+    if (command.duration) {course.updateDuration(new CourseDuration(command.duration.weeks, command.duration.minutes))};
     if (command.image) course.updateImages(new CourseImage(command.image));
     if (command.categoryId)
       course.updateCategory(new CategoryId(command.categoryId));

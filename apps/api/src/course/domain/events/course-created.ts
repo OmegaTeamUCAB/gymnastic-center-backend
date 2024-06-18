@@ -7,6 +7,7 @@ import {
   CourseLevel,
   CourseMinute,
   CourseName,
+  CoursePublishDate,
   CourseTag,
   CourseWeek,
 } from '../value-objects';
@@ -30,13 +31,13 @@ export class CourseCreated {
   image: string;
   category: string;
   instructor: string;
+  publishDate: Date;
   lessons: {
     id: string;
     title: string;
     description: string;
     video: string;
   }[];
-
   static createEvent(
     dispatcher: CourseId,
     courseName: CourseName,
@@ -47,6 +48,7 @@ export class CourseCreated {
     courseImage: CourseImage,
     courseCategory: CategoryId,
     courseInstructor: InstructorId,
+    coursePublishDate: CoursePublishDate,
     courseLesson: Lesson[],
   ): CourseCreatedEvent {
     return DomainEventFactory<CourseCreated>({
@@ -62,6 +64,7 @@ export class CourseCreated {
         image: courseImage.value,
         category: courseCategory.value,
         instructor: courseInstructor.value,
+        publishDate: coursePublishDate.value,
         lessons: courseLesson.map((lesson) => ({
           id: lesson.id.value,
           title: lesson.title.value,

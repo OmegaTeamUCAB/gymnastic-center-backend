@@ -4,8 +4,10 @@ export type UpdateCourseCommand = {
   description?: string;
   level?: number;
   tags?: string[];
-  weeks?: number;
-  minutes?: number;
+  duration?: {
+    weeks?: number;
+    minutes?: number;
+  }
   image?: string;
   categoryId?: string;
 };

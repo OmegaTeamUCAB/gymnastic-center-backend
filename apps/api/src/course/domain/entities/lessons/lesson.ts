@@ -7,7 +7,7 @@ import {
 } from './value-objects';
 
 export class Lesson extends Entity<LessonId> {
-  protected constructor(
+  constructor(
     id: LessonId,
     protected _title: LessonTitle,
     protected _description: LessonDescription,

@@ -6,6 +6,7 @@ import {
   CourseImage,
   CourseLevel,
   CourseName,
+  CoursePublishDate,
   CourseTag,
 } from './value-objects';
 import { CategoryId } from '../../category/domain/value-objects/category-id';
@@ -158,6 +159,7 @@ export class Course extends AggregateRoot<CourseId> {
         data.image,
         data.category,
         data.instructor,
+        new CoursePublishDate(new Date()),
         data.lessons,
       ),
     );

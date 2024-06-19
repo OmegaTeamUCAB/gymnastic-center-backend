@@ -176,6 +176,7 @@ export class Course extends AggregateRoot<CourseId> {
     this._level = new CourseLevel(context.level);
     this._tags = context.tags.map((tag) => new CourseTag(tag));
     this._image = new CourseImage(context.image);
+    this._duration = new CourseDuration(context.weeks, context.minutes);
     this._publishDate = new CoursePublishDate(context.publishDate);
     this._category = new CategoryId(context.category);
     this._instructor = new InstructorId(context.instructor);

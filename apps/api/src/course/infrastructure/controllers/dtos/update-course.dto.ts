@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsInt,
   IsNotEmpty,
@@ -51,6 +52,7 @@ export class UpdateCourseDto {
     type: () => DurationDto,
   })
   @ValidateNested()
+  @Type(() => DurationDto)
   @IsOptional()
   duration?: DurationDto;
 

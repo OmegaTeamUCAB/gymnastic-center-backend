@@ -8,11 +8,9 @@ export type CreateCourseCommand = {
   image: string;
   categoryId: string;
   instructorId: string;
-  lessons: CreateLessonDto[];
-};
-
-export type CreateLessonDto = {
-  title: string;
-  description: string;
-  video: string;
+  lessons: {
+    title: string;
+    description: string;
+    video: string;
+  }[];
 };

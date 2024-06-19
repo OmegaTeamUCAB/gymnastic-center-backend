@@ -10,6 +10,18 @@ import {
   ValidateNested,
 } from 'class-validator';
 
+export class DurationDto {
+  @IsInt()
+  @Min(1)
+  @ApiProperty()
+  weeks?: number;
+
+  @IsInt()
+  @Min(1)
+  @ApiProperty()
+  minutes?: number;
+}
+
 export class UpdateCourseDto {
   @IsString()
   @IsNotEmpty()
@@ -52,16 +64,4 @@ export class UpdateCourseDto {
   @IsOptional()
   @ApiProperty()
   categoryId?: string;
-}
-
-export class DurationDto {
-  @IsInt()
-  @Min(1)
-  @ApiProperty()
-  weeks?: number;
-
-  @IsInt()
-  @Min(1)
-  @ApiProperty()
-  minutes?: number;
 }

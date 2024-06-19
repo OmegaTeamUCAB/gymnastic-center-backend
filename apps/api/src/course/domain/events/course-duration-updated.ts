@@ -8,7 +8,8 @@ export type CourseDurationUpdatedEvent = DomainEvent<CourseDurationUpdated>;
 
 export class CourseDurationUpdated {
   private constructor() {}
-  duration: CourseDuration;
+  weeks: number;
+  minutes: number;
   static createEvent(
     dispatcher: CourseId,
     duration: CourseDuration,
@@ -17,7 +18,8 @@ export class CourseDurationUpdated {
       dispatcherId: dispatcher.value,
       name: CourseDurationUpdated.name,
       context: {
-        duration: duration,
+        weeks: duration.weeks,
+        minutes: duration.minutes,
       },
     });
   }

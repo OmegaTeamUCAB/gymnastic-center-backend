@@ -11,7 +11,7 @@ export class Lesson extends Entity<LessonId> {
     id: LessonId,
     protected _title: LessonTitle,
     protected _description: LessonDescription,
-    protected _video?: LessonVideo,
+    protected _video: LessonVideo,
   ) {
     super(id);
   }

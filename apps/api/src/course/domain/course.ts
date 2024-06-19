@@ -23,7 +23,12 @@ import {
   CourseNameUpdated,
   CourseTagsUpdated,
 } from './events';
-import { CourseLessonUpdated } from './events/course-lesson-updated';
+import {
+  LessonDescription,
+  LessonId,
+  LessonTitle,
+  LessonVideo,
+} from './entities/lessons/value-objects';
 
 export class Course extends AggregateRoot<CourseId> {
   private constructor(id: CourseId) {
@@ -40,8 +45,8 @@ export class Course extends AggregateRoot<CourseId> {
       !this._image ||
       this._lessons.length === 0 ||
       !this._duration ||
-      !this._categoryId ||
-      !this._instructorId
+      !this._category ||
+      !this._instructor
     ) {
       throw new InvalidCourseException();
     }
@@ -52,10 +57,10 @@ export class Course extends AggregateRoot<CourseId> {
   private _level: CourseLevel;
   private _tags: CourseTag[];
   private _duration: CourseDuration;
-
+  private _publishDate: CoursePublishDate;
   private _image: CourseImage;
-  private _categoryId: CategoryId;
-  private _instructorId: InstructorId;
+  private _category: CategoryId;
+  private _instructor: InstructorId;
   private _lessons: Lesson[];
 
   get name(): CourseName {
@@ -74,20 +79,24 @@ export class Course extends AggregateRoot<CourseId> {
     return this._tags;
   }
 
-  get images(): CourseImage {
+  get image(): CourseImage {
     return this._image;
   }
 
-  get categoryId(): CategoryId {
-    return this._categoryId;
+  get category(): CategoryId {
+    return this._category;
   }
 
-  get instructorId(): InstructorId {
-    return this._instructorId;
+  get instructor(): InstructorId {
+    return this._instructor;
   }
 
   get duration(): CourseDuration {
     return this._duration;
+  }
+
+  get publishDate(): CoursePublishDate {
+    return this._publishDate;
   }
 
   get lessons(): Lesson[] {
@@ -120,17 +129,6 @@ export class Course extends AggregateRoot<CourseId> {
 
   updateDuration(duration: CourseDuration): void {
     this.apply(CourseDurationUpdated.createEvent(this.id, duration));
-  }
-
-  updateLessons(lesson: Lesson): void {
-    this.apply(
-      CourseLessonUpdated.createEvent(
-        this.id,
-        lesson.title,
-        lesson.description,
-        lesson.video,
-      ),
-    );
   }
 
   static create(
@@ -178,8 +176,18 @@ export class Course extends AggregateRoot<CourseId> {
     this._level = new CourseLevel(context.level);
     this._tags = context.tags.map((tag) => new CourseTag(tag));
     this._image = new CourseImage(context.image);
-    this._categoryId = new CategoryId(context.category);
-    this._instructorId = new InstructorId(context.instructor);
+    this._publishDate = new CoursePublishDate(context.publishDate);
+    this._category = new CategoryId(context.category);
+    this._instructor = new InstructorId(context.instructor);
+    this._lessons = context.lessons.map(
+      (lesson) =>
+        new Lesson(
+          new LessonId(lesson.id),
+          new LessonTitle(lesson.title),
+          new LessonDescription(lesson.description),
+          new LessonVideo(lesson.video),
+        ),
+    );
   }
 
   [`on${CourseNameUpdated.name}`](context: CourseNameUpdated): void {
@@ -205,6 +213,14 @@ export class Course extends AggregateRoot<CourseId> {
   }
 
   [`on${CourseCategoryUpdated.name}`](context: CourseCategoryUpdated): void {
-    this._categoryId = new CategoryId(context.category);
+    this._category = new CategoryId(context.category);
+  }
+
+  [`on${CourseDurationUpdated.name}`](context: CourseDurationUpdated): void {
+    this._duration = new CourseDuration(context.weeks, context.minutes);
+  }
+
+  [`on${CourseCategoryUpdated.name}`](context: CourseCategoryUpdated): void {
+    this._category = new CategoryId(context.category);
   }
 }

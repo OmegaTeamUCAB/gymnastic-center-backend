@@ -162,6 +162,7 @@ export class CourseController {
     type: IdResponse,
   })
   async createCourse(@Body() createCourseDto: CreateCourseDto) {
+    console.log("object");
     const service = new CreateCourseCommandHandler(
       this.uuidGenerator,
       this.eventStore,

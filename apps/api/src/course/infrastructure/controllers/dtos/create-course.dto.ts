@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsInt,
   IsNotEmpty,
@@ -59,6 +60,7 @@ export class CreateCourseDto {
     type: () => [CreateLessonDto],
   })
   @ValidateNested({ each: true })
+  @Type(() => CreateLessonDto)
   lessons: CreateLessonDto[];
 }
 
@@ -70,14 +72,11 @@ export class CreateLessonDto {
 
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
-  @ApiProperty({
-  })
+  @ApiProperty()
   description: string;
 
   @IsUrl()
   @IsOptional()
-  @ApiProperty({
-  })
+  @ApiProperty()
   video: string;
 }

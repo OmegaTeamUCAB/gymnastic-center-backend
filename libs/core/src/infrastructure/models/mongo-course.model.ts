@@ -60,6 +60,7 @@ export class MongoCourse {
   @Prop({
     type: [
       {
+        _id: false,
         id: SchemaTypes.UUID,
         title: String,
         description: String,

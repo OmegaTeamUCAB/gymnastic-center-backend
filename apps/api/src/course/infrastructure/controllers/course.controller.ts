@@ -95,8 +95,8 @@ export class CourseController {
   ): Promise<CourseLeanResponse[]> {
     const courses = await this.courseModel.find(
       {
-        ...(instructorId && { instructorId }),
-        ...(categoryId && { categoryId }),
+        ...(instructorId && { 'trainer.id': instructorId }),
+        ...(categoryId && { 'category.id': categoryId }),
       },
       null,
       {
@@ -162,7 +162,6 @@ export class CourseController {
     type: IdResponse,
   })
   async createCourse(@Body() createCourseDto: CreateCourseDto) {
-    console.log("object");
     const service = new CreateCourseCommandHandler(
       this.uuidGenerator,
       this.eventStore,

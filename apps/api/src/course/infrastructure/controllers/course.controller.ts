@@ -102,16 +102,17 @@ export class CourseController {
       {
         skip: (page - 1) * perPage,
         limit: perPage,
+        sort: filter === 'POPULAR' ? { views: -1 } : { publishDate: -1 },
       },
     );
     return courses.map((course) => ({
-      id: course.aggregateId,
+      id: course.id,
       title: course.title,
       description: course.description,
-      category: course.category,
-      trainer: course.trainer,
-      image: course.imageUrl,
-      date: course.creationDate,
+      category: course.category.name,
+      trainer: course.trainer.name,
+      image: course.image,
+      date: course.publishDate,
     }));
   }
 
@@ -128,28 +129,28 @@ export class CourseController {
   async getCourseById(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<CourseResponse> {
-    const course = await this.courseModel.findOne({ aggregateId: id });
+    const course = await this.courseModel.findOne({ id });
     if (!course) throw new NotFoundException(new CourseNotFoundException());
     return {
-      id: course.aggregateId,
+      id: course.id,
       title: course.title,
       description: course.description,
       level: course.level,
       tags: course.tags,
       durationMinutes: course.minutes,
       durationWeeks: course.weeks,
-      image: course.imageUrl,
-      date: course.creationDate,
-      category: course.category,
+      image: course.image,
+      date: course.publishDate,
+      category: course.category.name,
       trainer: {
-        id: course.instructorId,
-        name: course.trainer,
+        id: course.trainer.id,
+        name: course.trainer.name,
       },
       lessons: course.lessons.map((lesson) => ({
-        id: lesson.entityId,
+        id: lesson.id,
         title: lesson.title,
-        content: lesson.content,
-        video: lesson.videoUrl,
+        content: lesson.description,
+        video: lesson.video,
       })),
     };
   }

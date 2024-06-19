@@ -1,17 +1,18 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, SchemaTypes } from 'mongoose';
 
 export type CourseDocument = HydratedDocument<MongoCourse>;
 
-@Schema({ collection: 'courses', timestamps: true, versionKey: false })
+@Schema({ collection: 'courses', timestamps: false, versionKey: false })
 export class MongoCourse {
   readonly _id: string;
 
   @Prop({
-    required: true,
+    type: SchemaTypes.UUID,
     unique: true,
+    required: true,
   })
-  aggregateId: string;
+  id: string;
 
   @Prop({ required: true })
   title: string;
@@ -25,6 +26,7 @@ export class MongoCourse {
   @Prop({
     type: [String],
     required: true,
+    default: [],
   })
   tags: string[];
 
@@ -35,70 +37,48 @@ export class MongoCourse {
   minutes: number;
 
   @Prop({ required: true })
-  imageUrl: string;
+  image: string;
 
   @Prop({ required: true })
-  categoryId: string;
+  publishDate: Date;
 
-  @Prop({ required: true })
-  instructorId: string;
+  @Prop({ required: true, default: 0 })
+  views: number;
 
-  @Prop({ required: true })
-  trainer: string;
+  @Prop({
+    type: { _id: false, id: SchemaTypes.UUID, name: String },
+    required: true,
+  })
+  trainer: { id: string; name: string };
 
-  @Prop({ required: true })
-  category: string;
+  @Prop({
+    type: { _id: false, id: SchemaTypes.UUID, name: String },
+    required: true,
+  })
+  category: { id: string; name: string };
 
   @Prop({
     type: [
       {
-        _id: false,
-        entityId: String,
+        id: SchemaTypes.UUID,
         title: String,
         description: String,
-        content: String,
-        videoUrl: String,
-        imageUrl: String,
-        comments: [
-          {
-            _id: false,
-            entityId: String,
-            userId: String,
-            comment: String,
-            creationDate: Date,
-          },
-        ],
+        video: String,
       },
     ],
     required: true,
   })
-  lessons: LessonSchema[];
-
-  @Prop({ required: true })
-  creationDate: Date;
-
-  @Prop({ required: true })
-  lastUpdate: Date;
-
-  readonly createdAt: Date;
-
-  readonly updatedAt: Date;
+  lessons: {
+    id: string;
+    title: string;
+    description: string;
+    video: string;
+  }[];
 }
 
 export const CourseSchema = SchemaFactory.createForClass(MongoCourse);
-
-export type LessonSchema = {
-  entityId: string;
-  title: string;
-  content?: string;
-  videoUrl?: string;
-  imageUrl?: string;
-  comments: CommentSchema[];
-};
-
-export type CommentSchema = {
-  entityId: string;
-  userId: string;
-  comment: string;
-  creationDate: Date;
-};
+CourseSchema.index({ id: 1 });
+CourseSchema.index({ 'category.id': 1 });
+CourseSchema.index({ 'trainer.id': 1 });
+CourseSchema.index({ publishDate: -1 });
+CourseSchema.index({ views: -1 });

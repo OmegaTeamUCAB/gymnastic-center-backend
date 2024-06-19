@@ -219,8 +219,4 @@ export class Course extends AggregateRoot<CourseId> {
   [`on${CourseDurationUpdated.name}`](context: CourseDurationUpdated): void {
     this._duration = new CourseDuration(context.weeks, context.minutes);
   }
-
-  [`on${CourseCategoryUpdated.name}`](context: CourseCategoryUpdated): void {
-    this._category = new CategoryId(context.category);
-  }
 }

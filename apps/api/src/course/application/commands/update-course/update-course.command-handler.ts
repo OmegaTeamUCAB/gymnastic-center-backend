@@ -38,15 +38,17 @@ export class UpdateCourseCommandHandler
     if (command.level) course.updateLevel(new CourseLevel(command.level));
     if (command.tags)
       course.updateTags(command.tags.map((tag) => new CourseTag(tag)));
-    if (command.duration) {course.updateDuration(new CourseDuration(command.duration.weeks, command.duration.minutes))};
+    if (command.duration) {
+      course.updateDuration(
+        new CourseDuration(command.duration.weeks, command.duration.minutes),
+      );
+    }
     if (command.image) course.updateImages(new CourseImage(command.image));
     if (command.categoryId)
       course.updateCategory(new CategoryId(command.categoryId));
-
     const newEvents = course.pullEvents();
     await this.eventStore.appendEvents(command.id, newEvents);
     this.eventHandler.publishEvents(newEvents);
-
     return Result.success<UpdateCourseResponse>({
       id: command.id,
     });

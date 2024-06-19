@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsInt,
   IsNotEmpty,
@@ -7,7 +8,20 @@ import {
   IsUUID,
   IsUrl,
   Min,
+  ValidateNested,
 } from 'class-validator';
+
+export class DurationDto {
+  @IsInt()
+  @Min(1)
+  @ApiProperty()
+  weeks?: number;
+
+  @IsInt()
+  @Min(1)
+  @ApiProperty()
+  minutes?: number;
+}
 
 export class UpdateCourseDto {
   @IsString()
@@ -34,17 +48,13 @@ export class UpdateCourseDto {
   @ApiProperty()
   tags?: string[];
 
-  @IsInt()
-  @Min(1)
+  @ApiProperty({
+    type: () => DurationDto,
+  })
+  @ValidateNested()
+  @Type(() => DurationDto)
   @IsOptional()
-  @ApiProperty()
-  weeks?: number;
-
-  @IsInt()
-  @Min(1)
-  @IsOptional()
-  @ApiProperty()
-  minutes?: number;
+  duration?: DurationDto;
 
   @IsUrl()
   @IsOptional()

@@ -14,6 +14,7 @@ import {
   UserSchema,
 } from '@app/core';
 import { DatasyncController } from './datasync.controller';
+import { CourseSchema, MongoCourse } from '@app/core/infrastructure/models/mongo-course.model';
 
 @Module({
   imports: [
@@ -45,6 +46,10 @@ import { DatasyncController } from './datasync.controller';
         name: MongoBlog.name,
         schema: BlogSchema,
       },
+      {
+        name: MongoCourse.name,
+        schema: CourseSchema,
+      }
     ]),
   ],
   controllers: [DatasyncController],

@@ -97,6 +97,7 @@ export class InstructorController {
       followers: instructor.followerCount,
       userFollow: instructor.followers.includes(credentials.userId),
       location: 'Caracas, Venezuela',
+      image: instructor.image,
     }));
   }
 
@@ -125,6 +126,7 @@ export class InstructorController {
       followers: instructor.followerCount,
       userFollow: instructor.followers.includes(credentials.userId),
       location: 'Caracas, Venezuela',
+      image: instructor.image,
     };
   }
 

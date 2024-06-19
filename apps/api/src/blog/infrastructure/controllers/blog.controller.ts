@@ -95,13 +95,14 @@ export class BlogController {
   ): Promise<BlogLeanResponse[]> {
     const blogs = await this.blogModel.find(
       {
-        ...(trainer && { trainerId: trainer }),
-        ...(category && { categoryId: category }),
+        ...(trainer && { 'trainer.id': trainer }),
+        ...(category && { 'category.id': category }),
       },
       null,
       {
         skip: (page - 1) * perPage,
         perPage,
+        sort: filter === 'POPULAR' ? { comments: -1 } : { uploadDate: -1 },
       },
     );
     return blogs.map((blog) => ({
@@ -110,7 +111,7 @@ export class BlogController {
       images: blog.images,
       trainer: blog.trainer.name,
       category: blog.category.name,
-      date: blog.createdAt,
+      date: blog.uploadDate,
     }));
   }
 
@@ -124,7 +125,7 @@ export class BlogController {
   async getBlogById(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<BlogResponse> {
-    const blog = await this.blogModel.findOne({ aggregateId: id });
+    const blog = await this.blogModel.findOne({ id });
     if (!blog) throw new NotFoundException(new BlogNotFoundException());
     return {
       id: blog.id,
@@ -136,8 +137,9 @@ export class BlogController {
         name: blog.trainer.name,
       },
       category: blog.category.name,
-      date: blog.createdAt,
+      date: blog.uploadDate,
       tags: blog.tags,
+      comments: blog.comments,
     };
   }
 
@@ -155,7 +157,6 @@ export class BlogController {
     );
     const result = await service.execute({
       ...createBlogDto,
-      creationDate: new Date(),
     });
     return result.unwrap();
   }

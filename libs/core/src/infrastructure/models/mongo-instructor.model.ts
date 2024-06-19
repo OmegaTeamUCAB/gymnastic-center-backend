@@ -3,7 +3,7 @@ import { HydratedDocument, SchemaTypes } from 'mongoose';
 
 export type InstructorDocument = HydratedDocument<MongoInstructor>;
 
-@Schema({ collection: 'instructors', timestamps: false, versionKey: false })
+@Schema({ collection: 'trainers', timestamps: false, versionKey: false })
 export class MongoInstructor {
   readonly _id: string;
 
@@ -14,8 +14,11 @@ export class MongoInstructor {
   })
   id: string;
 
-  @Prop({ required: true, minlength: 1 })
+  @Prop({ required: true })
   name: string;
+
+  @Prop({ required: true })
+  image: string;
 
   @Prop({ default: 0 })
   followerCount: number;
@@ -25,3 +28,5 @@ export class MongoInstructor {
 }
 
 export const InstructorSchema = SchemaFactory.createForClass(MongoInstructor);
+InstructorSchema.index({ id: 1 });
+InstructorSchema.index({ followerCount: -1 });

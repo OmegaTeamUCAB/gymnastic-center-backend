@@ -1,4 +1,4 @@
-import { Controller, Inject } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -152,14 +152,16 @@ export class DatasyncController {
     @Payload()
     data: EventType<{
       name: string;
+      image: string;
     }>,
     @Ctx() context: RmqContext,
   ) {
     try {
-      const { name } = data.context;
+      const { name, image } = data.context;
       await this.instructorModel.create({
         id: data.dispatcherId,
         name,
+        image,
         followerCount: 0,
         followers: [],
       });
@@ -178,6 +180,21 @@ export class DatasyncController {
     try {
       const { name } = data.context;
       await this.instructorModel.updateOne({ id: data.dispatcherId }, { name });
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('InstructorImageUpdated')
+  async onInstructorImageUpdated(
+    @Payload()
+    data: EventType<{
+      image: string;
+    }>,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const { image } = data.context;
+      await this.instructorModel.updateOne({ id: data.dispatcherId }, { image });
       this.rmqService.ack(context);
     } catch (error) {}
   }
@@ -233,15 +250,15 @@ export class DatasyncController {
     @Ctx() context: RmqContext,
   ) {
     try {
-      const {
-        title,
-        content,
-        creationDate,
-        images,
-        tags,
-        category,
-        instructor,
-      } = data.context;
+      const [category, instructor] = await Promise.all([
+        this.categoryModel.findOne({ id: data.context.category }),
+        this.instructorModel.findOne({ id: data.context.instructor }),
+      ]);
+      if (!category || !instructor) {
+        this.rmqService.nack(context);
+        return;
+      }
+      const { title, content, creationDate, images, tags } = data.context;
       await this.blogModel.create({
         id: data.dispatcherId,
         title,
@@ -249,8 +266,8 @@ export class DatasyncController {
         uploadDate: creationDate,
         images,
         tags,
-        category: { id: category, name: 'Programming' },
-        trainer: { id: instructor, name: 'Calo' },
+        category: { id: category.id, name: category.name },
+        trainer: { id: instructor.id, name: instructor.name },
         categoryId: category,
         trainerId: instructor,
       });
@@ -327,8 +344,22 @@ export class DatasyncController {
     @Ctx() context: RmqContext,
   ) {
     try {
-      const { category } = data.context;
-      await this.blogModel.updateOne({ id: data.dispatcherId }, { category });
+      const category = await this.categoryModel.findOne({
+        id: data.context.category,
+      });
+      if (!category) {
+        this.rmqService.nack(context);
+        return;
+      }
+      await this.blogModel.updateOne(
+        { id: data.dispatcherId },
+        {
+          category: {
+            id: category.id,
+            name: category.name,
+          },
+        },
+      );
       this.rmqService.ack(context);
     } catch (error) {}
   }

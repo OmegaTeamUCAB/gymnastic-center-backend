@@ -2,9 +2,9 @@ import { DomainEvent } from '@app/core';
 import { DomainEventFactory } from '@app/core/domain/events/domain-event';
 import {
   BlogContent,
-  BlogCreationDate,
+  BlogPublishDate,
   BlogId,
-  BlogImages,
+  BlogImage,
   BlogTag,
   BlogTitle,
 } from '../value-objects';
@@ -26,8 +26,8 @@ export class BlogCreated {
     dispatcher: BlogId,
     blogTitle: BlogTitle,
     blogContent: BlogContent,
-    blogCreationDate: BlogCreationDate,
-    blogImage: BlogImages[],
+    blogCreationDate: BlogPublishDate,
+    blogImage: BlogImage[],
     blogTag: BlogTag[],
     blogCategory: CategoryId,
     blogInstructor: InstructorId,

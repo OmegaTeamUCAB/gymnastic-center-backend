@@ -83,6 +83,7 @@ export class CommentController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async GetAllComments(
+    @CurrentUser() credentials: Credentials,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('perPage', new DefaultValuePipe(8), ParseIntPipe) perPage: number,
     @Query('blog') blog?: string,
@@ -103,8 +104,8 @@ export class CommentController {
       user: comment.publisher,
       countLikes: comment.numberOfLikes,
       countDislikes: comment.numberOfDislikes,
-      userLiked: comment.likes.includes(comment.publisher),
-      userDisliked: comment.dislikes.includes(comment.publisher),
+      userLiked: comment.likes.includes(credentials.userId),
+      userDisliked: comment.dislikes.includes(credentials.userId),
       body: comment.content,
       date: comment.publishDate,
     }));

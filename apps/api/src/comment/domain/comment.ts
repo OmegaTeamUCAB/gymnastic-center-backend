@@ -18,6 +18,7 @@ import {
   CommentLikeRemoved,
   CommentLiked,
 } from './events';
+import { CommentDeletedException } from './exceptions/comment-deleted.exception';
 
 export class Comment extends AggregateRoot<CommentId> {
   private constructor(id: CommentId) {
@@ -77,23 +78,27 @@ export class Comment extends AggregateRoot<CommentId> {
   }
 
   addLike(_user: UserId): void {
+    if (!this._isActive) throw new CommentDeletedException();
     if (this.isLikedBy(_user)) throw new CommentAlreadyLikedByException();
     if (this.isDislikedBy(_user)) this.removeDislike(_user);
     this.apply(CommentLiked.createEvent(this.id, _user));
   }
 
   removeLike(_user: UserId): void {
+    if (!this._isActive) throw new CommentDeletedException();
     if (!this.isLikedBy(_user)) throw new CommentDoesntLikedByException();
     this.apply(CommentLikeRemoved.createEvent(this.id, _user));
   }
 
   addDislike(_user: UserId): void {
+    if (!this._isActive) throw new CommentDeletedException();
     if (this.isDislikedBy(_user)) throw new CommentAlreadyDislikedByException();
     if (this.isLikedBy(_user)) this.removeLike(_user);
     this.apply(CommentDisliked.createEvent(this.id, _user));
   }
 
   removeDislike(_user: UserId): void {
+    if (!this._isActive) throw new CommentDeletedException();
     if (!this.isDislikedBy(_user)) throw new CommentDoesntDislikedByException();
     this.apply(CommentDislikeRemoved.createEvent(this.id, _user));
   }

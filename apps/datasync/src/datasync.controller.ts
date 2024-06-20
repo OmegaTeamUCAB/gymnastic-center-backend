@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
   MongoCategory,
+  MongoComment,
   MongoInstructor,
   MongoUser,
   RabbitMQService,
@@ -11,6 +12,7 @@ import {
 import { EventType } from './types';
 import { MongoBlog } from '@app/core/infrastructure/models/mongo-blog.model';
 import { MongoCourse } from '@app/core/infrastructure/models/mongo-course.model';
+
 
 @Controller()
 export class DatasyncController {
@@ -26,6 +28,8 @@ export class DatasyncController {
     private readonly blogModel: Model<MongoBlog>,
     @InjectModel(MongoCourse.name)
     private readonly courseModel: Model<MongoCourse>,
+    @InjectModel(MongoComment.name)
+    private readonly commentModel: Model<MongoComment>,
   ) {}
 
   @EventPattern('health')
@@ -560,6 +564,126 @@ export class DatasyncController {
         },
       );
       this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('CommentCreated')
+  async onCommentCreated(
+    @Payload()
+    data: EventType<{
+      content: string;
+      publisher: string;
+      blog: string;
+    }>,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const { content, publisher, blog } = data.context;
+      
+      await this.commentModel.create({
+        id: data.dispatcherId,
+        content,
+        blog,
+        publisher,
+        publishDate: new Date(),
+        likes: [],
+        dislikes: [],
+      });
+
+      await this.blogModel.updateOne(
+        { id: blog }, 
+        { $inc: { comments: 1 } });
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('CommentLiked')
+  async onCommentLiked(
+    @Payload()
+    data: EventType<{
+      user: string
+    }>,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const { user } = data.context;
+      await this.commentModel.updateOne(
+        {id: data.dispatcherId},
+        { $push: { likes: user }, $inc: { numberOfLikes: 1 } },
+      );
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('CommentLikeRemoved')
+  async onCommentLikeRemoved(
+    @Payload()
+    data: EventType<{
+      user: string
+    }>,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const { user } = data.context;
+      await this.commentModel.updateOne(
+        {id: data.dispatcherId},
+        { $pull: { likes: user }, $inc: { numberOfLikes: -1 } },
+      );
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('CommentDisliked')
+  async onCommentDisliked(
+    @Payload()
+    data: EventType<{
+      user: string
+    }>,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const { user } = data.context;
+      await this.commentModel.updateOne(
+        {id: data.dispatcherId},
+        { $push: { dislikes: user }, $inc: { numberOfDislikes: 1 } },
+      );
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('CommentDislikeRemoved')
+  async onCommentDislikeRemoved(
+    @Payload()
+    data: EventType<{
+      user: string
+    }>,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const { user } = data.context;
+      await this.commentModel.updateOne(
+        {id: data.dispatcherId},
+        { $pull: { dislikes: user }, $inc: { numberOfDislikes: -1 } },
+      );
+      this.rmqService.ack(context);
+    } catch (error) {}
+  }
+
+  @EventPattern('CommentDeleted')
+  async onCommentDeleted(
+    @Payload()
+    data: EventType<{ }>,
+    @Ctx() context: RmqContext,
+  ) {
+    try {
+      const comment = await this.commentModel.findOne({id: data.dispatcherId})
+      await this.commentModel.deleteOne(
+        {id: data.dispatcherId},
+      );
+      this.rmqService.ack(context);
+      await this.blogModel.updateOne(
+        { id: comment.blog }, 
+        { $inc: { comments: -1 } });
     } catch (error) {}
   }
 }

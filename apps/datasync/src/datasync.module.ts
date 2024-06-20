@@ -3,11 +3,11 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import * as Joi from 'joi';
 import {
-  BlogSchema,
   CategorySchema,
+  CommentSchema,
   InstructorSchema,
-  MongoBlog,
   MongoCategory,
+  MongoComment,
   MongoInstructor,
   MongoUser,
   RabbitMQModule,
@@ -15,6 +15,7 @@ import {
 } from '@app/core';
 import { DatasyncController } from './datasync.controller';
 import { CourseSchema, MongoCourse } from '@app/core/infrastructure/models/mongo-course.model';
+import { BlogSchema, MongoBlog } from '@app/core/infrastructure/models/mongo-blog.model';
 
 @Module({
   imports: [
@@ -49,7 +50,11 @@ import { CourseSchema, MongoCourse } from '@app/core/infrastructure/models/mongo
       {
         name: MongoCourse.name,
         schema: CourseSchema,
-      }
+      },
+      {
+        name: MongoComment.name,
+        schema: CommentSchema,
+      },
     ]),
   ],
   controllers: [DatasyncController],

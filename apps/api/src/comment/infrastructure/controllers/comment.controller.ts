@@ -85,8 +85,8 @@ export class CommentController {
   async GetAllComments(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('perPage', new DefaultValuePipe(8), ParseIntPipe) perPage: number,
-    @Query('blog') blog: string,
-    @Query('lesson') lesson: string,
+    @Query('blog') blog?: string,
+    @Query('lesson') lesson?: string,
   ): Promise<CommentResponse[]> {
     const comments = await this.commentModel.find(
       {
@@ -161,17 +161,14 @@ export class CommentController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() credentials: Credentials,
   ) {
-    console.log('antes de crear el servicio');
     const service = new ToggleLikeCommandHandler(
       this.eventStore,
       this.localEventHandler,
     );
-    console.log('antes de ejecutar el servicio');
     const result = await service.execute({
       commentId: id,
       userId: credentials.userId,
     });
-    console.log('despues de ejecutar al servicio');
     return result.unwrap();
   }
 

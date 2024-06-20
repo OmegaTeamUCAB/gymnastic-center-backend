@@ -2,7 +2,14 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import * as Joi from 'joi';
-import { EVENTS_QUEUE, RabbitMQModule, SearchesModule } from '@app/core';
+import {
+  EVENTS_QUEUE,
+  EventHandlerModule,
+  EventStoreModule,
+  RabbitMQModule,
+  SearchesModule,
+  UUIDModule,
+} from '@app/core';
 import { ApiController } from './api.controller';
 import { AuthModule } from './auth/infrastructure/auth.module';
 import { UserModule } from './user/infrastructure';
@@ -40,6 +47,9 @@ import { CommentModule } from './comment/infrastructure';
     CourseModule,
     SearchesModule,
     CommentModule,
+    UUIDModule,
+    EventStoreModule,
+    EventHandlerModule,
   ],
   controllers: [ApiController],
   providers: [],

@@ -1,34 +1,20 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   EVENT_STORE,
   EventHandler,
   EventStore,
-  IdGenerator,
   IdResponse,
   LOCAL_EVENT_HANDLER,
-  UUIDGENERATOR,
 } from '@app/core';
-import { MongoComment } from '@app/core/infrastructure/models/mongo-comment.model';
 import {
-  Body,
   Controller,
-  DefaultValuePipe,
   Delete,
-  Get,
   Inject,
   Param,
-  ParseIntPipe,
   ParseUUIDPipe,
   Post,
-  Query,
 } from '@nestjs/common';
 import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
-import { string } from 'joi';
-import { Model } from 'mongoose';
-import { CommentResponse } from './responses';
-import { CreateCommentCommandHandler } from '../../application/commands/create-comment';
-import { CreateCommentDto } from './dtos';
 import { Credentials } from 'apps/api/src/auth/application/models/credentials.model';
 import { ToggleLikeCommandHandler } from '../../application/commands/toggle-like';
 import { ToggleDislikeCommandHandler } from '../../application/commands/toggle-dislike';
@@ -39,100 +25,11 @@ import { DeleteCommentCommandHandler } from '../../application/commands/delete-c
 @Auth()
 export class CommentController {
   constructor(
-    @Inject(UUIDGENERATOR)
-    private readonly uuidGenerator: IdGenerator<string>,
     @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
     @Inject(LOCAL_EVENT_HANDLER)
     private readonly localEventHandler: EventHandler,
-    @InjectModel(MongoComment.name)
-    private readonly commentModel: Model<MongoComment>,
   ) {}
-
-  @Get('many')
-  @ApiQuery({
-    name: 'perPage',
-    required: false,
-    description:
-      'Number of results to return for each type of search. DEFAULT = 8',
-    type: Number,
-  })
-  @ApiQuery({
-    name: 'page',
-    required: false,
-    description: 'Page number of the results. DEFAULT = 1',
-    type: Number,
-  })
-  @ApiQuery({
-    name: 'blog',
-    required: false,
-    description: 'Check if it is a blog comment',
-    type: string,
-  })
-  @ApiQuery({
-    name: 'lesson',
-    required: false,
-    description: 'Check if it is a lesson comment',
-    type: string,
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Returns all comments from a post or lesson',
-    type: MongoComment,
-  })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async GetAllComments(
-    @CurrentUser() credentials: Credentials,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('perPage', new DefaultValuePipe(8), ParseIntPipe) perPage: number,
-    @Query('blog') blog?: string,
-    @Query('lesson') lesson?: string,
-  ): Promise<CommentResponse[]> {
-    const comments = await this.commentModel.find(
-      {
-        ...(blog && { blog }),
-      },
-      null,
-      {
-        skip: (page - 1) * perPage,
-        perPage,
-      },
-    );
-    return comments.map((comment) => ({
-      id: comment.id,
-      user: comment.publisher,
-      countLikes: comment.numberOfLikes,
-      countDislikes: comment.numberOfDislikes,
-      userLiked: comment.likes.includes(credentials.userId),
-      userDisliked: comment.dislikes.includes(credentials.userId),
-      body: comment.content,
-      date: comment.publishDate,
-    }));
-  }
-
-  @Post('release')
-  @ApiResponse({
-    status: 201,
-    description: 'Comment created successfully',
-    type: IdResponse,
-  })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async createComment(
-    @Body() createCommentDto: CreateCommentDto,
-    @CurrentUser() credentials: Credentials,
-  ) {
-    const service = new CreateCommentCommandHandler(
-      this.uuidGenerator,
-      this.eventStore,
-      this.localEventHandler,
-    );
-    const result = await service.execute({
-      blog: createCommentDto.target,
-      content: createCommentDto.body,
-      publisher: credentials.userId,
-    });
-    return result.unwrap();
-  }
 
   @Delete('delete/:id')
   @ApiResponse({

@@ -23,5 +23,6 @@ import { CommentController } from './controllers';
   ],
   controllers: [CommentController],
   providers: [],
+  exports: [MongooseModule],
 })
 export class CommentModule {}

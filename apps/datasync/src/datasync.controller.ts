@@ -590,10 +590,10 @@ export class DatasyncController {
         dislikes: [],
       });
 
-    //   await this.blogModel.updateOne(
-    //     { id: blog }, 
-    //     { $inc: { commentCount: 1 } });
-    //   this.rmqService.ack(context);
+      await this.blogModel.updateOne(
+        { id: blog }, 
+        { $inc: { comments: 1 } });
+      this.rmqService.ack(context);
     } catch (error) {}
   }
 
@@ -609,7 +609,7 @@ export class DatasyncController {
       const { user } = data.context;
       await this.commentModel.updateOne(
         {id: data.dispatcherId},
-        { $push: { likes: user }, $inc: { likes: 1 } },
+        { $push: { likes: user }, $inc: { numberOfLikes: 1 } },
       );
       this.rmqService.ack(context);
     } catch (error) {}
@@ -627,7 +627,7 @@ export class DatasyncController {
       const { user } = data.context;
       await this.commentModel.updateOne(
         {id: data.dispatcherId},
-        { $pull: { likes: user }, $inc: { likes: -1 } },
+        { $pull: { likes: user }, $inc: { numberOfLikes: -1 } },
       );
       this.rmqService.ack(context);
     } catch (error) {}
@@ -645,7 +645,7 @@ export class DatasyncController {
       const { user } = data.context;
       await this.commentModel.updateOne(
         {id: data.dispatcherId},
-        { $push: { dislikes: user }, $inc: { dislikes: 1 } },
+        { $push: { dislikes: user }, $inc: { numberOfDislikes: 1 } },
       );
       this.rmqService.ack(context);
     } catch (error) {}
@@ -663,7 +663,7 @@ export class DatasyncController {
       const { user } = data.context;
       await this.commentModel.updateOne(
         {id: data.dispatcherId},
-        { $pull: { dislikes: user }, $inc: { dislikes: -1 } },
+        { $pull: { dislikes: user }, $inc: { numberOfDislikes: -1 } },
       );
       this.rmqService.ack(context);
     } catch (error) {}
@@ -677,7 +677,7 @@ export class DatasyncController {
   ) {
     try {
 
-
+      const comment = await this.commentModel.findOne({id: data.dispatcherId})
 
       console.log('antes de eliminar en el readmodel')
       await this.commentModel.deleteOne(
@@ -686,9 +686,9 @@ export class DatasyncController {
       console.log('despues de eliminar en el readmodel')
       this.rmqService.ack(context);
 
-      // await this.blogModel.updateOne(
-      //   { id: blog }, 
-      //   { $inc: { commentCount: -1 } });
+      await this.blogModel.updateOne(
+        { id: comment.blog }, 
+        { $inc: { comments: -1 } });
     } catch (error) {}
   }
 }

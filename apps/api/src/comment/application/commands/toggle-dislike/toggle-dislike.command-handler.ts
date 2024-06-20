@@ -2,7 +2,6 @@ import {
   ApplicationService,
   EventHandler,
   EventStore,
-  IdGenerator,
   Result,
 } from '@app/core';
 import { ToggleDislikeCommand, ToggleDislikeResponse } from './types';
@@ -25,18 +24,15 @@ export class ToggleDislikeCommandHandler
     const events = await this.eventStore.getEventsByStream(command.commentId);
     if (events.length === 0)
       return Result.failure(new CommentNotFoundException());
-
     const comment = Comment.loadFromHistory(
       new CommentId(command.commentId),
       events,
     );
-
+    if (!comment.isActive)
+      return Result.failure(new CommentNotFoundException());
     const user = new UserId(command.userId);
-
     comment.addDislike(user);
-
     const newEvents = comment.pullEvents();
-
     await this.eventStore.appendEvents(command.commentId, newEvents);
     this.eventHandler.publishEvents(newEvents);
     return Result.success<ToggleDislikeResponse>({

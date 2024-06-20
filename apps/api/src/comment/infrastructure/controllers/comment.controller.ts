@@ -50,7 +50,6 @@ export class CommentController {
   ) {}
 
   @Get('many')
-  @Auth()
   @ApiQuery({
     name: 'perPage',
     required: false,
@@ -112,25 +111,30 @@ export class CommentController {
   }
 
   @Post('release')
-  @Auth()
   @ApiResponse({
     status: 201,
     description: 'Comment created successfully',
     type: IdResponse,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async createComment(@Body() createCommentDto: CreateCommentDto) {
+  async createComment(
+    @Body() createCommentDto: CreateCommentDto,
+    @CurrentUser() credentials: Credentials,
+  ) {
     const service = new CreateCommentCommandHandler(
       this.uuidGenerator,
       this.eventStore,
       this.localEventHandler,
     );
-    const result = await service.execute({ ...createCommentDto });
+    const result = await service.execute({
+      blog: createCommentDto.target,
+      content: createCommentDto.body,
+      publisher: credentials.userId,
+    });
     return result.unwrap();
   }
 
   @Delete('delete/:id')
-  @Auth()
   @ApiResponse({
     status: 200,
     description: 'Comment deleted successfully',
@@ -153,7 +157,6 @@ export class CommentController {
   }
 
   @Post('toggle/like/:id')
-  @Auth()
   @ApiResponse({
     status: 200,
     description: 'Comment liked successfully',
@@ -176,7 +179,6 @@ export class CommentController {
   }
 
   @Post('toggle/dislike/:id')
-  @Auth()
   @ApiResponse({
     status: 200,
     description: 'Comment disliked successfully',

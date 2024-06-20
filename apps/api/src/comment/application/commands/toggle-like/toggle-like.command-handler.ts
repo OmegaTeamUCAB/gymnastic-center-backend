@@ -25,7 +25,6 @@ export class ToggleLikeCommandHandler
     const events = await this.eventStore.getEventsByStream(command.commentId);
     if (events.length === 0)
       return Result.failure(new CommentNotFoundException());
-    console.log(events)
     const comment = Comment.loadFromHistory(
       new CommentId(command.commentId),
       events,

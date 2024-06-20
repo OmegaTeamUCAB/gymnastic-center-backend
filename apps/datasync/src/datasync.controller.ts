@@ -676,16 +676,11 @@ export class DatasyncController {
     @Ctx() context: RmqContext,
   ) {
     try {
-
       const comment = await this.commentModel.findOne({id: data.dispatcherId})
-
-      console.log('antes de eliminar en el readmodel')
       await this.commentModel.deleteOne(
         {id: data.dispatcherId},
       );
-      console.log('despues de eliminar en el readmodel')
       this.rmqService.ack(context);
-
       await this.blogModel.updateOne(
         { id: comment.blog }, 
         { $inc: { comments: -1 } });

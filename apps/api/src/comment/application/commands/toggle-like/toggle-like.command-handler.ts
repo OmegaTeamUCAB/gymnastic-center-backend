@@ -4,7 +4,6 @@ import {
   EventStore,
   Result,
 } from '@app/core';
-
 import { ToggleLikeCommand, ToggleLikeResponse } from './types';
 import { CommentNotFoundException } from '../../exceptions';
 import { Comment } from '../../../domain';
@@ -29,10 +28,11 @@ export class ToggleLikeCommandHandler
       new CommentId(command.commentId),
       events,
     );
-    if (!comment.isActive) 
+    if (!comment.isActive)
       return Result.failure(new CommentNotFoundException());
     const user = new UserId(command.userId);
-    comment.addLike(user);
+    if (comment.isLikedBy(user)) comment.removeLike(user);
+    else comment.addLike(user);
     const newEvents = comment.pullEvents();
     await this.eventStore.appendEvents(command.commentId, newEvents);
     this.eventHandler.publishEvents(newEvents);

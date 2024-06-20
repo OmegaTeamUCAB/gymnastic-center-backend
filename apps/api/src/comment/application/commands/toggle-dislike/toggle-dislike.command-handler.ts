@@ -31,7 +31,8 @@ export class ToggleDislikeCommandHandler
     if (!comment.isActive)
       return Result.failure(new CommentNotFoundException());
     const user = new UserId(command.userId);
-    comment.addDislike(user);
+    if (comment.isDislikedBy(user)) comment.removeDislike(user);
+    else comment.addDislike(user);
     const newEvents = comment.pullEvents();
     await this.eventStore.appendEvents(command.commentId, newEvents);
     this.eventHandler.publishEvents(newEvents);

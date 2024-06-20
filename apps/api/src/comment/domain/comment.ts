@@ -5,6 +5,8 @@ import { UserId } from '../../user/domain/value-objects';
 import {
   CommentAlreadyDislikedByException,
   CommentAlreadyLikedByException,
+  CommentDoesntDislikedByException,
+  CommentDoesntLikedByException,
   CommentIsntPublishedByException,
   InvalidCommentException,
 } from './exceptions';
@@ -81,6 +83,7 @@ export class Comment extends AggregateRoot<CommentId> {
   }
 
   removeLike(_user: UserId): void {
+    if (!this.isLikedBy(_user)) throw new CommentDoesntLikedByException();
     this.apply(CommentLikeRemoved.createEvent(this.id, _user));
   }
 
@@ -91,6 +94,7 @@ export class Comment extends AggregateRoot<CommentId> {
   }
 
   removeDislike(_user: UserId): void {
+    if (!this.isDislikedBy(_user)) throw new CommentDoesntDislikedByException();
     this.apply(CommentDislikeRemoved.createEvent(this.id, _user));
   }
 

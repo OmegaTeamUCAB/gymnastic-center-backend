@@ -5,3 +5,5 @@ export * from './comment-already-liked-by.exception';
 export * from './comment-already-disliked-by.exception';
 export * from './comment-isnt-published-by.exception';
 export * from './invalid-comment-date.exception';
+export * from './comment-doesnt-disliked-by.exception';
+export * from './comment-doesnt-liked-by.exception';

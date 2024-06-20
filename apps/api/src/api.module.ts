@@ -10,6 +10,7 @@ import { InstructorModule } from './instructor/infrastructure/instructors.module
 import { CategoryModule } from './category/infrastructure';
 import { CourseModule } from './course/infrastructure/course.module';
 import { BlogModule } from './blog/infrastructure/blog.module';
+import { CommentModule } from './comment/infrastructure';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { BlogModule } from './blog/infrastructure/blog.module';
     BlogModule,
     CourseModule,
     SearchesModule,
+    CommentModule,
   ],
   controllers: [ApiController],
   providers: [],

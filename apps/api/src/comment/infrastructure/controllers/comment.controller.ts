@@ -101,8 +101,10 @@ export class CommentController {
     return comments.map((comment) => ({
       id: comment.id,
       user: comment.publisher,
-      countLikes: comment.likes.length,
-      countDislikes: comment.dislikes.length,
+      countLikes: comment.numberOfLikes,
+      countDislikes: comment.numberOfDislikes,
+      userLiked: comment.likes.includes(comment.publisher),
+      userDisliked: comment.dislikes.includes(comment.publisher),
       body: comment.content,
       date: comment.publishDate,
     }));

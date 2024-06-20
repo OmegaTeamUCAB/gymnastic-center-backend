@@ -1,22 +1,27 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CommentResponse {
-    @ApiProperty()
-    id: string;
+  @ApiProperty()
+  id: string;
 
-    @ApiProperty()
-    user: string;
+  @ApiProperty()
+  user: string;
 
-    @ApiProperty()
-    countLikes?: number;
+  @ApiProperty()
+  countLikes: number;
 
-    @ApiProperty()
-    countDislikes?: number;
-    
-    @ApiProperty()
-    body: string;
+  @ApiProperty()
+  countDislikes: number;
 
-    @ApiProperty()
-    date: Date;
+  @ApiProperty()
+  userLiked: boolean;
 
+  @ApiProperty()
+  userDisliked: boolean;
+
+  @ApiProperty()
+  body: string;
+
+  @ApiProperty()
+  date: Date;
 }

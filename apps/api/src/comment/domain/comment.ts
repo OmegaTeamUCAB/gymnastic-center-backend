@@ -104,6 +104,7 @@ export class Comment extends AggregateRoot<CommentId> {
   }
 
   delete(id: CommentId, user: UserId): void {
+    if (!this._isActive) throw new CommentDeletedException();
     if (!this._publisher.equals(user))
       throw new CommentIsntPublishedByException();
     this.apply(CommentDeleted.createEvent(id));

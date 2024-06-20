@@ -11,7 +11,7 @@ import {
 } from '@app/core';
 import { MongoComment } from '@app/core/infrastructure/models/mongo-comment.model';
 import {
-    Body,
+  Body,
   Controller,
   DefaultValuePipe,
   Delete,
@@ -99,13 +99,13 @@ export class CommentController {
       },
     );
     return comments.map((comment) => ({
-        id: comment.id,
-        user: comment.publisher,
-        countLikes: comment.likes.length,
-        countDislikes: comment.dislikes.length,
-        body: comment.content,
-        date: comment.publishDate,
-    }))
+      id: comment.id,
+      user: comment.publisher,
+      countLikes: comment.likes.length,
+      countDislikes: comment.dislikes.length,
+      body: comment.content,
+      date: comment.publishDate,
+    }));
   }
 
   @Post('release')
@@ -113,16 +113,16 @@ export class CommentController {
   @ApiResponse({
     status: 201,
     description: 'Comment created successfully',
-    type: IdResponse
+    type: IdResponse,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async createComment(@Body() createCommentDto: CreateCommentDto){
+  async createComment(@Body() createCommentDto: CreateCommentDto) {
     const service = new CreateCommentCommandHandler(
-        this.uuidGenerator,
-        this.eventStore,
-        this.localEventHandler
+      this.uuidGenerator,
+      this.eventStore,
+      this.localEventHandler,
     );
-    const result = await service.execute({...createCommentDto});
+    const result = await service.execute({ ...createCommentDto });
     return result.unwrap();
   }
 
@@ -131,20 +131,21 @@ export class CommentController {
   @ApiResponse({
     status: 200,
     description: 'Comment deleted successfully',
-    type: IdResponse
+    type: IdResponse,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async deleteComment(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() credentials: Credentials,
-  ){
+  ) {
     const service = new DeleteCommentCommandHandler(
-        this.eventStore,
-        this.localEventHandler
+      this.eventStore,
+      this.localEventHandler,
     );
     const result = await service.execute({
-        commentId: id, 
-        userId: credentials.userId})
+      commentId: id,
+      userId: credentials.userId,
+    });
     return result.unwrap();
   }
 
@@ -153,26 +154,24 @@ export class CommentController {
   @ApiResponse({
     status: 200,
     description: 'Comment liked successfully',
-    type: IdResponse
+    type: IdResponse,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async likeComment(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() credentials: Credentials,
-  ){
-    console.log('antes de crear el servicio')
+  ) {
+    console.log('antes de crear el servicio');
     const service = new ToggleLikeCommandHandler(
-        this.eventStore,
-        this.localEventHandler
-    )
-    console.log('antes de ejecutar el servicio')
-    const result = await service.execute(
-        {
-            commentId: id,
-            userId: credentials.userId
-        }
-    )
-    console.log('despues de ejecutar al servicio')
+      this.eventStore,
+      this.localEventHandler,
+    );
+    console.log('antes de ejecutar el servicio');
+    const result = await service.execute({
+      commentId: id,
+      userId: credentials.userId,
+    });
+    console.log('despues de ejecutar al servicio');
     return result.unwrap();
   }
 
@@ -181,24 +180,21 @@ export class CommentController {
   @ApiResponse({
     status: 200,
     description: 'Comment disliked successfully',
-    type: IdResponse
+    type: IdResponse,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async dislikeComment(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() credentials: Credentials,
-  ){
+  ) {
     const service = new ToggleDislikeCommandHandler(
-        this.eventStore,
-        this.localEventHandler
-    )
-    const result = await service.execute(
-        {
-            commentId: id,
-            userId: credentials.userId
-        }
-    )
+      this.eventStore,
+      this.localEventHandler,
+    );
+    const result = await service.execute({
+      commentId: id,
+      userId: credentials.userId,
+    });
     return result.unwrap();
   }
-
 }

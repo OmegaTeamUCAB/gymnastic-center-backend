@@ -1,4 +1,4 @@
-import { IsArray, IsDate, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsArray, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateBlogDto {
@@ -28,5 +28,11 @@ export class CreateBlogDto {
   @IsUUID()
   @IsNotEmpty()
   @ApiProperty()
-  category: string
+  category: string;
+
+  @IsString()
+  @IsUUID()
+  @IsNotEmpty()
+  @ApiProperty()
+  instructor: string;
 }

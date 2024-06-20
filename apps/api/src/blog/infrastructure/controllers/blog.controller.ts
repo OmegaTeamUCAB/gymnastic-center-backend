@@ -25,12 +25,12 @@ import {
   IdGenerator,
   IdResponse,
   LOCAL_EVENT_HANDLER,
+  MongoBlog,
   UUIDGENERATOR,
 } from '@app/core';
 import { BlogLeanResponse, BlogResponse } from './responses';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
 import { InjectModel } from '@nestjs/mongoose';
-import { MongoBlog } from '../models';
 import { Model } from 'mongoose';
 
 @Controller('blog')
@@ -95,22 +95,23 @@ export class BlogController {
   ): Promise<BlogLeanResponse[]> {
     const blogs = await this.blogModel.find(
       {
-        ...(trainer && { trainerId: trainer }),
-        ...(category && { categoryId: category }),
+        ...(trainer && { 'trainer.id': trainer }),
+        ...(category && { 'category.id': category }),
       },
       null,
       {
         skip: (page - 1) * perPage,
         perPage,
+        sort: filter === 'POPULAR' ? { comments: -1 } : { uploadDate: -1 },
       },
     );
     return blogs.map((blog) => ({
-      id: blog.aggregateId,
+      id: blog.id,
       title: blog.title,
-      image: blog.imageUrl,
+      images: blog.images,
       trainer: blog.trainer.name,
       category: blog.category.name,
-      date: blog.createdAt,
+      date: blog.uploadDate,
     }));
   }
 
@@ -124,20 +125,21 @@ export class BlogController {
   async getBlogById(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<BlogResponse> {
-    const blog = await this.blogModel.findOne({ aggregateId: id });
+    const blog = await this.blogModel.findOne({ id });
     if (!blog) throw new NotFoundException(new BlogNotFoundException());
     return {
-      id: blog.aggregateId,
+      id: blog.id,
       title: blog.title,
       description: blog.content,
-      images: [blog.imageUrl],
+      images: blog.images,
       trainer: {
         id: blog.trainer.id,
         name: blog.trainer.name,
       },
       category: blog.category.name,
-      date: blog.createdAt,
+      date: blog.uploadDate,
       tags: blog.tags,
+      comments: blog.comments,
     };
   }
 
@@ -155,7 +157,6 @@ export class BlogController {
     );
     const result = await service.execute({
       ...createBlogDto,
-      date: new Date(),
     });
     return result.unwrap();
   }

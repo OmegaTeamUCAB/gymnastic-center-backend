@@ -8,11 +8,11 @@ import {
 } from 'class-validator';
 
 export class UpdateBlogDto {
-  @IsString()
-  @IsNotEmpty()
+  @IsArray()
+  @IsString({ each: true })
   @IsOptional()
   @ApiProperty()
-  imageUrl?: string;
+  images?: string[];
 
   @IsString()
   @IsNotEmpty()
@@ -24,21 +24,17 @@ export class UpdateBlogDto {
   @IsNotEmpty()
   @IsOptional()
   @ApiProperty()
-  description?: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @IsOptional()
-  @ApiProperty()
   content?: string;
 
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
+  @ApiProperty()
   tags?: string[];
 
   @IsString()
   @IsUUID()
   @IsOptional()
+  @ApiProperty()
   categoryId?: string;
 }

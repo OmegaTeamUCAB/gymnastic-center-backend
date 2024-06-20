@@ -1,2 +1,2 @@
-export { CreateCourseCommand } from './create-course/create-course.command';
-export { UpdateCourseCommand } from './update-course/update-course.command';
+export { CreateCourseCommandHandler } from './create-course/create-course.command-handler';
+export { UpdateCourseCommandHandler } from './update-course/update-course.command-handler';

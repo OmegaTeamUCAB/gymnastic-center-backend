@@ -1,11 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, IsUrl, Min, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsUrl,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 
 export class CreateCourseDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  title: string;
+  name: string;
 
   @IsString()
   @IsNotEmpty()
@@ -34,7 +44,7 @@ export class CreateCourseDto {
 
   @IsUrl()
   @ApiProperty()
-  imageUrl: string;
+  image: string;
 
   @IsString()
   @IsUUID()
@@ -50,6 +60,7 @@ export class CreateCourseDto {
     type: () => [CreateLessonDto],
   })
   @ValidateNested({ each: true })
+  @Type(() => CreateLessonDto)
   lessons: CreateLessonDto[];
 }
 
@@ -61,23 +72,11 @@ export class CreateLessonDto {
 
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
-  @ApiProperty({
-    nullable: true,
-  })
-  content: string;
+  @ApiProperty()
+  description: string;
 
   @IsUrl()
   @IsOptional()
-  @ApiProperty({
-    nullable: true,
-  })
-  videoUrl: string;
-
-  @IsUrl()
-  @IsOptional()
-  @ApiProperty({
-    nullable: true,
-  })
-  imageUrl: string;
+  @ApiProperty()
+  video: string;
 }

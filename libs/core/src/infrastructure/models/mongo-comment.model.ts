@@ -36,13 +36,27 @@ export class MongoComment {
 
   @Prop({
     required: true,
+    default: [],
   })
   likes: string[];
 
   @Prop({
     required: true,
+    default: [],
   })
   dislikes: string[];
+
+  @Prop({
+    required: true,
+    default: 0,
+  })
+  numberOfLikes: number;
+
+  @Prop({
+    required: true,
+    default: 0,
+  })
+  numberOfDislikes: number;
 
   createdAt: Date;
 }

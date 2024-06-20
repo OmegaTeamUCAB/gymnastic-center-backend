@@ -133,6 +133,12 @@ export class ApiController {
     description: 'lesson id to get comments from',
     type: String,
   })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    description: 'Sort comments by date or likes. (LIKES | DATE)',
+    type: String,
+  })
   @ApiResponse({
     status: 200,
     description: 'Returns all comments from a post or lesson',
@@ -145,6 +151,7 @@ export class ApiController {
     @Query('perPage', new DefaultValuePipe(8), ParseIntPipe) perPage: number,
     @Query('blog') blog?: string,
     @Query('lesson') lesson?: string,
+    @Query('sort') sort?: 'LIKES' | 'DATE',
   ): Promise<CommentResponse[]> {
     if (!blog && !lesson)
       throw new BadRequestException('You must provide a blog or lesson id');
@@ -161,6 +168,7 @@ export class ApiController {
         {
           skip: (page - 1) * perPage,
           perPage,
+          sort: sort === 'DATE' ? { publishDate: 1 } : { numberOfLikes: 1 },
         },
       );
       return comments.map((comment) => ({

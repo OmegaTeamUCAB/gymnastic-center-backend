@@ -20,11 +20,13 @@ export class MongoComment {
   content: string;
 
   @Prop({
+    type: SchemaTypes.UUID,
     required: true,
   })
   blog: string;
 
   @Prop({
+    type: SchemaTypes.UUID,
     required: true,
   })
   publisher: string;
@@ -62,3 +64,5 @@ export class MongoComment {
 }
 
 export const CommentSchema = SchemaFactory.createForClass(MongoComment);
+CommentSchema.index({ blog: 1, publishDate: -1 });
+CommentSchema.index({ blog: 1, numberOfLikes: -1 });

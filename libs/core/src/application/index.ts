@@ -8,3 +8,4 @@ export { ExceptionCatcherDecorator } from './decorators/exception-catcher';
 export { IdGenerator } from './id/id-generator.interface';
 export { CryptoService } from './crypto/crypto-service.interface';
 export { ReadModel } from './read-model/read-model';
+export { IExceptionParser } from './exceptions/exception-parser.interface';

@@ -27,7 +27,7 @@ import {
 import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import { InstructorResponse } from '../responses/instructor.response';
 import { CreateInstructorDto, UpdateInstructorDto } from './dtos';
-import { InstructorNotFoundException } from '../../application/exceptions/instructor-not-found';
+import { InstructorNotFoundException } from '../../application/exceptions/instructor-not-found.exception';
 import {
   CreateInstructorCommandHandler,
   ToggleFollowCommandHandler,
@@ -63,26 +63,41 @@ export class InstructorController {
     description: 'Number of . DEFAULT = 1',
     type: Number,
   })
+  @ApiQuery({
+    name: 'filter',
+    required: false,
+    description: 'Instructor filtering',
+    type: String,
+    enum: ['FOLLOWING'],
+  })
   @ApiResponse({
     status: 200,
     description: 'instructors list',
     type: [InstructorResponse],
   })
   async getInstructors(
+    @CurrentUser() credentials: Credentials,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('perPage', new DefaultValuePipe(8), ParseIntPipe) perPage: number,
-    @CurrentUser() credentials: Credentials,
+    @Query('filter') filter?: 'FOLLOWING',
   ): Promise<InstructorResponse[]> {
-    const instructors = await this.instructorModel.find({}, null, {
-      skip: (page - 1) * perPage,
-      limit: perPage,
-    });
+    const instructors = await this.instructorModel.find(
+      {
+        ...(filter === 'FOLLOWING' && { followers: credentials.userId }),
+      },
+      null,
+      {
+        skip: (page - 1) * perPage,
+        limit: perPage,
+      },
+    );
     return instructors.map((instructor) => ({
       id: instructor.id,
       name: instructor.name,
       followers: instructor.followerCount,
       userFollow: instructor.followers.includes(credentials.userId),
       location: 'Caracas, Venezuela',
+      image: instructor.image,
     }));
   }
 
@@ -111,6 +126,7 @@ export class InstructorController {
       followers: instructor.followerCount,
       userFollow: instructor.followers.includes(credentials.userId),
       location: 'Caracas, Venezuela',
+      image: instructor.image,
     };
   }
 

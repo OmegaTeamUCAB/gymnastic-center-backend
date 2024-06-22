@@ -1,2 +1,2 @@
-export { UpdateCourseDto } from './dto.type';
+export { UpdateCourseCommand } from './command.type';
 export { UpdateCourseResponse } from './response.type';

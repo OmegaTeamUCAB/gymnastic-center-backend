@@ -22,7 +22,7 @@ export class BlogResponse {
   description: string;
 
   @ApiProperty({
-    description: 'Category name'
+    description: 'Category name',
   })
   category: string;
 
@@ -36,4 +36,7 @@ export class BlogResponse {
 
   @ApiProperty()
   tags: string[];
+
+  @ApiProperty()
+  comments: number;
 }

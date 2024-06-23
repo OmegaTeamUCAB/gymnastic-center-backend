@@ -8,6 +8,7 @@ import {
   EventStoreModule,
   CategorySchema,
   MongoCategory,
+  LoggerModule,
 } from '@app/core';
 
 @Module({
@@ -22,6 +23,7 @@ import {
     UUIDModule,
     EventStoreModule,
     EventHandlerModule,
+    LoggerModule,
   ],
   controllers: [CategoryController],
   providers: [],

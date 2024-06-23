@@ -22,9 +22,12 @@ import {
   EVENT_STORE,
   EventHandler,
   EventStore,
+  ILogger,
   IdGenerator,
   IdResponse,
   LOCAL_EVENT_HANDLER,
+  LOGGER,
+  LoggingDecorator,
   MongoBlog,
   UUIDGENERATOR,
 } from '@app/core';
@@ -46,6 +49,8 @@ export class BlogController {
     private readonly localEventHandler: EventHandler,
     @InjectModel(MongoBlog.name)
     private readonly blogModel: Model<MongoBlog>,
+    @Inject(LOGGER)
+    private readonly logger: ILogger,
   ) {}
 
   @Get('many')
@@ -150,10 +155,14 @@ export class BlogController {
   })
   @Post()
   async createBlog(@Body() createBlogDto: CreateBlogDto) {
-    const service = new CreateBlogCommandHandler(
-      this.uuidGenerator,
-      this.eventStore,
-      this.localEventHandler,
+    const service = new LoggingDecorator(
+      new CreateBlogCommandHandler(
+        this.uuidGenerator,
+        this.eventStore,
+        this.localEventHandler,
+      ),
+      this.logger,
+      'Create Blog',
     );
     const result = await service.execute({
       ...createBlogDto,
@@ -163,7 +172,7 @@ export class BlogController {
 
   @ApiResponse({
     status: 200,
-    description: 'The blog has been successfully created',
+    description: 'The blog has been successfully updated',
     type: IdResponse,
   })
   @Post(':id')
@@ -176,9 +185,10 @@ export class BlogController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateBlogDto: UpdateBlogDto,
   ) {
-    const service = new UpdateBlogCommandHandler(
-      this.eventStore,
-      this.localEventHandler,
+    const service = new LoggingDecorator(
+      new UpdateBlogCommandHandler(this.eventStore, this.localEventHandler),
+      this.logger,
+      'Update Blog',
     );
     const result = await service.execute({ id, ...updateBlogDto });
     return result.unwrap();

@@ -30,6 +30,9 @@ import {
   CodeGenerator,
   SuccessBasedResponse,
   DateBasedResponse,
+  ILogger,
+  LOGGER,
+  LoggingDecorator,
 } from '@app/core';
 
 @Controller('auth')
@@ -44,6 +47,8 @@ export class AuthController {
     private readonly codeGenerator: CodeGenerator<string>,
     @Inject(VERIFICATION_EMAIL_HANDLER)
     private readonly verificationEmailHandler: EmailHandler<{ code: string }>,
+    @Inject(LOGGER)
+    private readonly logger: ILogger,
   ) {}
 
   @Post('forget/password')
@@ -60,10 +65,14 @@ export class AuthController {
     @Body() requestVerificationCodeDto: RequestVerificationCodeDto,
   ) {
     try {
-      const service = new RequestVerificationCodeCommandHandler(
-        this.repository,
-        this.verificationEmailHandler,
-        this.codeGenerator,
+      const service = new LoggingDecorator(
+        new RequestVerificationCodeCommandHandler(
+          this.repository,
+          this.verificationEmailHandler,
+          this.codeGenerator,
+        ),
+        this.logger,
+        'Request Verification Code',
       );
       const result = await service.execute(requestVerificationCodeDto);
       result.unwrap();
@@ -85,7 +94,11 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Code expired' })
   async checkVerificationCode(@Body() checkCodeDto: CheckCodeDto) {
     try {
-      const service = new CheckVerificationCodeCommandHandler(this.repository);
+      const service = new LoggingDecorator(
+        new CheckVerificationCodeCommandHandler(this.repository),
+        this.logger,
+        'Check Verification Code',
+      );
       const result = await service.execute(checkCodeDto);
       result.unwrap();
       return {
@@ -107,9 +120,13 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Code expired' })
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     try {
-      const service = new ResetPasswordCommandHandler(
-        this.repository,
-        this.bcryptService,
+      const service = new LoggingDecorator(
+        new ResetPasswordCommandHandler(
+          this.repository,
+          this.bcryptService,
+        ),
+        this.logger,
+        'Reset Password',
       );
       const result = await service.execute({
         email: resetPasswordDto.email,

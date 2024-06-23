@@ -23,6 +23,9 @@ import {
   LOCAL_EVENT_HANDLER,
   EventHandler,
   MongoCategory,
+  ILogger,
+  LOGGER,
+  LoggingDecorator,
 } from '@app/core';
 import {
   CreateCategoryCommandHandler,
@@ -46,6 +49,8 @@ export class CategoryController {
     private readonly localEventHandler: EventHandler,
     @InjectModel(MongoCategory.name)
     private readonly categoryModel: Model<MongoCategory>,
+    @Inject(LOGGER)
+    private readonly logger: ILogger,
   ) {}
 
   @Get('many')
@@ -113,10 +118,14 @@ export class CategoryController {
     type: IdResponse,
   })
   async createCategory(@Body() createCategoryDto: CreateCategoryDto) {
-    const service = new CreateCategoryCommandHandler(
-      this.uuidGenerator,
-      this.eventStore,
-      this.localEventHandler,
+    const service = new LoggingDecorator(
+      new CreateCategoryCommandHandler(
+        this.uuidGenerator,
+        this.eventStore,
+        this.localEventHandler,
+      ),
+      this.logger,
+      'Create Category',
     );
     const result = await service.execute(createCategoryDto);
     return result.unwrap();
@@ -132,9 +141,10 @@ export class CategoryController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
   ) {
-    const service = new UpdateCategoryCommandHandler(
-      this.eventStore,
-      this.localEventHandler,
+    const service = new LoggingDecorator(
+      new UpdateCategoryCommandHandler(this.eventStore, this.localEventHandler),
+      this.logger,
+      'Update Category',
     );
     const result = await service.execute({ id, ...updateCategoryDto });
     return result.unwrap();

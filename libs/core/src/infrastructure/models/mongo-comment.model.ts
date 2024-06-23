@@ -3,7 +3,7 @@ import { HydratedDocument, SchemaTypes } from 'mongoose';
 
 export type CommentDocument = HydratedDocument<MongoComment>;
 
-@Schema({ collection: 'comments', timestamps: false, versionKey: false })
+@Schema({ collection: 'blogcomments', timestamps: false, versionKey: false })
 export class MongoComment {
   readonly _id: string;
 
@@ -26,10 +26,28 @@ export class MongoComment {
   blog: string;
 
   @Prop({
-    type: SchemaTypes.UUID,
+    type: {
+      id: {
+        type: SchemaTypes.UUID,
+        required: true,
+      },
+      name: {
+        type: String,
+        required: true,
+      },
+      image: {
+        type: String,
+        required: false,
+      },
+      _id: false,
+    },
     required: true,
   })
-  publisher: string;
+  publisher: {
+    id: string;
+    name: string;
+    image?: string;
+  };
 
   @Prop({
     required: true,

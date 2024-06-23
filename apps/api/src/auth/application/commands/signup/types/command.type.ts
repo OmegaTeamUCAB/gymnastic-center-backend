@@ -1,4 +1,4 @@
-export type SignUpDTO = {
+export type SignUpCommand = {
   id: string;
   email: string;
   password: string;

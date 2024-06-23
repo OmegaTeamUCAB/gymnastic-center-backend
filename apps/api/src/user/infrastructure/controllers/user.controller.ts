@@ -15,21 +15,22 @@ import {
   CryptoService,
   EVENT_STORE,
   EventStore,
+  ILogger,
   IdGenerator,
   IdResponse,
   LOCAL_EVENT_HANDLER,
+  LOGGER,
+  LoggingDecorator,
   MongoUser,
   UUIDGENERATOR,
 } from '@app/core';
-
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-
 import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import {
   CredentialsRepository,
-  LoginCommand,
-  SignUpCommand,
+  LoginCommandHandler,
+  SignUpCommandHandler,
   TokenGenerator,
 } from 'apps/api/src/auth/application';
 import {
@@ -37,7 +38,6 @@ import {
   JWT_SERVICE,
 } from 'apps/api/src/auth/infrastructure/constants';
 import { AuthResponse } from 'apps/api/src/auth/infrastructure/controllers/responses';
-
 import { UserResponse } from './responses';
 import { Credentials } from 'apps/api/src/auth/application/models/credentials.model';
 import { LocalEventHandler } from '@app/core/infrastructure/event-handler/providers/local-event-handler';
@@ -67,6 +67,8 @@ export class UserController {
     private readonly jwtService: TokenGenerator<string, { id: string }>,
     @Inject(BCRYPT_SERVICE)
     private readonly bcryptService: CryptoService,
+    @Inject(LOGGER)
+    private readonly logger: ILogger,
   ) {}
 
   @Post('auth/login')
@@ -78,10 +80,14 @@ export class UserController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async login(@Body() loginDto: LoginDto) {
     try {
-      const loginService = new LoginCommand(
-        this.repository,
-        this.jwtService,
-        this.bcryptService,
+      const loginService = new LoggingDecorator(
+        new LoginCommandHandler(
+          this.repository,
+          this.jwtService,
+          this.bcryptService,
+        ),
+        this.logger,
+        'Login',
       );
       const loginResult = await loginService.execute(loginDto);
       const { token, id } = loginResult.unwrap();
@@ -89,7 +95,6 @@ export class UserController {
         id,
       });
       if (!user) throw new NotFoundException(new UserNotFoundException());
-
       return {
         token,
         user: {
@@ -116,11 +121,14 @@ export class UserController {
     try {
       if (await this.repository.findCredentialsByEmail(signUpDto.email))
         throw new UserAlreadyExistsException(signUpDto.email);
-
-      const signUpService = new SignUpCommand(
-        this.repository,
-        this.jwtService,
-        this.bcryptService,
+      const signUpService = new LoggingDecorator(
+        new SignUpCommandHandler(
+          this.repository,
+          this.jwtService,
+          this.bcryptService,
+        ),
+        this.logger,
+        'Sign Up',
       );
       const suscription = this.localEventHandler.subscribe(
         UserCreated.name,
@@ -132,11 +140,14 @@ export class UserController {
           });
         },
       );
-
-      const service = new CreateUserCommandHandler(
-        this.uuidGenerator,
-        this.eventStore,
-        this.localEventHandler,
+      const service = new LoggingDecorator(
+        new CreateUserCommandHandler(
+          this.uuidGenerator,
+          this.eventStore,
+          this.localEventHandler,
+        ),
+        this.logger,
+        'Create User',
       );
       const result = await service.execute({ ...signUpDto });
       suscription.unsubscribe();
@@ -179,9 +190,10 @@ export class UserController {
     @CurrentUser() credentials: Credentials,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    const service = new UpdateUserCommandHandler(
-      this.eventStore,
-      this.localEventHandler,
+    const service = new LoggingDecorator(
+      new UpdateUserCommandHandler(this.eventStore, this.localEventHandler),
+      this.logger,
+      'Update User',
     );
     const result = await service.execute({
       id: credentials.userId,

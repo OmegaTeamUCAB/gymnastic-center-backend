@@ -1,5 +1,5 @@
 import { ApplicationService, Result } from '@app/core';
-import { CheckVerificationCodeDto } from './types';
+import { CheckVerificationCodeCommand } from './types';
 import { CredentialsRepository } from '../../repositories/credentials.repository';
 import {
   CodeExpiredException,
@@ -7,19 +7,19 @@ import {
   UserNotFoundException,
 } from '../../exceptions';
 
-export class CheckVerificationCodeCommand
-  implements ApplicationService<CheckVerificationCodeDto, void>
+export class CheckVerificationCodeCommandHandler
+  implements ApplicationService<CheckVerificationCodeCommand, void>
 {
   constructor(private readonly credentialsRepository: CredentialsRepository) {}
 
-  async execute(data: CheckVerificationCodeDto): Promise<Result<void>> {
+  async execute(command: CheckVerificationCodeCommand): Promise<Result<void>> {
     const credentials = await this.credentialsRepository.findCredentialsByEmail(
-      data.email,
+      command.email,
     );
     if (!credentials) return Result.failure(new UserNotFoundException());
     if (
       !credentials.verificationCode ||
-      credentials.verificationCode !== data.code
+      credentials.verificationCode !== command.code
     )
       return Result.failure(new InvalidCodeException());
     if (

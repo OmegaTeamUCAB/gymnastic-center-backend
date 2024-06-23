@@ -1,1 +1,1 @@
-export { RequestVerificationCodeDto } from './dto.type';
+export { RequestVerificationCodeCommand } from './command.type';

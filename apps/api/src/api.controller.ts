@@ -186,6 +186,7 @@ export class ApiController {
   }
 
   @Post('comment/release')
+  @Auth()
   @ApiResponse({
     status: 201,
     description: 'Comment created successfully',

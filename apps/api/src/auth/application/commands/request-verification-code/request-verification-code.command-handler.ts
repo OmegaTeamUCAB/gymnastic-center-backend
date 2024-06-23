@@ -4,12 +4,12 @@ import {
   EmailHandler,
   CodeGenerator,
 } from '@app/core';
-import { RequestVerificationCodeDto } from './types';
+import { RequestVerificationCodeCommand } from './types';
 import { UserNotFoundException } from '../../exceptions';
 import { CredentialsRepository } from '../../repositories/credentials.repository';
 
-export class RequestVerificationCodeCommand
-  implements ApplicationService<RequestVerificationCodeDto, void>
+export class RequestVerificationCodeCommandHandler
+  implements ApplicationService<RequestVerificationCodeCommand, void>
 {
   constructor(
     private readonly credentialsRepository: CredentialsRepository,
@@ -17,8 +17,12 @@ export class RequestVerificationCodeCommand
     private readonly codeGenerator: CodeGenerator<string>,
   ) {}
 
-  async execute(data: RequestVerificationCodeDto): Promise<Result<void>> {
-    const credentials = await this.credentialsRepository.findCredentialsByEmail(data.email);
+  async execute(
+    command: RequestVerificationCodeCommand,
+  ): Promise<Result<void>> {
+    const credentials = await this.credentialsRepository.findCredentialsByEmail(
+      command.email,
+    );
     if (!credentials) return Result.failure<void>(new UserNotFoundException());
     const code = this.codeGenerator.generateRandomCode();
     credentials.verificationCode = code;

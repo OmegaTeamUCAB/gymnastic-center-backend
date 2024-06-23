@@ -29,8 +29,8 @@ import { Model } from 'mongoose';
 import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import {
   CredentialsRepository,
-  LoginCommand,
-  SignUpCommand,
+  LoginCommandHandler,
+  SignUpCommandHandler,
   TokenGenerator,
 } from 'apps/api/src/auth/application';
 import {
@@ -80,7 +80,7 @@ export class UserController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async login(@Body() loginDto: LoginDto) {
     try {
-      const loginService = new LoginCommand(
+      const loginService = new LoginCommandHandler(
         this.repository,
         this.jwtService,
         this.bcryptService,
@@ -119,7 +119,7 @@ export class UserController {
       if (await this.repository.findCredentialsByEmail(signUpDto.email))
         throw new UserAlreadyExistsException(signUpDto.email);
 
-      const signUpService = new SignUpCommand(
+      const signUpService = new SignUpCommandHandler(
         this.repository,
         this.jwtService,
         this.bcryptService,

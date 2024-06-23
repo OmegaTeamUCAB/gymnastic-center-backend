@@ -18,10 +18,10 @@ import {
   VERIFICATION_EMAIL_HANDLER,
 } from '../constants';
 import {
-  CheckVerificationCodeCommand,
+  CheckVerificationCodeCommandHandler,
   CredentialsRepository,
-  RequestVerificationCodeCommand,
-  ResetPasswordCommand,
+  RequestVerificationCodeCommandHandler,
+  ResetPasswordCommandHandler,
 } from '../../application';
 import {
   BCRYPT_SERVICE,
@@ -60,7 +60,7 @@ export class AuthController {
     @Body() requestVerificationCodeDto: RequestVerificationCodeDto,
   ) {
     try {
-      const service = new RequestVerificationCodeCommand(
+      const service = new RequestVerificationCodeCommandHandler(
         this.repository,
         this.verificationEmailHandler,
         this.codeGenerator,
@@ -85,7 +85,7 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Code expired' })
   async checkVerificationCode(@Body() checkCodeDto: CheckCodeDto) {
     try {
-      const service = new CheckVerificationCodeCommand(this.repository);
+      const service = new CheckVerificationCodeCommandHandler(this.repository);
       const result = await service.execute(checkCodeDto);
       result.unwrap();
       return {
@@ -107,7 +107,7 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Code expired' })
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     try {
-      const service = new ResetPasswordCommand(
+      const service = new ResetPasswordCommandHandler(
         this.repository,
         this.bcryptService,
       );

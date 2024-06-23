@@ -1,1 +1,1 @@
-export { ResetPasswordDto } from './dto';
+export { ResetPasswordCommand } from './command.type';

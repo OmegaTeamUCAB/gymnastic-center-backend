@@ -1,3 +1,3 @@
-export { LOGGER_SERVICE } from './constants';
-export { NativeLogger } from './providers/logging.service';
+export * from './constants';
+export { NestLogger } from './providers/nest-logger';
 export { LoggerModule } from './logger.module';

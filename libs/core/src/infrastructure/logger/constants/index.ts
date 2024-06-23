@@ -1,1 +1,1 @@
-export const LOGGER_SERVICE = 'NativeLogger';
+export const LOGGER = 'LOGGER';

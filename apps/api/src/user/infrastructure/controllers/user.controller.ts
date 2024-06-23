@@ -15,9 +15,12 @@ import {
   CryptoService,
   EVENT_STORE,
   EventStore,
+  ILogger,
   IdGenerator,
   IdResponse,
   LOCAL_EVENT_HANDLER,
+  LOGGER,
+  LoggingDecorator,
   MongoUser,
   UUIDGENERATOR,
 } from '@app/core';
@@ -64,6 +67,8 @@ export class UserController {
     private readonly jwtService: TokenGenerator<string, { id: string }>,
     @Inject(BCRYPT_SERVICE)
     private readonly bcryptService: CryptoService,
+    @Inject(LOGGER)
+    private readonly logger: ILogger,
   ) {}
 
   @Post('auth/login')
@@ -176,9 +181,10 @@ export class UserController {
     @CurrentUser() credentials: Credentials,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    const service = new UpdateUserCommandHandler(
-      this.eventStore,
-      this.localEventHandler,
+    const service = new LoggingDecorator(
+      new UpdateUserCommandHandler(this.eventStore, this.localEventHandler),
+      this.logger,
+      'Update User',
     );
     const result = await service.execute({
       id: credentials.userId,

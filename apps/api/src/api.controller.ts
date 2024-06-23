@@ -173,7 +173,9 @@ export class ApiController {
       );
       return comments.map((comment) => ({
         id: comment.id,
-        user: comment.publisher,
+        user: comment.publisher.name,
+        userId: comment.publisher.id,
+        userImage: comment.publisher.image,
         countLikes: comment.numberOfLikes,
         countDislikes: comment.numberOfDislikes,
         userLiked: comment.likes.includes(credentials.userId),

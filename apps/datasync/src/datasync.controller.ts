@@ -13,7 +13,6 @@ import { EventType } from './types';
 import { MongoBlog } from '@app/core/infrastructure/models/mongo-blog.model';
 import { MongoCourse } from '@app/core/infrastructure/models/mongo-course.model';
 
-
 @Controller()
 export class DatasyncController {
   constructor(
@@ -71,6 +70,10 @@ export class DatasyncController {
     try {
       const { name } = data.context;
       await this.userModel.updateOne({ id: data.dispatcherId }, { name });
+      await this.commentModel.updateMany(
+        { 'publisher.id': data.dispatcherId },
+        { 'publisher.name': name },
+      );
       this.rmqService.ack(context);
     } catch (error) {}
   }
@@ -101,6 +104,10 @@ export class DatasyncController {
     try {
       const { image } = data.context;
       await this.userModel.updateOne({ id: data.dispatcherId }, { image });
+      await this.commentModel.updateMany(
+        { 'publisher.id': data.dispatcherId },
+        { 'publisher.image': image },
+      );
       this.rmqService.ack(context);
     } catch (error) {}
   }
@@ -579,20 +586,21 @@ export class DatasyncController {
   ) {
     try {
       const { content, publisher, blog } = data.context;
-      
+      const user = await this.userModel.findOne({ id: publisher });
       await this.commentModel.create({
         id: data.dispatcherId,
         content,
         blog,
-        publisher,
+        publisher: {
+          id: user.id,
+          name: user.name,
+          image: user.image,
+        },
         publishDate: new Date(),
         likes: [],
         dislikes: [],
       });
-
-      await this.blogModel.updateOne(
-        { id: blog }, 
-        { $inc: { comments: 1 } });
+      await this.blogModel.updateOne({ id: blog }, { $inc: { comments: 1 } });
       this.rmqService.ack(context);
     } catch (error) {}
   }
@@ -601,14 +609,14 @@ export class DatasyncController {
   async onCommentLiked(
     @Payload()
     data: EventType<{
-      user: string
+      user: string;
     }>,
     @Ctx() context: RmqContext,
   ) {
     try {
       const { user } = data.context;
       await this.commentModel.updateOne(
-        {id: data.dispatcherId},
+        { id: data.dispatcherId },
         { $push: { likes: user }, $inc: { numberOfLikes: 1 } },
       );
       this.rmqService.ack(context);
@@ -619,14 +627,14 @@ export class DatasyncController {
   async onCommentLikeRemoved(
     @Payload()
     data: EventType<{
-      user: string
+      user: string;
     }>,
     @Ctx() context: RmqContext,
   ) {
     try {
       const { user } = data.context;
       await this.commentModel.updateOne(
-        {id: data.dispatcherId},
+        { id: data.dispatcherId },
         { $pull: { likes: user }, $inc: { numberOfLikes: -1 } },
       );
       this.rmqService.ack(context);
@@ -637,14 +645,14 @@ export class DatasyncController {
   async onCommentDisliked(
     @Payload()
     data: EventType<{
-      user: string
+      user: string;
     }>,
     @Ctx() context: RmqContext,
   ) {
     try {
       const { user } = data.context;
       await this.commentModel.updateOne(
-        {id: data.dispatcherId},
+        { id: data.dispatcherId },
         { $push: { dislikes: user }, $inc: { numberOfDislikes: 1 } },
       );
       this.rmqService.ack(context);
@@ -655,14 +663,14 @@ export class DatasyncController {
   async onCommentDislikeRemoved(
     @Payload()
     data: EventType<{
-      user: string
+      user: string;
     }>,
     @Ctx() context: RmqContext,
   ) {
     try {
       const { user } = data.context;
       await this.commentModel.updateOne(
-        {id: data.dispatcherId},
+        { id: data.dispatcherId },
         { $pull: { dislikes: user }, $inc: { numberOfDislikes: -1 } },
       );
       this.rmqService.ack(context);
@@ -672,18 +680,19 @@ export class DatasyncController {
   @EventPattern('CommentDeleted')
   async onCommentDeleted(
     @Payload()
-    data: EventType<{ }>,
+    data: EventType<{}>,
     @Ctx() context: RmqContext,
   ) {
     try {
-      const comment = await this.commentModel.findOne({id: data.dispatcherId})
-      await this.commentModel.deleteOne(
-        {id: data.dispatcherId},
-      );
+      const comment = await this.commentModel.findOne({
+        id: data.dispatcherId,
+      });
+      await this.commentModel.deleteOne({ id: data.dispatcherId });
       this.rmqService.ack(context);
       await this.blogModel.updateOne(
-        { id: comment.blog }, 
-        { $inc: { comments: -1 } });
+        { id: comment.blog },
+        { $inc: { comments: -1 } },
+      );
     } catch (error) {}
   }
 }

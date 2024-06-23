@@ -7,6 +7,16 @@ export class CommentResponse {
   @ApiProperty()
   user: string;
 
+  @ApiProperty({
+    nullable: true,
+  })
+  userId: string;
+
+  @ApiProperty({
+    nullable: true,
+  })
+  userImage: string;
+
   @ApiProperty()
   countLikes: number;
 

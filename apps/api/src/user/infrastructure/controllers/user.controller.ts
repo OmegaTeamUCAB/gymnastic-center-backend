@@ -21,10 +21,8 @@ import {
   MongoUser,
   UUIDGENERATOR,
 } from '@app/core';
-
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-
 import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import {
   CredentialsRepository,
@@ -37,7 +35,6 @@ import {
   JWT_SERVICE,
 } from 'apps/api/src/auth/infrastructure/constants';
 import { AuthResponse } from 'apps/api/src/auth/infrastructure/controllers/responses';
-
 import { UserResponse } from './responses';
 import { Credentials } from 'apps/api/src/auth/application/models/credentials.model';
 import { LocalEventHandler } from '@app/core/infrastructure/event-handler/providers/local-event-handler';

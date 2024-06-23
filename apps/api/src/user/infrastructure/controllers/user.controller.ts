@@ -80,10 +80,14 @@ export class UserController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async login(@Body() loginDto: LoginDto) {
     try {
-      const loginService = new LoginCommandHandler(
-        this.repository,
-        this.jwtService,
-        this.bcryptService,
+      const loginService = new LoggingDecorator(
+        new LoginCommandHandler(
+          this.repository,
+          this.jwtService,
+          this.bcryptService,
+        ),
+        this.logger,
+        'Login',
       );
       const loginResult = await loginService.execute(loginDto);
       const { token, id } = loginResult.unwrap();
@@ -91,7 +95,6 @@ export class UserController {
         id,
       });
       if (!user) throw new NotFoundException(new UserNotFoundException());
-
       return {
         token,
         user: {
@@ -118,11 +121,14 @@ export class UserController {
     try {
       if (await this.repository.findCredentialsByEmail(signUpDto.email))
         throw new UserAlreadyExistsException(signUpDto.email);
-
-      const signUpService = new SignUpCommandHandler(
-        this.repository,
-        this.jwtService,
-        this.bcryptService,
+      const signUpService = new LoggingDecorator(
+        new SignUpCommandHandler(
+          this.repository,
+          this.jwtService,
+          this.bcryptService,
+        ),
+        this.logger,
+        'Sign Up',
       );
       const suscription = this.localEventHandler.subscribe(
         UserCreated.name,
@@ -134,11 +140,14 @@ export class UserController {
           });
         },
       );
-
-      const service = new CreateUserCommandHandler(
-        this.uuidGenerator,
-        this.eventStore,
-        this.localEventHandler,
+      const service = new LoggingDecorator(
+        new CreateUserCommandHandler(
+          this.uuidGenerator,
+          this.eventStore,
+          this.localEventHandler,
+        ),
+        this.logger,
+        'Create User',
       );
       const result = await service.execute({ ...signUpDto });
       suscription.unsubscribe();

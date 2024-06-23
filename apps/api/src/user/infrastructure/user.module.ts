@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserController } from './controllers';
+import { UserController } from './controllers/user.controller';
 import { AuthModule } from '../../auth/infrastructure';
 import {
   BcryptModule,

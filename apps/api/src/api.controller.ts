@@ -168,7 +168,7 @@ export class ApiController {
         {
           skip: (page - 1) * perPage,
           perPage,
-          sort: sort === 'DATE' ? { publishDate: 1 } : { numberOfLikes: 1 },
+          sort: sort === 'DATE' ? { publishDate: -1 } : { numberOfLikes: -1 },
         },
       );
       return comments.map((comment) => ({

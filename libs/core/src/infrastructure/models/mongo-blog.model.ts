@@ -33,11 +33,17 @@ export class MongoBlog {
   @Prop({ required: true, default: [], type: [String] })
   tags: string[];
 
-  @Prop({ type: { id: SchemaTypes.UUID, name: String }, required: true })
-  category: { id: string; name: string };
+  @Prop({
+    type: { id: SchemaTypes.UUID, name: String, image: String, _id: false },
+    required: true,
+  })
+  category: { id: string; name: string; image?: string };
 
-  @Prop({ type: { id: SchemaTypes.UUID, name: String }, required: true })
-  trainer: { id: string; name: string };
+  @Prop({
+    type: { id: SchemaTypes.UUID, name: String, image: String, _id: false },
+    required: true,
+  })
+  trainer: { id: string; name: string; image?: string };
 
   @Prop({ required: true, default: 0 })
   comments: number;

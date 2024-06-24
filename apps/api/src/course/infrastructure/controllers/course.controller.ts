@@ -15,6 +15,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Model } from 'mongoose';
 import {
+  CountResponse,
   EVENT_STORE,
   EventHandler,
   EventStore,
@@ -198,5 +199,36 @@ export class CourseController {
     const result = await service.execute({ id, ...updateCourseDto });
     const response = result.unwrap();
     return response;
+  }
+
+  @Get('count')
+  @ApiResponse({
+    status: 200,
+    description: 'Courses count',
+    type: CountResponse,
+  })
+  @ApiQuery({
+    name: 'trainer',
+    required: false,
+    description: 'Instructor id filter',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'category',
+    required: false,
+    description: 'Category id filter',
+    type: String,
+  })
+  async countCourses(
+    @Query('trainer') instructorId?: string,
+    @Query('category') categoryId?: string,
+  ): Promise<CountResponse> {
+    const count = await this.courseModel.countDocuments({
+      ...(instructorId && { 'trainer.id': instructorId }),
+      ...(categoryId && { 'category.id': categoryId }),
+    });
+    return {
+      count,
+    };
   }
 }

@@ -19,6 +19,7 @@ import {
 } from '../../application';
 import { CreateBlogDto, UpdateBlogDto } from './dtos';
 import {
+  CountResponse,
   EVENT_STORE,
   EventHandler,
   EventStore,
@@ -192,5 +193,36 @@ export class BlogController {
     );
     const result = await service.execute({ id, ...updateBlogDto });
     return result.unwrap();
+  }
+
+  @Get('count')
+  @ApiResponse({
+    status: 200,
+    description: 'Blogs count',
+    type: CountResponse,
+  })
+  @ApiQuery({
+    name: 'trainer',
+    required: false,
+    description: 'Instructor id filter',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'category',
+    required: false,
+    description: 'Category id filter',
+    type: String,
+  })
+  async countCourses(
+    @Query('trainer') instructorId?: string,
+    @Query('category') categoryId?: string,
+  ): Promise<CountResponse> {
+    const count = await this.blogModel.countDocuments({
+      ...(instructorId && { 'trainer.id': instructorId }),
+      ...(categoryId && { 'category.id': categoryId }),
+    });
+    return {
+      count,
+    };
   }
 }

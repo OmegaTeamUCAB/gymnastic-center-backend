@@ -141,6 +141,7 @@ export class BlogController {
       trainer: {
         id: blog.trainer.id,
         name: blog.trainer.name,
+        image: blog.trainer.image,
       },
       category: blog.category.name,
       date: blog.uploadDate,

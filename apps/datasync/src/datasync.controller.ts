@@ -209,6 +209,10 @@ export class DatasyncController {
         { id: data.dispatcherId },
         { image },
       );
+      await this.blogModel.updateMany(
+        { 'trainer.id': data.dispatcherId },
+        { 'trainer.image': image },
+      );
       this.rmqService.ack(context);
     } catch (error) {}
   }
@@ -281,7 +285,11 @@ export class DatasyncController {
         images,
         tags,
         category: { id: category.id, name: category.name },
-        trainer: { id: instructor.id, name: instructor.name },
+        trainer: {
+          id: instructor.id,
+          name: instructor.name,
+          image: instructor.image,
+        },
         categoryId: category,
         trainerId: instructor,
       });

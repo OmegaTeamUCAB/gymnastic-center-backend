@@ -112,8 +112,8 @@ export class ApiController {
       'Search Blogs',
     );
     const [coursesResult, blogsResult] = await Promise.all([
-      searchCoursesService.execute({ searchTerm, limit: perPage, page, tags}),
-      searchBlogsService.execute({ searchTerm, limit: perPage, page, tags}),
+      searchCoursesService.execute({ searchTerm, limit: perPage, page, tags }),
+      searchBlogsService.execute({ searchTerm, limit: perPage, page, tags }),
     ]);
     const courses = coursesResult.unwrap().map((course) => ({
       id: course.id,
@@ -231,10 +231,14 @@ export class ApiController {
     @CurrentUser() credentials: Credentials,
   ) {
     if (createCommentDto.targetType === 'BLOG') {
-      const service = new CreateCommentCommandHandler(
-        this.uuidGenerator,
-        this.eventStore,
-        this.localEventHandler,
+      const service = new LoggingDecorator(
+        new CreateCommentCommandHandler(
+          this.uuidGenerator,
+          this.eventStore,
+          this.localEventHandler,
+        ),
+        this.logger,
+        'Create Comment',
       );
       const result = await service.execute({
         blog: createCommentDto.target,

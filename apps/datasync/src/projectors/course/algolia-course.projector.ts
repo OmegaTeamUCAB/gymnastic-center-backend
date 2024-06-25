@@ -1,17 +1,19 @@
-import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { SearchClient, SearchIndex } from 'algoliasearch';
 import { Model } from 'mongoose';
 import {
   InjectAlgolia,
   MongoCategory,
-  MongoEventProvider,
+  MongoCourse,
   MongoInstructor,
 } from '@app/core';
-import { EventType } from '../../../types';
+import { EventType, Projector } from '../../types';
 
 @Injectable()
-export class AlgoliaCourseProjector implements OnApplicationBootstrap {
+export class AlgoliaCourseProjector
+  implements Projector, OnModuleInit
+{
   constructor(
     @InjectAlgolia()
     private readonly algolia: SearchClient,
@@ -19,14 +21,15 @@ export class AlgoliaCourseProjector implements OnApplicationBootstrap {
     private readonly categoryModel: Model<MongoCategory>,
     @InjectModel(MongoInstructor.name)
     private readonly instructorModel: Model<MongoInstructor>,
-    private readonly eventProvider: MongoEventProvider,
+    @InjectModel(MongoCourse.name)
+    private readonly courseModel: Model<MongoCourse>,
   ) {
     this.index = this.algolia.initIndex('course');
   }
 
   private index: SearchIndex;
 
-  async onApplicationBootstrap() {
+  async onModuleInit() {
     this.index.setSettings({
       searchableAttributes: [
         'name',
@@ -39,12 +42,13 @@ export class AlgoliaCourseProjector implements OnApplicationBootstrap {
       ],
       attributesForFaceting: ['tags'],
     });
-    await this.index.clearObjects();
-    const events = await this.eventProvider.getEvents();
-    for (const event of events) await this.handleEvent(event);
   }
 
-  async handleEvent(event: EventType) {
+  async clear() {
+    await this.index.clearObjects();
+  }
+
+  async project(event: EventType) {
     const handler = this[`on${event.name}`];
     if (handler) await handler.call(this, event);
   }
@@ -74,10 +78,7 @@ export class AlgoliaCourseProjector implements OnApplicationBootstrap {
       this.categoryModel.findOne({ id: event.context.category }),
       this.instructorModel.findOne({ id: event.context.instructor }),
     ]);
-    if (!category || !instructor) {
-      //this.rmqService.nack(context);
-      return;
-    }
+    if (!category || !instructor) return;
     await this.index.saveObject({
       objectID: event.dispatcherId,
       id: event.dispatcherId,
@@ -124,10 +125,7 @@ export class AlgoliaCourseProjector implements OnApplicationBootstrap {
     const category = await this.categoryModel.findOne({
       id: event.context.category,
     });
-    if (!category) {
-      //this.rmqService.nack(context);
-      return;
-    }
+    if (!category) return;
     await this.index.partialUpdateObject({
       objectID: event.dispatcherId,
       category: category.name,
@@ -144,5 +142,24 @@ export class AlgoliaCourseProjector implements OnApplicationBootstrap {
       objectID: event.dispatcherId,
       image,
     });
+  }
+
+  async onCategoryNameUpdated(
+    event: EventType<{
+      name: string;
+    }>,
+  ) {
+    const { name } = event.context;
+    const courses = await this.courseModel.find({
+      'category.id': event.dispatcherId,
+    });
+    await Promise.all(
+      courses.map((course) =>
+        this.index.partialUpdateObject({
+          objectID: course.id,
+          category: name,
+        }),
+      ),
+    );
   }
 }

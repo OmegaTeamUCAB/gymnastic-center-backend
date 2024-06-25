@@ -69,7 +69,7 @@ export class MongoEventStore
     this.changeStream = this.eventStore.watch().on('change', (change) => {
       if (change.operationType === 'insert') {
         const event: MongoEvent = change.fullDocument;
-        this.rmqClient.emit(event.type, {
+        this.rmqClient.emit('event', {
           dispatcherId: event.stream,
           context: event.context,
           name: event.type,

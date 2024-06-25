@@ -34,10 +34,10 @@ export class MongoBlog {
   tags: string[];
 
   @Prop({
-    type: { id: SchemaTypes.UUID, name: String, image: String, _id: false },
+    type: { id: SchemaTypes.UUID, name: String, _id: false },
     required: true,
   })
-  category: { id: string; name: string; image?: string };
+  category: { id: string; name: string; };
 
   @Prop({
     type: { id: SchemaTypes.UUID, name: String, image: String, _id: false },

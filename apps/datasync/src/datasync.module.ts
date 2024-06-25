@@ -14,18 +14,22 @@ import {
   RabbitMQModule,
   SearchModule,
   UserSchema,
+  CourseSchema,
+  MongoCourse,
+  BlogSchema,
+  MongoBlog,
 } from '@app/core';
 import { DatasyncController } from './datasync.controller';
 import {
-  CourseSchema,
-  MongoCourse,
-} from '@app/core/infrastructure/models/mongo-course.model';
-import {
-  BlogSchema,
-  MongoBlog,
-} from '@app/core/infrastructure/models/mongo-blog.model';
-import { AlgoliaBlogProjector } from './projectors/search/blog/algolia-blog.projector';
-import { AlgoliaCourseProjector } from './projectors/search/course/algolia-course.projector';
+  AlgoliaBlogProjector,
+  AlgoliaCourseProjector,
+  MongoCategoryProjector,
+  MongoCommentProjector,
+  MongoCourseProjector,
+  MongoInstructorProjector,
+  MongoUserProjector,
+} from './projectors';
+import { MongoBlogProjector } from './projectors/blog/mongo-blog.projector';
 
 @Module({
   imports: [
@@ -70,6 +74,47 @@ import { AlgoliaCourseProjector } from './projectors/search/course/algolia-cours
     ]),
   ],
   controllers: [DatasyncController],
-  providers: [AlgoliaBlogProjector, AlgoliaCourseProjector],
+  providers: [
+    AlgoliaBlogProjector,
+    AlgoliaCourseProjector,
+    MongoUserProjector,
+    MongoCategoryProjector,
+    MongoCourseProjector,
+    MongoBlogProjector,
+    MongoCommentProjector,
+    MongoInstructorProjector,
+    {
+      provide: 'PROJECTORS',
+      useFactory: (
+        userProjector: MongoUserProjector,
+        categoryProjector: MongoCategoryProjector,
+        courseProjector: MongoCourseProjector,
+        blogProjector: MongoBlogProjector,
+        commentProjector: MongoCommentProjector,
+        instructorProjector: MongoInstructorProjector,
+        algoliaBlogProjector: AlgoliaBlogProjector,
+        algoliaCourseProjector: AlgoliaCourseProjector,
+      ) => [
+        userProjector,
+        categoryProjector,
+        courseProjector,
+        blogProjector,
+        commentProjector,
+        instructorProjector,
+        algoliaBlogProjector,
+        algoliaCourseProjector,
+      ],
+      inject: [
+        MongoUserProjector,
+        MongoCategoryProjector,
+        MongoCourseProjector,
+        MongoBlogProjector,
+        MongoCommentProjector,
+        MongoInstructorProjector,
+        AlgoliaBlogProjector,
+        AlgoliaCourseProjector,
+      ],
+    },
+  ],
 })
 export class DatasyncModule {}

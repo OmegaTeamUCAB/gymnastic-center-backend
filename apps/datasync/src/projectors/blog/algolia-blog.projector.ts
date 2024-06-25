@@ -1,17 +1,17 @@
-import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { SearchClient, SearchIndex } from 'algoliasearch';
 import { Model } from 'mongoose';
 import {
   InjectAlgolia,
+  MongoBlog,
   MongoCategory,
-  MongoEventProvider,
   MongoInstructor,
 } from '@app/core';
-import { EventType } from '../../../types';
+import { EventType, Projector } from '../../types';
 
 @Injectable()
-export class AlgoliaBlogProjector implements OnApplicationBootstrap {
+export class AlgoliaBlogProjector implements Projector, OnModuleInit {
   constructor(
     @InjectAlgolia()
     private readonly algolia: SearchClient,
@@ -19,15 +19,16 @@ export class AlgoliaBlogProjector implements OnApplicationBootstrap {
     private readonly categoryModel: Model<MongoCategory>,
     @InjectModel(MongoInstructor.name)
     private readonly instructorModel: Model<MongoInstructor>,
-    private readonly eventProvider: MongoEventProvider,
+    @InjectModel(MongoBlog.name)
+    private readonly blogModel: Model<MongoBlog>,
   ) {
     this.index = this.algolia.initIndex('blog');
   }
 
   private index: SearchIndex;
 
-  async onApplicationBootstrap() {
-    this.index.setSettings({
+  async onModuleInit() {
+    await this.index.setSettings({
       searchableAttributes: [
         'title',
         'instructor',
@@ -37,14 +38,15 @@ export class AlgoliaBlogProjector implements OnApplicationBootstrap {
       ],
       attributesForFaceting: ['tags'],
     });
-    await this.index.clearObjects();
-    const events = await this.eventProvider.getEvents();
-    for (const event of events) await this.handleEvent(event);
   }
 
-  async handleEvent(event: EventType) {
+  async project(event: EventType) {
     const handler = this[`on${event.name}`];
     if (handler) await handler.call(this, event);
+  }
+
+  async clear() {
+    await this.index.clearObjects();
   }
 
   async onBlogCreated(
@@ -62,10 +64,7 @@ export class AlgoliaBlogProjector implements OnApplicationBootstrap {
       this.categoryModel.findOne({ id: event.context.category }),
       this.instructorModel.findOne({ id: event.context.instructor }),
     ]);
-    if (!category || !instructor) {
-      //this.rmqService.nack(context);
-      return;
-    }
+    if (!category || !instructor) return;
     const { title, content, tags } = event.context;
     await this.index.saveObject({
       objectID: event.dispatcherId,
@@ -123,10 +122,7 @@ export class AlgoliaBlogProjector implements OnApplicationBootstrap {
     const category = await this.categoryModel.findOne({
       id: event.context.category,
     });
-    if (!category) {
-      //this.rmqService.nack(context);
-      return;
-    }
+    if (!category) return;
     await this.index.partialUpdateObject({
       objectID: event.dispatcherId,
       category: category.name,
@@ -143,5 +139,24 @@ export class AlgoliaBlogProjector implements OnApplicationBootstrap {
       objectID: event.dispatcherId,
       image: images[0],
     });
+  }
+
+  async onCategoryNameUpdated(
+    data: EventType<{
+      name: string;
+    }>,
+  ) {
+    const { name } = data.context;
+    const blogs = await this.blogModel.find({
+      'category.id': data.dispatcherId,
+    });
+    await Promise.all(
+      blogs.map((blog) =>
+        this.index.partialUpdateObject({
+          objectID: blog.id,
+          category: name,
+        }),
+      ),
+    );
   }
 }

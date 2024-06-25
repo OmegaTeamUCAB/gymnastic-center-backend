@@ -62,7 +62,7 @@ export class ApiController {
     return 'Health check sent';
   }
 
-  @Get('search')
+  @Get('search/all')
   @Auth()
   @ApiQuery({
     name: 'perPage',

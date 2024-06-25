@@ -1,4 +1,4 @@
-export { ApplicationService } from './services/application-service';
+export { Service } from './services/application-service';
 export { ApplicationException } from './exceptions/application-exception';
 export { CodeGenerator } from './codes/code-generator.interface';
 export { EmailHandler } from './email/email-handler.interface';

@@ -1,5 +1,5 @@
 import {
-  ApplicationService,
+  Service,
   EventHandler,
   EventStore,
   Result,
@@ -11,7 +11,7 @@ import { Comment } from '../../../domain';
 import { CommentNotFoundException } from '../../exceptions';
 
 export class DeleteCommentCommandHandler
-  implements ApplicationService<DeleteCommentCommand, DeleteCommentResponse>
+  implements Service<DeleteCommentCommand, DeleteCommentResponse>
 {
   constructor(
     private readonly eventStore: EventStore,

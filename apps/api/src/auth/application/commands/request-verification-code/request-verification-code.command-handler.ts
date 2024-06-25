@@ -1,5 +1,5 @@
 import {
-  ApplicationService,
+  Service,
   Result,
   EmailHandler,
   CodeGenerator,
@@ -9,7 +9,7 @@ import { UserNotFoundException } from '../../exceptions';
 import { CredentialsRepository } from '../../repositories/credentials.repository';
 
 export class RequestVerificationCodeCommandHandler
-  implements ApplicationService<RequestVerificationCodeCommand, void>
+  implements Service<RequestVerificationCodeCommand, void>
 {
   constructor(
     private readonly credentialsRepository: CredentialsRepository,

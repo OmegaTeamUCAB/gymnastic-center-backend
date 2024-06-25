@@ -1,4 +1,4 @@
-import { CryptoService, ApplicationService, Result } from '@app/core';
+import { CryptoService, Service, Result } from '@app/core';
 import { LoginCommand, LoginResponse } from './types';
 import {
   UserNotFoundException,
@@ -8,7 +8,7 @@ import { CredentialsRepository } from '../../repositories/credentials.repository
 import { TokenGenerator } from '../../token/token-generator.interface';
 
 export class LoginCommandHandler
-  implements ApplicationService<LoginCommand, LoginResponse>
+  implements Service<LoginCommand, LoginResponse>
 {
   constructor(
     private readonly credentialsRepository: CredentialsRepository,

@@ -1,5 +1,5 @@
 import {
-  ApplicationService,
+  Service,
   EventHandler,
   EventStore,
   IdGenerator,
@@ -12,7 +12,7 @@ import { Comment } from '../../../domain';
 import { CommentContent, CommentId } from '../../../domain/value-objects';
 
 export class CreateCommentCommandHandler
-  implements ApplicationService<CreateCommentCommand, CreateCommentResponse>
+  implements Service<CreateCommentCommand, CreateCommentResponse>
 {
   constructor(
     private readonly idGenerator: IdGenerator<string>,

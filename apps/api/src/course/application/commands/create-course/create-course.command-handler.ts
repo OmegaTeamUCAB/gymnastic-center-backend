@@ -1,5 +1,5 @@
 import {
-  ApplicationService,
+  Service,
   EventHandler,
   EventStore,
   Result,
@@ -27,7 +27,7 @@ import {
 } from '../../../domain/entities/lessons/value-objects';
 
 export class CreateCourseCommandHandler
-  implements ApplicationService<CreateCourseCommand, CreateCourseResponse>
+  implements Service<CreateCourseCommand, CreateCourseResponse>
 {
   constructor(
     private readonly idGenerator: IdGenerator<string>,

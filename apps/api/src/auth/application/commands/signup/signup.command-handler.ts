@@ -1,11 +1,11 @@
-import { CryptoService, ApplicationService, Result } from '@app/core';
+import { CryptoService, Service, Result } from '@app/core';
 import { CredentialsRepository } from '../../repositories/credentials.repository';
 import { SignUpCommand, SignUpResponse } from './types';
 import { Credentials } from '../../models/credentials.model';
 import { TokenGenerator } from '../../token/token-generator.interface';
 
 export class SignUpCommandHandler
-  implements ApplicationService<SignUpCommand, SignUpResponse>
+  implements Service<SignUpCommand, SignUpResponse>
 {
   constructor(
     private readonly credentialsRepository: CredentialsRepository,

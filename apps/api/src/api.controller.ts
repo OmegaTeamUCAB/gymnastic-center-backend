@@ -23,11 +23,14 @@ import {
   IdResponse,
   LOCAL_EVENT_HANDLER,
   MongoComment,
-  SearchBlogsReadModel,
-  SearchCoursesReadModel,
+  MongoSearchBlogsService,
+  MongoSearchCoursesService,
   SearchResponse,
   UUIDGENERATOR,
   CreateTargetedTextDto,
+  LoggingDecorator,
+  ILogger,
+  LOGGER,
 } from '@app/core';
 import { Auth, CurrentUser } from './auth/infrastructure/decorators';
 import { Credentials } from './auth/application/models/credentials.model';
@@ -47,8 +50,10 @@ export class ApiController {
     private readonly eventStore: EventStore,
     @Inject(LOCAL_EVENT_HANDLER)
     private readonly localEventHandler: EventHandler,
-    private readonly searchCoursesReadModel: SearchCoursesReadModel,
-    private readonly searchBlogsReadModel: SearchBlogsReadModel,
+    private readonly searchCoursesService: MongoSearchCoursesService,
+    private readonly searchBlogsService: MongoSearchBlogsService,
+    @Inject(LOGGER)
+    private readonly logger: ILogger,
   ) {}
 
   @Get('health')
@@ -94,12 +99,38 @@ export class ApiController {
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
     @Query('perPage', new DefaultValuePipe(3), ParseIntPipe)
     perPage: number = 3,
-    @Query('tag', new DefaultValuePipe([]), ParseArrayPipe) tag: string[] = [],
-  ) {
-    const [courses, blogs] = await Promise.all([
-      this.searchCoursesReadModel.execute({ searchTerm, limit: perPage }),
-      this.searchBlogsReadModel.execute({ searchTerm, limit: perPage }),
+    @Query('tag', new DefaultValuePipe([]), ParseArrayPipe) tags: string[] = [],
+  ): Promise<SearchResponse> {
+    const searchCoursesService = new LoggingDecorator(
+      this.searchCoursesService,
+      this.logger,
+      'Search Courses',
+    );
+    const searchBlogsService = new LoggingDecorator(
+      this.searchBlogsService,
+      this.logger,
+      'Search Blogs',
+    );
+    const [coursesResult, blogsResult] = await Promise.all([
+      searchCoursesService.execute({ searchTerm, limit: perPage, page, tags}),
+      searchBlogsService.execute({ searchTerm, limit: perPage, page, tags}),
     ]);
+    const courses = coursesResult.unwrap().map((course) => ({
+      id: course.id,
+      title: course.title,
+      description: course.description,
+      image: course.imageUrl,
+      category: course.categoryName,
+      trainer: course.instructorName,
+    }));
+    const blogs = blogsResult.unwrap().map((blog) => ({
+      id: blog.id,
+      title: blog.title,
+      description: blog.description,
+      image: blog.imageUrl,
+      category: blog.categoryName,
+      trainer: blog.instructorName,
+    }));
     return {
       courses,
       blogs,

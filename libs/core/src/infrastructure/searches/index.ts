@@ -1,2 +1,2 @@
 export { SearchesModule } from './searches.module';
-export * from './read-models';
+export * from './providers';

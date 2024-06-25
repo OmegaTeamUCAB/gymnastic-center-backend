@@ -5,17 +5,27 @@ import * as Joi from 'joi';
 import {
   CategorySchema,
   CommentSchema,
+  EventReplayModule,
   InstructorSchema,
   MongoCategory,
   MongoComment,
   MongoInstructor,
   MongoUser,
   RabbitMQModule,
+  SearchModule,
   UserSchema,
 } from '@app/core';
 import { DatasyncController } from './datasync.controller';
-import { CourseSchema, MongoCourse } from '@app/core/infrastructure/models/mongo-course.model';
-import { BlogSchema, MongoBlog } from '@app/core/infrastructure/models/mongo-blog.model';
+import {
+  CourseSchema,
+  MongoCourse,
+} from '@app/core/infrastructure/models/mongo-course.model';
+import {
+  BlogSchema,
+  MongoBlog,
+} from '@app/core/infrastructure/models/mongo-blog.model';
+import { AlgoliaBlogProjector } from './projectors/search/blog/algolia-blog.projector';
+import { AlgoliaCourseProjector } from './projectors/search/course/algolia-course.projector';
 
 @Module({
   imports: [
@@ -29,6 +39,8 @@ import { BlogSchema, MongoBlog } from '@app/core/infrastructure/models/mongo-blo
       envFilePath: './apps/datasync/.env',
     }),
     RabbitMQModule,
+    EventReplayModule,
+    SearchModule,
     MongooseModule.forRoot(process.env.MONGODB_CNN),
     MongooseModule.forFeature([
       {
@@ -58,6 +70,6 @@ import { BlogSchema, MongoBlog } from '@app/core/infrastructure/models/mongo-blo
     ]),
   ],
   controllers: [DatasyncController],
-  providers: [],
+  providers: [AlgoliaBlogProjector, AlgoliaCourseProjector],
 })
 export class DatasyncModule {}

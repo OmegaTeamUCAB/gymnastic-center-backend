@@ -23,14 +23,14 @@ import {
   IdResponse,
   LOCAL_EVENT_HANDLER,
   MongoComment,
-  MongoSearchBlogsService,
-  MongoSearchCoursesService,
   SearchResponse,
   UUIDGENERATOR,
   CreateTargetedTextDto,
   LoggingDecorator,
   ILogger,
   LOGGER,
+  AlgoliaSearchCoursesService,
+  AlgoliaSearchBlogsService,
 } from '@app/core';
 import { Auth, CurrentUser } from './auth/infrastructure/decorators';
 import { Credentials } from './auth/application/models/credentials.model';
@@ -50,8 +50,8 @@ export class ApiController {
     private readonly eventStore: EventStore,
     @Inject(LOCAL_EVENT_HANDLER)
     private readonly localEventHandler: EventHandler,
-    private readonly searchCoursesService: MongoSearchCoursesService,
-    private readonly searchBlogsService: MongoSearchBlogsService,
+    private readonly searchCoursesService: AlgoliaSearchCoursesService,
+    private readonly searchBlogsService: AlgoliaSearchBlogsService,
     @Inject(LOGGER)
     private readonly logger: ILogger,
   ) {}
@@ -115,25 +115,23 @@ export class ApiController {
       searchCoursesService.execute({ searchTerm, limit: perPage, page, tags }),
       searchBlogsService.execute({ searchTerm, limit: perPage, page, tags }),
     ]);
-    const courses = coursesResult.unwrap().map((course) => ({
-      id: course.id,
-      title: course.title,
-      description: course.description,
-      image: course.imageUrl,
-      category: course.categoryName,
-      trainer: course.instructorName,
-    }));
-    const blogs = blogsResult.unwrap().map((blog) => ({
-      id: blog.id,
-      title: blog.title,
-      description: blog.description,
-      image: blog.imageUrl,
-      category: blog.categoryName,
-      trainer: blog.instructorName,
-    }));
+    const courseHits = coursesResult.unwrap();
+    const blogHits = blogsResult.unwrap();
     return {
-      courses,
-      blogs,
+      courses: courseHits.map((hit) => ({
+        id: hit.id,
+        title: hit.name,
+        category: hit.category,
+        trainer: hit.instructor,
+        image: hit.image,
+      })),
+      blogs: blogHits.map((hit) => ({
+        id: hit.id,
+        title: hit.title,
+        category: hit.category,
+        trainer: hit.instructor,
+        image: hit.image,
+      })),
     };
   }
 

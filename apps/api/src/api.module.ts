@@ -8,7 +8,7 @@ import {
   EventStoreModule,
   LoggerModule,
   RabbitMQModule,
-  SearchesModule,
+  SearchModule,
   UUIDModule,
 } from '@app/core';
 import { ApiController } from './api.controller';
@@ -46,7 +46,7 @@ import { CommentModule } from './comment/infrastructure';
     InstructorModule,
     BlogModule,
     CourseModule,
-    SearchesModule,
+    SearchModule,
     CommentModule,
     UUIDModule,
     EventStoreModule,

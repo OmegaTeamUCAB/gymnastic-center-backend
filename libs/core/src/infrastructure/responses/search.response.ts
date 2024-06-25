@@ -20,9 +20,6 @@ class CourseSearchResponse {
   title: string;
 
   @ApiProperty()
-  description: string;
-
-  @ApiProperty()
   image: string;
 
   @ApiProperty()

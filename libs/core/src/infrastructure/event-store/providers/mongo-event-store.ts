@@ -65,26 +65,6 @@ export class MongoEventStore
     }));
   }
 
-  async getEventsByDateRange(
-    from?: Date,
-    until: Date = new Date(),
-  ): Promise<DomainEvent[]> {
-    const events = await this.eventStore
-      .find({
-        date: {
-          ...(from && { $gte: from }),
-          $lte: until,
-        },
-      })
-      .sort({ date: 1 });
-    return events.map((event) => ({
-      dispatcherId: event.stream,
-      name: event.type,
-      timestamp: event.date,
-      context: event.context,
-    }));
-  }
-
   onApplicationBootstrap() {
     this.changeStream = this.eventStore.watch().on('change', (change) => {
       if (change.operationType === 'insert') {
@@ -92,6 +72,7 @@ export class MongoEventStore
         this.rmqClient.emit(event.type, {
           dispatcherId: event.stream,
           context: event.context,
+          name: event.type,
         });
       }
     });

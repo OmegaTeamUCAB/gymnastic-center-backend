@@ -12,6 +12,7 @@ import {
 import { EventType } from './types';
 import { MongoBlog } from '@app/core/infrastructure/models/mongo-blog.model';
 import { MongoCourse } from '@app/core/infrastructure/models/mongo-course.model';
+import { AlgoliaBlogProjector } from './projectors/search/blog/algolia-blog.projector';
 
 @Controller()
 export class DatasyncController {
@@ -29,6 +30,7 @@ export class DatasyncController {
     private readonly courseModel: Model<MongoCourse>,
     @InjectModel(MongoComment.name)
     private readonly commentModel: Model<MongoComment>,
+    private readonly algoliaBlogProjector: AlgoliaBlogProjector,
   ) {}
 
   @EventPattern('health')

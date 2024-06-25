@@ -33,6 +33,8 @@ import { CommentModule } from './comment/infrastructure';
         MAILGUN_FROM: Joi.string().required(),
         MAILGUN_DOMAIN: Joi.string().required(),
         VERIFICATION_EMAIL_TEMPLATE: Joi.string().required(),
+        ALGOLIA_ID: Joi.string().required(),
+        ALGOLIA_KEY: Joi.string().required(),
       }),
       envFilePath: './apps/api/.env',
     }),

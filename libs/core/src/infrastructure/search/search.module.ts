@@ -29,8 +29,8 @@ import { AlgoliaModule } from './algolia';
       },
     ]),
     AlgoliaModule.forRoot({
-      id: 'JO0RL6UF13',
-      key: '1fd6690555027c659bff016ad9af8ddf',
+      id: process.env.ALGOLIA_ID,
+      key: process.env.ALGOLIA_KEY,
       isGlobal: true,
     }),
   ],

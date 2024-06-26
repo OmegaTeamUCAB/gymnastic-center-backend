@@ -31,6 +31,7 @@ import {
   LOGGER,
   AlgoliaSearchCoursesService,
   AlgoliaSearchBlogsService,
+  GetPopularAlgoliaFacetsService,
 } from '@app/core';
 import { Auth, CurrentUser } from './auth/infrastructure/decorators';
 import { Credentials } from './auth/application/models/credentials.model';
@@ -54,6 +55,7 @@ export class ApiController {
     private readonly searchBlogsService: AlgoliaSearchBlogsService,
     @Inject(LOGGER)
     private readonly logger: ILogger,
+    private readonly searchTagsService: GetPopularAlgoliaFacetsService,
   ) {}
 
   @Get('health')
@@ -99,8 +101,12 @@ export class ApiController {
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
     @Query('perPage', new DefaultValuePipe(3), ParseIntPipe)
     perPage: number = 3,
-    @Query('tag', new DefaultValuePipe([]), ParseArrayPipe) tags: string[] = [],
+    @Query('tag', new DefaultValuePipe([]), ParseArrayPipe) tagParam: string[] = [],
   ): Promise<SearchResponse> {
+    const tags = tagParam.map((tag) => {
+      const tagParts = tag.split('(');
+      return tagParts[0].trim();
+    });
     const searchCoursesService = new LoggingDecorator(
       this.searchCoursesService,
       this.logger,
@@ -133,6 +139,29 @@ export class ApiController {
         image: hit.image,
       })),
     };
+  }
+
+  @Get('search/popular/tags')
+  @Auth()
+  @ApiQuery({
+    name: 'perPage',
+    required: false,
+    description:
+      'Number of results to return for each type of search. DEFAULT = 3',
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Number of . DEFAULT = 1',
+    type: Number,
+  })
+  async getTags(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
+    @Query('perPage', new DefaultValuePipe(3), ParseIntPipe)
+    perPage: number = 8,
+  ): Promise<string[]> {
+    return (await this.searchTagsService.execute({ page, perPage })).unwrap();
   }
 
   @Get('comment/many')

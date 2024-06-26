@@ -40,7 +40,7 @@ export class AlgoliaCourseProjector
         'tags',
         'lessonDescriptions',
       ],
-      attributesForFaceting: ['tags'],
+      attributesForFaceting: ['searchable(tags)'],
     });
   }
 

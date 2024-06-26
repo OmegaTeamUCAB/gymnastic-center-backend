@@ -12,7 +12,8 @@ import {
   MongoSearchBlogsService,
   MongoSearchCoursesService,
   AlgoliaSearchBlogsService,
-  AlgoliaSearchCoursesService
+  AlgoliaSearchCoursesService,
+  GetPopularAlgoliaFacetsService
 } from './providers';
 import { AlgoliaModule } from './algolia';
 
@@ -39,12 +40,14 @@ import { AlgoliaModule } from './algolia';
     MongoSearchCoursesService,
     AlgoliaSearchBlogsService,
     AlgoliaSearchCoursesService,
+    GetPopularAlgoliaFacetsService,
   ],
   exports: [
     MongoSearchBlogsService,
     MongoSearchCoursesService,
     AlgoliaSearchBlogsService,
     AlgoliaSearchCoursesService,
+    GetPopularAlgoliaFacetsService,
   ],
 })
 export class SearchModule {}

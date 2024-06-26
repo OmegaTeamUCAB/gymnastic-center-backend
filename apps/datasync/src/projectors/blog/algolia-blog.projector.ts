@@ -36,7 +36,7 @@ export class AlgoliaBlogProjector implements Projector, OnModuleInit {
         'content',
         'tags',
       ],
-      attributesForFaceting: ['tags'],
+      attributesForFaceting: ['searchable(tags)'],
     });
   }
 

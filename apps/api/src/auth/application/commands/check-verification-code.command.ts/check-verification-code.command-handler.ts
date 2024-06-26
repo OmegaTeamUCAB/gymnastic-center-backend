@@ -1,4 +1,4 @@
-import { ApplicationService, Result } from '@app/core';
+import { Service, Result } from '@app/core';
 import { CheckVerificationCodeCommand } from './types';
 import { CredentialsRepository } from '../../repositories/credentials.repository';
 import {
@@ -8,7 +8,7 @@ import {
 } from '../../exceptions';
 
 export class CheckVerificationCodeCommandHandler
-  implements ApplicationService<CheckVerificationCodeCommand, void>
+  implements Service<CheckVerificationCodeCommand, void>
 {
   constructor(private readonly credentialsRepository: CredentialsRepository) {}
 

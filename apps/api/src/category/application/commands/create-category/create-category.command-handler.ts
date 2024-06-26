@@ -1,5 +1,5 @@
 import {
-  ApplicationService,
+  Service,
   EventHandler,
   EventStore,
   Result,
@@ -12,7 +12,7 @@ import { CategoryIcon } from '../../../domain/value-objects/category-icon';
 import { CategoryId } from '../../../domain/value-objects/category-id';
 
 export class CreateCategoryCommandHandler
-  implements ApplicationService<CreateCategoryCommand, CreateCategoryResponse>
+  implements Service<CreateCategoryCommand, CreateCategoryResponse>
 {
   constructor(
     private readonly idGenerator: IdGenerator<string>,

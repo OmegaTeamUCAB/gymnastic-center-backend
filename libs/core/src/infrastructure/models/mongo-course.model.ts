@@ -46,10 +46,10 @@ export class MongoCourse {
   views: number;
 
   @Prop({
-    type: { _id: false, id: SchemaTypes.UUID, name: String },
+    type: { _id: false, id: SchemaTypes.UUID, name: String, image: String },
     required: true,
   })
-  trainer: { id: string; name: string };
+  trainer: { id: string; name: string; image: string };
 
   @Prop({
     type: { _id: false, id: SchemaTypes.UUID, name: String },

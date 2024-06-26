@@ -1,4 +1,4 @@
-import { ApplicationService, CryptoService, Result } from '@app/core';
+import { Service, CryptoService, Result } from '@app/core';
 import { ResetPasswordCommand } from './types';
 import { CredentialsRepository } from '../../repositories/credentials.repository';
 import {
@@ -8,7 +8,7 @@ import {
 } from '../../exceptions';
 
 export class ResetPasswordCommandHandler
-  implements ApplicationService<ResetPasswordCommand, void>
+  implements Service<ResetPasswordCommand, void>
 {
   constructor(
     private readonly credentialsRepository: CredentialsRepository,

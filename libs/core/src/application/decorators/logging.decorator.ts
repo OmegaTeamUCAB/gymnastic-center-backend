@@ -1,10 +1,10 @@
-import { ApplicationService } from '../services/application-service';
+import { Service } from '../services/application-service';
 import { Result } from '@app/core/utils';
 import { ILogger } from '../logger/logger.interface';
 
-export class LoggingDecorator<T, U> implements ApplicationService<T, U> {
+export class LoggingDecorator<T, U> implements Service<T, U> {
   constructor(
-    private readonly service: ApplicationService<T, U>,
+    private readonly service: Service<T, U>,
     private readonly logger: ILogger,
     private readonly operationName: string,
   ) {}

@@ -40,7 +40,7 @@ import { MongoBlogProjector } from './projectors/blog/mongo-blog.projector';
         RABBITMQ_EVENTS_QUEUE: Joi.string().required(),
         MONGODB_CNN: Joi.string().required(),
         ALGOLIA_ID: Joi.string().required(),
-        ALGOLIA_KEY: Joi.string().required
+        ALGOLIA_KEY: Joi.string().required()
       }),
       envFilePath: './apps/datasync/.env',
     }),

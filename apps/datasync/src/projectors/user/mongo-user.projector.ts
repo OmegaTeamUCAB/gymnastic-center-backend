@@ -63,4 +63,22 @@ export class MongoUserProjector implements Projector {
     const { image } = event.context;
     await this.userModel.updateOne({ id: event.dispatcherId }, { image });
   }
+
+  async onInstructorFollowed(
+    event: EventType<{
+      user: string;
+    }>,
+  ) {
+    const { user } = event.context;
+    await this.userModel.updateOne({ id: user }, { $inc: { follows: 1 } });
+  }
+
+  async onInstructorUnfollowed(
+    event: EventType<{
+      user: string;
+    }>,
+  ) {
+    const { user } = event.context;
+    await this.userModel.updateOne({ id: user }, { $inc: { follows: -1 } });
+  }
 }

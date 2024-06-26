@@ -12,6 +12,7 @@ import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UpdateUserDto, LoginDto, SignUpDto } from './dtos';
 import {
   BCRYPT_SERVICE,
+  CountResponse,
   CryptoService,
   EVENT_STORE,
   EventStore,
@@ -200,5 +201,17 @@ export class UserController {
       ...updateUserDto,
     });
     return result.unwrap();
+  }
+
+  @Get('trainer/user/follow')
+  @Auth()
+  async countUserFollows(
+    @CurrentUser() credentials: Credentials,
+  ): Promise<CountResponse> {
+    const user = await this.userModel.findOne({ id: credentials.userId });
+    if (!user) throw new NotFoundException('User not found');
+    return {
+      count: user.follows,
+    };
   }
 }

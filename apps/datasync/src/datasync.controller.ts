@@ -15,7 +15,7 @@ export class DatasyncController implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
-    if (true) {
+    if (this.configService.get('REPLAY') === 'true') {
       const [events] = await Promise.all([
         this.eventProvider.getEvents(),
         ...this.projectors.map((p) => p.clear()),

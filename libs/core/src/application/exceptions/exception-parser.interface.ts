@@ -1,3 +1,3 @@
 export interface IExceptionParser {
-    execute(exception: Error): Error; 
+    parse(exception: Error): Error; 
 }

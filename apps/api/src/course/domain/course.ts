@@ -1,4 +1,7 @@
-import { InvalidCourseException } from './exceptions';
+import {
+  CourseAlreadyStartedByUserException,
+  InvalidCourseException,
+} from './exceptions';
 import {
   CourseDescription,
   CourseDuration,
@@ -21,6 +24,7 @@ import {
   CourseImageUpdated,
   CourseLevelUpdated,
   CourseNameUpdated,
+  CourseStarted,
   CourseTagsUpdated,
 } from './events';
 import {
@@ -29,6 +33,14 @@ import {
   LessonTitle,
   LessonVideo,
 } from './entities/lessons/value-objects';
+import { UserProgress } from './entities/user-progress/user-progress';
+import { UserId } from '../../user/domain/value-objects';
+import {
+  CompletionPercentage,
+  LastSecondWatched,
+} from './entities/user-progress/value-objects';
+import { LessonNotExistentException } from './exceptions/lesson-not-existent.exception';
+import { CourseLessonWatched } from './events/course-lesson-watched';
 
 export class Course extends AggregateRoot<CourseId> {
   private constructor(id: CourseId) {
@@ -46,7 +58,13 @@ export class Course extends AggregateRoot<CourseId> {
       this._lessons.length === 0 ||
       !this._duration ||
       !this._category ||
-      !this._instructor
+      !this._instructor ||
+      !this._publishDate ||
+      !this._progressHistory ||
+      this._progressHistory.some(
+        (progress) =>
+          !this.lessons.find((lesson) => lesson.id.equals(progress.lesson)),
+      )
     ) {
       throw new InvalidCourseException();
     }
@@ -62,6 +80,7 @@ export class Course extends AggregateRoot<CourseId> {
   private _category: CategoryId;
   private _instructor: InstructorId;
   private _lessons: Lesson[];
+  private _progressHistory: UserProgress[];
 
   get name(): CourseName {
     return this._name;
@@ -131,6 +150,44 @@ export class Course extends AggregateRoot<CourseId> {
     this.apply(CourseDurationUpdated.createEvent(this.id, duration));
   }
 
+  isBeingWatchedBy(user: UserId): boolean {
+    return this._progressHistory.some((progress) => progress.user.equals(user));
+  }
+
+  isCompletedBy(user: UserId): boolean {
+    return this._progressHistory.every((progress) =>
+      progress.user.equals(user) ? progress.isCompleted : true,
+    );
+  }
+
+  startWatching(user: UserId): void {
+    if (this.isBeingWatchedBy(user))
+      throw new CourseAlreadyStartedByUserException();
+    this.apply(CourseStarted.createEvent(this.id, user));
+  }
+
+  watchLesson(
+    lesson: LessonId,
+    user: UserId,
+    lastTime: LastSecondWatched,
+    progress: CompletionPercentage,
+  ): void {
+    const lessonProgress = this._progressHistory.find(
+      (progress) =>
+        progress.user.equals(user) && progress.lesson.equals(lesson),
+    );
+    if (!lessonProgress) throw new LessonNotExistentException();
+    this.apply(
+      CourseLessonWatched.createEvent(
+        this.id,
+        user,
+        lesson,
+        progress,
+        lastTime,
+      ),
+    );
+  }
+
   static create(
     id: CourseId,
     data: {
@@ -189,6 +246,7 @@ export class Course extends AggregateRoot<CourseId> {
           new LessonVideo(lesson.video),
         ),
     );
+    this._progressHistory = [];
   }
 
   [`on${CourseNameUpdated.name}`](context: CourseNameUpdated): void {
@@ -219,5 +277,28 @@ export class Course extends AggregateRoot<CourseId> {
 
   [`on${CourseDurationUpdated.name}`](context: CourseDurationUpdated): void {
     this._duration = new CourseDuration(context.weeks, context.minutes);
+  }
+
+  [`on${CourseStarted.name}`](context: CourseStarted) {
+    const progress = this.lessons.map((lesson) =>
+      UserProgress.start(new UserId(context.user), lesson.id),
+    );
+    progress.forEach((lessonProgress) =>
+      this._progressHistory.push(lessonProgress),
+    );
+  }
+
+  [`on${CourseLessonWatched.name}`](context: CourseLessonWatched) {
+    const lessonProgress = this._progressHistory.find(
+      (progress) =>
+        progress.user.equals(new UserId(context.user)) &&
+        progress.lesson.equals(new LessonId(context.lesson)),
+    );
+    lessonProgress.lastSecondWatched = new LastSecondWatched(
+      context.lastSecondWatched,
+    );
+    lessonProgress.completionPercentage = new CompletionPercentage(
+      context.completionPercentage,
+    );
   }
 }

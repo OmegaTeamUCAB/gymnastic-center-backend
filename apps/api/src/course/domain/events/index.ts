@@ -1,3 +1,4 @@
+export { CourseStarted } from './course-started';
 export { CourseNameUpdated } from './course-name-updated';
 export { CourseDescriptionUpdated } from './course-description-updated';
 export { CourseLevelUpdated } from './course-level-updated';

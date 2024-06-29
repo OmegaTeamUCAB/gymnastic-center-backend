@@ -1,3 +1,4 @@
+export { CourseAlreadyStartedByUserException } from './course-already-started-by-user.exception';
 export { InvalidLessonQuantityException } from './invalid-lesson-quantity.exception';
 export { InvalidVideoQuantityException } from './invalid-video-quantity.exception';
 export { InvalidCourseIdException } from './invalid-course-id.exception';

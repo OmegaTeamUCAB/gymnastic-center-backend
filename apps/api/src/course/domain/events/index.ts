@@ -1,4 +1,5 @@
 export { CourseLessonWatched } from './course-lesson-watched';
+export { CourseCompleted } from './course-completed';
 export { CourseStarted } from './course-started';
 export { CourseNameUpdated } from './course-name-updated';
 export { CourseDescriptionUpdated } from './course-description-updated';

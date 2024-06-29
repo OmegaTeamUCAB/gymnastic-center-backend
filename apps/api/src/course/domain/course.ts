@@ -28,6 +28,7 @@ import {
   CourseStarted,
   CourseTagsUpdated,
   CourseLessonWatched,
+  CourseCompleted,
 } from './events';
 import {
   LessonDescription,
@@ -289,9 +290,11 @@ export class Course extends AggregateRoot<CourseId> {
   }
 
   [`on${CourseLessonWatched.name}`](context: CourseLessonWatched) {
+    const user = new UserId(context.user);
+    const previouslyCompleted = this.isCompletedBy(user);
     const lessonProgress = this._progressHistory.find(
       (progress) =>
-        progress.user.equals(new UserId(context.user)) &&
+        progress.user.equals(user) &&
         progress.lesson.equals(new LessonId(context.lesson)),
     );
     lessonProgress.lastSecondWatched = new LastSecondWatched(
@@ -300,5 +303,13 @@ export class Course extends AggregateRoot<CourseId> {
     lessonProgress.completionPercentage = new CompletionPercentage(
       context.completionPercentage,
     );
+    if (
+      !previouslyCompleted &&
+      lessonProgress.isCompleted &&
+      this.isCompletedBy(user)
+    )
+      this.apply(CourseCompleted.createEvent(this.id, user));
   }
+
+  [`on${CourseCompleted.name}`](context: CourseCompleted) {}
 }

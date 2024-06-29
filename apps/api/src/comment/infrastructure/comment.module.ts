@@ -1,4 +1,4 @@
-import { EventHandlerModule, EventStoreModule, UUIDModule } from '@app/core';
+import { EventHandlerModule, EventStoreModule, LoggerModule, UUIDModule } from '@app/core';
 import {
   CommentSchema,
   MongoComment,
@@ -20,6 +20,7 @@ import { CommentController } from './controllers';
     UUIDModule,
     EventStoreModule,
     EventHandlerModule,
+    LoggerModule,
   ],
   controllers: [CommentController],
   providers: [],

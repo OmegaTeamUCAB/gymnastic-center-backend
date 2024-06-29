@@ -1,5 +1,5 @@
 import {
-  ApplicationService,
+  Service,
   EventHandler,
   EventStore,
   Result,
@@ -11,7 +11,7 @@ import { CommentId } from '../../../domain/value-objects';
 import { UserId } from 'apps/api/src/user/domain/value-objects';
 
 export class ToggleDislikeCommandHandler
-  implements ApplicationService<ToggleDislikeCommand, ToggleDislikeResponse>
+  implements Service<ToggleDislikeCommand, ToggleDislikeResponse>
 {
   constructor(
     private readonly eventStore: EventStore,

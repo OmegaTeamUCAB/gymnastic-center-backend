@@ -35,6 +35,12 @@ export class MongoUser {
   })
   image: string;
 
+  @Prop({
+    required: true,
+    default: 0,
+  })
+  follows: number;
+
   createdAt: Date;
 
   updatedAt?: Date;

@@ -3,8 +3,11 @@ import {
   EVENT_STORE,
   EventHandler,
   EventStore,
+  ILogger,
   IdResponse,
   LOCAL_EVENT_HANDLER,
+  LOGGER,
+  LoggingDecorator,
 } from '@app/core';
 import {
   Controller,
@@ -29,6 +32,8 @@ export class CommentController {
     private readonly eventStore: EventStore,
     @Inject(LOCAL_EVENT_HANDLER)
     private readonly localEventHandler: EventHandler,
+    @Inject(LOGGER)
+    private readonly logger: ILogger,
   ) {}
 
   @Delete('delete/:id')
@@ -42,9 +47,10 @@ export class CommentController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() credentials: Credentials,
   ) {
-    const service = new DeleteCommentCommandHandler(
-      this.eventStore,
-      this.localEventHandler,
+    const service = new LoggingDecorator(
+      new DeleteCommentCommandHandler(this.eventStore, this.localEventHandler),
+      this.logger,
+      'Delete Comment',
     );
     const result = await service.execute({
       commentId: id,
@@ -64,9 +70,10 @@ export class CommentController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() credentials: Credentials,
   ) {
-    const service = new ToggleLikeCommandHandler(
-      this.eventStore,
-      this.localEventHandler,
+    const service = new LoggingDecorator(
+      new ToggleLikeCommandHandler(this.eventStore, this.localEventHandler),
+      this.logger,
+      'Toggle Like',
     );
     const result = await service.execute({
       commentId: id,
@@ -86,9 +93,10 @@ export class CommentController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() credentials: Credentials,
   ) {
-    const service = new ToggleDislikeCommandHandler(
-      this.eventStore,
-      this.localEventHandler,
+    const service = new LoggingDecorator(
+      new ToggleDislikeCommandHandler(this.eventStore, this.localEventHandler),
+      this.logger,
+      'Toggle Dislike',
     );
     const result = await service.execute({
       commentId: id,

@@ -1,5 +1,5 @@
 import {
-  ApplicationService,
+  Service,
   EventHandler,
   EventStore,
   Result,
@@ -11,7 +11,7 @@ import { UserId } from 'apps/api/src/user/domain/value-objects';
 import { InstructorNotFoundException } from '../../exceptions';
 
 export class ToggleFollowCommandHandler
-  implements ApplicationService<ToggleFollowCommand, ToggleFollowResponse>
+  implements Service<ToggleFollowCommand, ToggleFollowResponse>
 {
   constructor(
     private readonly eventStore: EventStore,

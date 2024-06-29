@@ -1,1 +1,1 @@
-export { CheckVerificationCodeDto } from './dto.type';
+export { CheckVerificationCodeCommand } from './command.type';

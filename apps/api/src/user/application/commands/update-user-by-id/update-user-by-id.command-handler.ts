@@ -1,5 +1,5 @@
 import {
-  ApplicationService,
+  Service,
   EventHandler,
   EventStore,
   Result,
@@ -15,7 +15,7 @@ import {
 } from '../../../domain/value-objects';
 
 export class UpdateUserCommandHandler
-  implements ApplicationService<UpdateUserCommand, UpdateUserResponse>
+  implements Service<UpdateUserCommand, UpdateUserResponse>
 {
   constructor(
     private readonly eventStore: EventStore,

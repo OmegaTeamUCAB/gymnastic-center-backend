@@ -1,5 +1,5 @@
 import {
-  ApplicationService,
+  Service,
   EventHandler,
   EventStore,
   Result,
@@ -19,7 +19,7 @@ import { CategoryId } from 'apps/api/src/category/domain/value-objects/category-
 import { InstructorId } from 'apps/api/src/instructor/domain/value-objects/instructor-id';
 
 export class CreateBlogCommandHandler
-  implements ApplicationService<CreateBlogCommand, CreateBlogResponse>
+  implements Service<CreateBlogCommand, CreateBlogResponse>
 {
   constructor(
     private readonly idGenerator: IdGenerator<string>,

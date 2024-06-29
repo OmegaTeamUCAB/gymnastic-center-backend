@@ -1,4 +1,4 @@
-import { EventHandlerModule, EventStoreModule, UUIDModule } from '@app/core';
+import { EventHandlerModule, EventStoreModule, LoggerModule, UUIDModule } from '@app/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Module } from '@nestjs/common';
 import { BlogController } from './controllers/blog.controller';
@@ -20,6 +20,7 @@ import {
     UUIDModule,
     EventStoreModule,
     EventHandlerModule,
+    LoggerModule,
   ],
   controllers: [BlogController],
   providers: [],

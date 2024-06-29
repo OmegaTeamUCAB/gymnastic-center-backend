@@ -1,5 +1,5 @@
 import {
-  ApplicationService,
+  Service,
   EventHandler,
   EventStore,
   IdGenerator,
@@ -13,7 +13,7 @@ import { InstructorImage } from '../../../domain/value-objects/instructor-image'
 
 export class CreateInstructorCommandHandler
   implements
-    ApplicationService<CreateInstructorCommand, CreateInstructorResponse>
+    Service<CreateInstructorCommand, CreateInstructorResponse>
 {
   constructor(
     private readonly idGenerator: IdGenerator<string>,

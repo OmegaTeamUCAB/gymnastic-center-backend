@@ -1,3 +1,4 @@
+export { CountResponse } from './count-response';
 export { DateBasedResponse } from './date-based.response';
 export { IdResponse } from './id.response';
 export { SearchResponse } from './search.response';

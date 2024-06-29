@@ -1,2 +1,2 @@
-export { SignUpDTO } from './dto.type';
+export { SignUpCommand } from './command.type';
 export { SignUpResponse } from './response.type';

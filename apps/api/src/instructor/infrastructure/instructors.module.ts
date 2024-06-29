@@ -8,6 +8,7 @@ import {
   UUIDModule,
   MongoInstructor,
   InstructorSchema,
+  LoggerModule,
 } from '@app/core';
 
 @Module({
@@ -19,6 +20,7 @@ import {
     UUIDModule,
     EventStoreModule,
     EventHandlerModule,
+    LoggerModule,
   ],
   controllers: [InstructorController],
   providers: [],

@@ -15,12 +15,16 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Model } from 'mongoose';
 import {
+  CountResponse,
   EVENT_STORE,
   EventHandler,
   EventStore,
+  ILogger,
   IdGenerator,
   IdResponse,
   LOCAL_EVENT_HANDLER,
+  LOGGER,
+  LoggingDecorator,
   UUIDGENERATOR,
 } from '@app/core';
 import { CreateCourseDto, UpdateCourseDto } from './dtos';
@@ -46,6 +50,8 @@ export class CourseController {
     private readonly localEventHandler: EventHandler,
     @InjectModel(MongoCourse.name)
     private readonly courseModel: Model<MongoCourse>,
+    @Inject(LOGGER)
+    private readonly logger: ILogger,
   ) {}
 
   @Get('many')
@@ -162,10 +168,14 @@ export class CourseController {
     type: IdResponse,
   })
   async createCourse(@Body() createCourseDto: CreateCourseDto) {
-    const service = new CreateCourseCommandHandler(
-      this.uuidGenerator,
-      this.eventStore,
-      this.localEventHandler,
+    const service = new LoggingDecorator(
+      new CreateCourseCommandHandler(
+        this.uuidGenerator,
+        this.eventStore,
+        this.localEventHandler,
+      ),
+      this.logger,
+      'Create Course',
     );
     const result = await service.execute({ ...createCourseDto });
     return result.unwrap();
@@ -181,12 +191,44 @@ export class CourseController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCourseDto: UpdateCourseDto,
   ) {
-    const service = new UpdateCourseCommandHandler(
-      this.eventStore,
-      this.localEventHandler,
+    const service = new LoggingDecorator(
+      new UpdateCourseCommandHandler(this.eventStore, this.localEventHandler),
+      this.logger,
+      'Update Course',
     );
     const result = await service.execute({ id, ...updateCourseDto });
     const response = result.unwrap();
     return response;
+  }
+
+  @Get('count')
+  @ApiResponse({
+    status: 200,
+    description: 'Courses count',
+    type: CountResponse,
+  })
+  @ApiQuery({
+    name: 'trainer',
+    required: false,
+    description: 'Instructor id filter',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'category',
+    required: false,
+    description: 'Category id filter',
+    type: String,
+  })
+  async countCourses(
+    @Query('trainer') instructorId?: string,
+    @Query('category') categoryId?: string,
+  ): Promise<CountResponse> {
+    const count = await this.courseModel.countDocuments({
+      ...(instructorId && { 'trainer.id': instructorId }),
+      ...(categoryId && { 'category.id': categoryId }),
+    });
+    return {
+      count,
+    };
   }
 }

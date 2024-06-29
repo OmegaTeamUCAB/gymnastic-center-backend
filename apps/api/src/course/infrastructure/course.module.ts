@@ -5,7 +5,7 @@ import {
   CourseSchema,
   MongoCourse,
 } from '../../../../../libs/core/src/infrastructure/models/mongo-course.model';
-import { EventHandlerModule, EventStoreModule, UUIDModule } from '@app/core';
+import { EventHandlerModule, EventStoreModule, LoggerModule, UUIDModule } from '@app/core';
 import { AuthModule } from '../../auth/infrastructure';
 
 @Module({
@@ -20,6 +20,7 @@ import { AuthModule } from '../../auth/infrastructure';
     UUIDModule,
     EventStoreModule,
     EventHandlerModule,
+    LoggerModule,
   ],
   providers: [],
   controllers: [CourseController],

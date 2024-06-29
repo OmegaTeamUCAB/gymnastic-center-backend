@@ -1,5 +1,5 @@
 import {
-  ApplicationService,
+  Service,
   EventHandler,
   EventStore,
   Result,
@@ -19,7 +19,7 @@ import {
 import { CategoryId } from 'apps/api/src/category/domain/value-objects/category-id';
 
 export class UpdateCourseCommandHandler
-  implements ApplicationService<UpdateCourseCommand, UpdateCourseResponse>
+  implements Service<UpdateCourseCommand, UpdateCourseResponse>
 {
   constructor(
     private readonly eventStore: EventStore,

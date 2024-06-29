@@ -20,6 +20,11 @@ export class Result<T> {
     return !!this.error;
   }
 
+  get errorMessage() {
+    if (!this.error) throw new Error('No error in result');
+    if (this.error) return this.error.message;
+  }
+
   static success<T>(value: T) {
     return new Result(value, undefined);
   }

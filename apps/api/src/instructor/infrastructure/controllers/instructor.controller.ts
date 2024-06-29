@@ -23,6 +23,9 @@ import {
   LOCAL_EVENT_HANDLER,
   EventHandler,
   MongoInstructor,
+  ILogger,
+  LOGGER,
+  LoggingDecorator,
 } from '@app/core';
 import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import { InstructorResponse } from '../responses/instructor.response';
@@ -47,6 +50,8 @@ export class InstructorController {
     private readonly localEventHandler: EventHandler,
     @InjectModel(MongoInstructor.name)
     private readonly instructorModel: Model<MongoInstructor>,
+    @Inject(LOGGER)
+    private readonly logger: ILogger,
   ) {}
 
   @Get('many')
@@ -140,9 +145,10 @@ export class InstructorController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() credentials: Credentials,
   ) {
-    const service = new ToggleFollowCommandHandler(
-      this.eventStore,
-      this.localEventHandler,
+    const service = new LoggingDecorator(
+      new ToggleFollowCommandHandler(this.eventStore, this.localEventHandler),
+      this.logger,
+      'Toggle Follow',
     );
     const result = await service.execute({
       instructorId: id,
@@ -158,10 +164,14 @@ export class InstructorController {
     type: IdResponse,
   })
   async createInstructor(@Body() createInstructorDto: CreateInstructorDto) {
-    const service = new CreateInstructorCommandHandler(
-      this.uuidGenerator,
-      this.eventStore,
-      this.localEventHandler,
+    const service = new LoggingDecorator(
+      new CreateInstructorCommandHandler(
+        this.uuidGenerator,
+        this.eventStore,
+        this.localEventHandler,
+      ),
+      this.logger,
+      'Create Instructor',
     );
     const result = await service.execute(createInstructorDto);
     return result.unwrap();

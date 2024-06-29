@@ -23,11 +23,15 @@ import {
   IdResponse,
   LOCAL_EVENT_HANDLER,
   MongoComment,
-  SearchBlogsReadModel,
-  SearchCoursesReadModel,
   SearchResponse,
   UUIDGENERATOR,
   CreateTargetedTextDto,
+  LoggingDecorator,
+  ILogger,
+  LOGGER,
+  AlgoliaSearchCoursesService,
+  AlgoliaSearchBlogsService,
+  GetPopularAlgoliaFacetsService,
 } from '@app/core';
 import { Auth, CurrentUser } from './auth/infrastructure/decorators';
 import { Credentials } from './auth/application/models/credentials.model';
@@ -47,8 +51,11 @@ export class ApiController {
     private readonly eventStore: EventStore,
     @Inject(LOCAL_EVENT_HANDLER)
     private readonly localEventHandler: EventHandler,
-    private readonly searchCoursesReadModel: SearchCoursesReadModel,
-    private readonly searchBlogsReadModel: SearchBlogsReadModel,
+    private readonly searchCoursesService: AlgoliaSearchCoursesService,
+    private readonly searchBlogsService: AlgoliaSearchBlogsService,
+    @Inject(LOGGER)
+    private readonly logger: ILogger,
+    private readonly searchTagsService: GetPopularAlgoliaFacetsService,
   ) {}
 
   @Get('health')
@@ -57,7 +64,7 @@ export class ApiController {
     return 'Health check sent';
   }
 
-  @Get('search')
+  @Get('search/all')
   @Auth()
   @ApiQuery({
     name: 'perPage',
@@ -94,16 +101,67 @@ export class ApiController {
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
     @Query('perPage', new DefaultValuePipe(3), ParseIntPipe)
     perPage: number = 3,
-    @Query('tag', new DefaultValuePipe([]), ParseArrayPipe) tag: string[] = [],
-  ) {
-    const [courses, blogs] = await Promise.all([
-      this.searchCoursesReadModel.execute({ searchTerm, limit: perPage }),
-      this.searchBlogsReadModel.execute({ searchTerm, limit: perPage }),
+    @Query('tag', new DefaultValuePipe([]), ParseArrayPipe) tagParam: string[] = [],
+  ): Promise<SearchResponse> {
+    const tags = tagParam.map((tag) => {
+      const tagParts = tag.split('(');
+      return tagParts[0].trim();
+    });
+    const searchCoursesService = new LoggingDecorator(
+      this.searchCoursesService,
+      this.logger,
+      'Search Courses',
+    );
+    const searchBlogsService = new LoggingDecorator(
+      this.searchBlogsService,
+      this.logger,
+      'Search Blogs',
+    );
+    const [coursesResult, blogsResult] = await Promise.all([
+      searchCoursesService.execute({ searchTerm, limit: perPage, page, tags }),
+      searchBlogsService.execute({ searchTerm, limit: perPage, page, tags }),
     ]);
+    const courseHits = coursesResult.unwrap();
+    const blogHits = blogsResult.unwrap();
     return {
-      courses,
-      blogs,
+      courses: courseHits.map((hit) => ({
+        id: hit.id,
+        title: hit.name,
+        category: hit.category,
+        trainer: hit.instructor,
+        image: hit.image,
+      })),
+      blogs: blogHits.map((hit) => ({
+        id: hit.id,
+        title: hit.title,
+        category: hit.category,
+        trainer: hit.instructor,
+        image: hit.image,
+      })),
     };
+  }
+
+  @Get('search/popular/tags')
+  @Auth()
+  @ApiQuery({
+    name: 'perPage',
+    required: false,
+    description:
+      'Number of results to return for each type of search. DEFAULT = 3',
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Number of . DEFAULT = 1',
+    type: Number,
+  })
+  async getTags(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
+    @Query('perPage', new DefaultValuePipe(3), ParseIntPipe)
+    perPage: number = 8,
+  ): Promise<string[]> {
+    return (await this.searchTagsService.execute({ page, perPage })).unwrap();
   }
 
   @Get('comment/many')
@@ -168,12 +226,14 @@ export class ApiController {
         {
           skip: (page - 1) * perPage,
           perPage,
-          sort: sort === 'DATE' ? { publishDate: 1 } : { numberOfLikes: 1 },
+          sort: sort === 'DATE' ? { publishDate: -1 } : { numberOfLikes: -1 },
         },
       );
       return comments.map((comment) => ({
         id: comment.id,
-        user: comment.publisher,
+        user: comment.publisher.name,
+        userId: comment.publisher.id,
+        userImage: comment.publisher.image,
         countLikes: comment.numberOfLikes,
         countDislikes: comment.numberOfDislikes,
         userLiked: comment.likes.includes(credentials.userId),
@@ -186,6 +246,7 @@ export class ApiController {
   }
 
   @Post('comment/release')
+  @Auth()
   @ApiResponse({
     status: 201,
     description: 'Comment created successfully',
@@ -197,10 +258,14 @@ export class ApiController {
     @CurrentUser() credentials: Credentials,
   ) {
     if (createCommentDto.targetType === 'BLOG') {
-      const service = new CreateCommentCommandHandler(
-        this.uuidGenerator,
-        this.eventStore,
-        this.localEventHandler,
+      const service = new LoggingDecorator(
+        new CreateCommentCommandHandler(
+          this.uuidGenerator,
+          this.eventStore,
+          this.localEventHandler,
+        ),
+        this.logger,
+        'Create Comment',
       );
       const result = await service.execute({
         blog: createCommentDto.target,

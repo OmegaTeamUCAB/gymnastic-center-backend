@@ -1,6 +1,7 @@
 import {
   CourseAlreadyStartedByUserException,
   InvalidCourseException,
+  CourseNotStartedByUserException,
 } from './exceptions';
 import {
   CourseDescription,
@@ -26,6 +27,7 @@ import {
   CourseNameUpdated,
   CourseStarted,
   CourseTagsUpdated,
+  CourseLessonWatched,
 } from './events';
 import {
   LessonDescription,
@@ -39,8 +41,6 @@ import {
   CompletionPercentage,
   LastSecondWatched,
 } from './entities/user-progress/value-objects';
-import { LessonNotExistentException } from './exceptions/lesson-not-existent.exception';
-import { CourseLessonWatched } from './events/course-lesson-watched';
 
 export class Course extends AggregateRoot<CourseId> {
   private constructor(id: CourseId) {
@@ -176,7 +176,7 @@ export class Course extends AggregateRoot<CourseId> {
       (progress) =>
         progress.user.equals(user) && progress.lesson.equals(lesson),
     );
-    if (!lessonProgress) throw new LessonNotExistentException();
+    if (!lessonProgress) throw new CourseNotStartedByUserException();
     this.apply(
       CourseLessonWatched.createEvent(
         this.id,

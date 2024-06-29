@@ -3,10 +3,16 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CourseController } from './controllers/course.controller';
 import {
   CourseSchema,
+  EventHandlerModule,
+  EventStoreModule,
+  LoggerModule,
   MongoCourse,
-} from '../../../../../libs/core/src/infrastructure/models/mongo-course.model';
-import { EventHandlerModule, EventStoreModule, LoggerModule, UUIDModule } from '@app/core';
+  MongoProgress,
+  ProgressSchema,
+  UUIDModule,
+} from '@app/core';
 import { AuthModule } from '../../auth/infrastructure';
+import { ProgressController } from './controllers/progress.controller';
 
 @Module({
   imports: [
@@ -14,6 +20,10 @@ import { AuthModule } from '../../auth/infrastructure';
       {
         name: MongoCourse.name,
         schema: CourseSchema,
+      },
+      {
+        name: MongoProgress.name,
+        schema: ProgressSchema,
       },
     ]),
     AuthModule,
@@ -23,6 +33,6 @@ import { AuthModule } from '../../auth/infrastructure';
     LoggerModule,
   ],
   providers: [],
-  controllers: [CourseController],
+  controllers: [CourseController, ProgressController],
 })
 export class CourseModule {}

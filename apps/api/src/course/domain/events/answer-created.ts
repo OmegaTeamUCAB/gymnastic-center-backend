@@ -1,0 +1,44 @@
+import { DomainEvent } from '@app/core';
+import {
+  QuestionContent,
+  QuestionDate,
+  QuestionId,
+} from '../entities/questions/value-objects';
+import { LessonId } from '../entities/lessons/value-objects';
+import { DomainEventFactory } from '@app/core/domain/events/domain-event';
+import { InstructorId } from 'apps/api/src/instructor/domain/value-objects/instructor-id';
+import { AnswerId } from '../entities/answers/value-objects';
+
+export type AnswerCreatedEvent = DomainEvent<AnswerCreated>;
+
+export class AnswerCreated {
+  private constructor() {}
+  answerId: string;
+  questionId: string;
+  instructor: string;
+  lesson: string;
+  content: string;
+  date: Date;
+  static createEvent(
+    dispatcher: QuestionId,
+    answerId: AnswerId,
+    questionId: QuestionId,
+    instructor: InstructorId,
+    lesson: LessonId,
+    content: QuestionContent,
+    date: QuestionDate,
+  ): AnswerCreatedEvent {
+    return DomainEventFactory<AnswerCreated>({
+      dispatcherId: dispatcher.value,
+      name: AnswerCreated.name,
+      context: {
+        answerId: answerId.value,
+        questionId: questionId.value,
+        instructor: instructor.value,
+        lesson: lesson.value,
+        content: content.value,
+        date: date.value,
+      },
+    });
+  }
+}

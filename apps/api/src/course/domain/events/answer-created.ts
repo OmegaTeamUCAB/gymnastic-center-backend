@@ -7,7 +7,8 @@ import {
 import { LessonId } from '../entities/lessons/value-objects';
 import { DomainEventFactory } from '@app/core/domain/events/domain-event';
 import { InstructorId } from 'apps/api/src/instructor/domain/value-objects/instructor-id';
-import { AnswerId } from '../entities/answers/value-objects';
+import { AnswerContent, AnswerDate, AnswerId } from '../entities/answers/value-objects';
+import { CourseId } from '../value-objects';
 
 export type AnswerCreatedEvent = DomainEvent<AnswerCreated>;
 
@@ -20,13 +21,13 @@ export class AnswerCreated {
   content: string;
   date: Date;
   static createEvent(
-    dispatcher: QuestionId,
+    dispatcher: CourseId,
     answerId: AnswerId,
     questionId: QuestionId,
     instructor: InstructorId,
     lesson: LessonId,
-    content: QuestionContent,
-    date: QuestionDate,
+    content: AnswerContent,
+    date: AnswerDate,
   ): AnswerCreatedEvent {
     return DomainEventFactory<AnswerCreated>({
       dispatcherId: dispatcher.value,

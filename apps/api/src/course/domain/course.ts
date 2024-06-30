@@ -2,6 +2,7 @@ import {
   CourseAlreadyStartedByUserException,
   InvalidCourseException,
   CourseNotStartedByUserException,
+  InvalidInstructorToAnswerException,
 } from './exceptions';
 import {
   CourseDescription,
@@ -45,9 +46,17 @@ import {
 } from './entities/user-progress/value-objects';
 import { Question } from './entities/questions';
 import { Answer } from './entities/answers/answer';
-import { QuestionContent, QuestionDate, QuestionId } from './entities/questions/value-objects';
+import {
+  QuestionContent,
+  QuestionDate,
+  QuestionId,
+} from './entities/questions/value-objects';
 import { AnswerCreated } from './events/answer-created';
-import { AnswerContent, AnswerDate, AnswerId } from './entities/answers/value-objects';
+import {
+  AnswerContent,
+  AnswerDate,
+  AnswerId,
+} from './entities/answers/value-objects';
 
 export class Course extends AggregateRoot<CourseId> {
   private constructor(id: CourseId) {
@@ -179,6 +188,36 @@ export class Course extends AggregateRoot<CourseId> {
     if (this.isBeingWatchedBy(user))
       throw new CourseAlreadyStartedByUserException();
     this.apply(CourseStarted.createEvent(this.id, user));
+  }
+
+  addQuestion(question: Question): void {
+    this.apply(
+      QuestionCreated.createEvent(
+        this.id,
+        question.id,
+        question.user,
+        question.lesson,
+        question.content,
+        question.date,
+      ),
+    );
+  }
+
+  addAnswer(answer: Answer): void {
+    if (answer.instructor !== this.instructor)
+      throw new InvalidInstructorToAnswerException();
+
+    this.apply(
+      AnswerCreated.createEvent(
+        this.id,
+        answer.id,
+        answer.question,
+        answer.instructor,
+        answer.lesson,
+        answer.content,
+        answer.date,
+      ),
+    );
   }
 
   watchLesson(
@@ -337,7 +376,7 @@ export class Course extends AggregateRoot<CourseId> {
         new LessonId(context.lesson),
         new QuestionContent(context.content),
         new QuestionDate(context.date),
-      )
+      ),
     );
   }
 
@@ -350,7 +389,7 @@ export class Course extends AggregateRoot<CourseId> {
         new LessonId(context.lesson),
         new AnswerContent(context.content),
         new AnswerDate(context.date),
-      )
+      ),
     );
   }
 }

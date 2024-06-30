@@ -17,7 +17,7 @@ export class MongoProgressProjector implements Projector {
   ) {}
 
   async clear() {
-    await this.courseModel.deleteMany();
+    await this.progressModel.deleteMany();
   }
 
   async project(event: EventType): Promise<void> {

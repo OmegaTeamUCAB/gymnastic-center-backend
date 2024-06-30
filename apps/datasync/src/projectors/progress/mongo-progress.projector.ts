@@ -172,7 +172,7 @@ export class MongoProgressProjector implements Projector {
     const averageCompletionPercentage =
       progress.lessons.reduce((acc, lesson) => acc + lesson.percent, 0) /
       progress.lessons.length;
-    progress.percent = averageCompletionPercentage;
+    progress.percent = Math.round(averageCompletionPercentage * 100) / 100;
     await progress.save();
   }
 

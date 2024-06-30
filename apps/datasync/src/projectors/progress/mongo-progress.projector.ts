@@ -61,7 +61,10 @@ export class MongoProgressProjector implements Projector {
     await this.progressModel.updateMany(
       { courseId: event.dispatcherId },
       {
-        category: category.name,
+        category: {
+          id: category.id,
+          name: category.name,
+        },
       },
     );
   }
@@ -77,7 +80,12 @@ export class MongoProgressProjector implements Projector {
     });
     await this.progressModel.updateMany(
       { courseId: { $in: courses.map((course) => course.id) } },
-      { category: name },
+      {
+        category: {
+          id: event.dispatcherId,
+          name,
+        },
+      },
     );
   }
 
@@ -92,7 +100,12 @@ export class MongoProgressProjector implements Projector {
     });
     await this.progressModel.updateMany(
       { courseId: { $in: courses.map((course) => course.id) } },
-      { trainer: name },
+      {
+        trainer: {
+          id: event.dispatcherId,
+          name,
+        },
+      },
     );
   }
 
@@ -109,8 +122,14 @@ export class MongoProgressProjector implements Projector {
       userId: user,
       title: course.title,
       image: course.image,
-      category: course.category.name,
-      trainer: course.trainer.name,
+      category: {
+        id: course.category.id,
+        name: course.category.name,
+      },
+      trainer: {
+        id: course.trainer.id,
+        name: course.trainer.name,
+      },
       percent: 0,
       lastTime: new Date(),
       publishDate: course.publishDate,
@@ -132,12 +151,7 @@ export class MongoProgressProjector implements Projector {
   ) {
     const { user, lesson, completionPercentage, lastSecondWatched } =
       event.context;
-    const progress = await this.progressModel.findOne({
-      courseId: event.dispatcherId,
-      userId: user,
-    });
-    if (!progress) return;
-    await this.progressModel.updateOne(
+    const progress = await this.progressModel.findOneAndUpdate(
       {
         courseId: event.dispatcherId,
         userId: user,
@@ -151,8 +165,15 @@ export class MongoProgressProjector implements Projector {
       },
       {
         arrayFilters: [{ 'lesson.id': lesson }],
+        new: true,
       },
     );
+    if (!progress) return;
+    const averageCompletionPercentage =
+      progress.lessons.reduce((acc, lesson) => acc + lesson.percent, 0) /
+      progress.lessons.length;
+    progress.percent = averageCompletionPercentage;
+    await progress.save();
   }
 
   async onCourseCompleted(

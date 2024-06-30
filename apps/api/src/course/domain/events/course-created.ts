@@ -5,11 +5,9 @@ import {
   CourseId,
   CourseImage,
   CourseLevel,
-  CourseMinute,
   CourseName,
   CoursePublishDate,
   CourseTag,
-  CourseWeek,
 } from '../value-objects';
 import {
   DomainEvent,

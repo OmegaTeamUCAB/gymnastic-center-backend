@@ -39,7 +39,6 @@ export class CreateCourseCommandHandler
     command: CreateCourseCommand,
   ): Promise<Result<CreateCourseResponse>> {
     const id = this.idGenerator.generateId();
-    const lessonId = this.idGenerator.generateId();
     const data = {
       name: new CourseName(command.name),
       description: new CourseDescription(command.description),
@@ -52,7 +51,7 @@ export class CreateCourseCommandHandler
       lessons: command.lessons.map(
         (lesson) =>
           new Lesson(
-            new LessonId(lessonId),
+            new LessonId(this.idGenerator.generateId()),
             new LessonTitle(lesson.title),
             new LessonDescription(lesson.description),
             new LessonVideo(lesson.video),

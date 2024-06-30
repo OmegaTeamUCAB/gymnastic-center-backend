@@ -18,6 +18,8 @@ import {
   MongoCourse,
   BlogSchema,
   MongoBlog,
+  MongoProgress,
+  ProgressSchema,
 } from '@app/core';
 import { DatasyncController } from './datasync.controller';
 import {
@@ -27,6 +29,7 @@ import {
   MongoCommentProjector,
   MongoCourseProjector,
   MongoInstructorProjector,
+  MongoProgressProjector,
   MongoUserProjector,
 } from './projectors';
 import { MongoBlogProjector } from './projectors/blog/mongo-blog.projector';
@@ -40,7 +43,7 @@ import { MongoBlogProjector } from './projectors/blog/mongo-blog.projector';
         RABBITMQ_EVENTS_QUEUE: Joi.string().required(),
         MONGODB_CNN: Joi.string().required(),
         ALGOLIA_ID: Joi.string().required(),
-        ALGOLIA_KEY: Joi.string().required()
+        ALGOLIA_KEY: Joi.string().required(),
       }),
       envFilePath: './apps/datasync/.env',
     }),
@@ -73,6 +76,10 @@ import { MongoBlogProjector } from './projectors/blog/mongo-blog.projector';
         name: MongoComment.name,
         schema: CommentSchema,
       },
+      {
+        name: MongoProgress.name,
+        schema: ProgressSchema,
+      },
     ]),
   ],
   controllers: [DatasyncController],
@@ -85,34 +92,38 @@ import { MongoBlogProjector } from './projectors/blog/mongo-blog.projector';
     MongoBlogProjector,
     MongoCommentProjector,
     MongoInstructorProjector,
+    MongoProgressProjector,
     {
       provide: 'PROJECTORS',
       useFactory: (
-        userProjector: MongoUserProjector,
         categoryProjector: MongoCategoryProjector,
-        courseProjector: MongoCourseProjector,
+        instructorProjector: MongoInstructorProjector,
+        userProjector: MongoUserProjector,
         blogProjector: MongoBlogProjector,
         commentProjector: MongoCommentProjector,
-        instructorProjector: MongoInstructorProjector,
+        courseProjector: MongoCourseProjector,
+        progressProjector: MongoProgressProjector,
         algoliaBlogProjector: AlgoliaBlogProjector,
         algoliaCourseProjector: AlgoliaCourseProjector,
       ) => [
-        userProjector,
         categoryProjector,
-        courseProjector,
+        instructorProjector,
+        userProjector,
         blogProjector,
         commentProjector,
-        instructorProjector,
+        courseProjector,
+        progressProjector,
         algoliaBlogProjector,
         algoliaCourseProjector,
       ],
       inject: [
-        MongoUserProjector,
         MongoCategoryProjector,
+        MongoInstructorProjector,
         MongoCourseProjector,
+        MongoUserProjector,
         MongoBlogProjector,
         MongoCommentProjector,
-        MongoInstructorProjector,
+        MongoProgressProjector,
         AlgoliaBlogProjector,
         AlgoliaCourseProjector,
       ],

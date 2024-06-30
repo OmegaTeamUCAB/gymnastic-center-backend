@@ -3,7 +3,7 @@ import { HydratedDocument, SchemaTypes } from 'mongoose';
 
 export type ProgressDocument = HydratedDocument<MongoProgress>;
 
-@Schema({ collection: 'courses', timestamps: false, versionKey: false })
+@Schema({ collection: 'progress', timestamps: false, versionKey: false })
 export class MongoProgress {
   readonly _id: string;
 

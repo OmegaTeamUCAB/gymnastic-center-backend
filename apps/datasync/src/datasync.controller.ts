@@ -21,7 +21,7 @@ export class DatasyncController implements OnApplicationBootstrap {
         ...this.projectors.map((p) => p.clear()),
       ]);
       for (const event of events)
-        for (const projector of this.projectors) await projector.project(event);
+        await Promise.all(this.projectors.map((p) => p.project(event)));
     }
   }
 

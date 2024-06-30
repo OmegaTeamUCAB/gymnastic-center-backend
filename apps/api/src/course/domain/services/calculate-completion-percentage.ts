@@ -17,7 +17,7 @@ export class CalculateCompletionPercentage
     if (markAsCompleted) return CompletionPercentage.completed();
     if (totalSeconds < lastSecondWatched)
       throw new InvalidCompletionPercentageException();
-    if (totalSeconds <= lastSecondWatched + 3)
+    if (totalSeconds <= lastSecondWatched + 5)
       return CompletionPercentage.completed();
     return new CompletionPercentage((lastSecondWatched * 100) / totalSeconds);
   }

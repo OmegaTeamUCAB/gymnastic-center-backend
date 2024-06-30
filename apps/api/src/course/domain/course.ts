@@ -29,6 +29,7 @@ import {
   CourseTagsUpdated,
   CourseLessonWatched,
   CourseCompleted,
+  QuestionCreated,
 } from './events';
 import {
   LessonDescription,
@@ -42,6 +43,11 @@ import {
   CompletionPercentage,
   LastSecondWatched,
 } from './entities/user-progress/value-objects';
+import { Question } from './entities/questions';
+import { Answer } from './entities/answers/answer';
+import { QuestionContent, QuestionDate, QuestionId } from './entities/questions/value-objects';
+import { AnswerCreated } from './events/answer-created';
+import { AnswerContent, AnswerDate, AnswerId } from './entities/answers/value-objects';
 
 export class Course extends AggregateRoot<CourseId> {
   private constructor(id: CourseId) {
@@ -65,7 +71,9 @@ export class Course extends AggregateRoot<CourseId> {
       this._progressHistory.some(
         (progress) =>
           !this.lessons.find((lesson) => lesson.id.equals(progress.lesson)),
-      )
+      ) ||
+      !this._questions ||
+      !this._answers
     ) {
       throw new InvalidCourseException();
     }
@@ -82,6 +90,8 @@ export class Course extends AggregateRoot<CourseId> {
   private _instructor: InstructorId;
   private _lessons: Lesson[];
   private _progressHistory: UserProgress[];
+  private _questions: Question[];
+  private _answers: Answer[];
 
   get name(): CourseName {
     return this._name;
@@ -121,6 +131,10 @@ export class Course extends AggregateRoot<CourseId> {
 
   get lessons(): Lesson[] {
     return this._lessons;
+  }
+
+  get questions(): Question[] {
+    return this._questions;
   }
 
   updateName(name: CourseName): void {
@@ -248,6 +262,8 @@ export class Course extends AggregateRoot<CourseId> {
         ),
     );
     this._progressHistory = [];
+    this._questions = [];
+    this._answers = [];
   }
 
   [`on${CourseNameUpdated.name}`](context: CourseNameUpdated): void {
@@ -312,4 +328,29 @@ export class Course extends AggregateRoot<CourseId> {
   }
 
   [`on${CourseCompleted.name}`](context: CourseCompleted) {}
+
+  [`on${QuestionCreated.name}`](context: QuestionCreated) {
+    this._questions.push(
+      new Question(
+        new QuestionId(context.questionId),
+        new UserId(context.user),
+        new LessonId(context.lesson),
+        new QuestionContent(context.content),
+        new QuestionDate(context.date),
+      )
+    );
+  }
+
+  [`on${AnswerCreated.name}`](context: AnswerCreated) {
+    this._answers.push(
+      new Answer(
+        new AnswerId(context.answerId),
+        new QuestionId(context.questionId),
+        new InstructorId(context.instructor),
+        new LessonId(context.lesson),
+        new AnswerContent(context.content),
+        new AnswerDate(context.date),
+      )
+    );
+  }
 }

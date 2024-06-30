@@ -157,7 +157,7 @@ export class MongoProgressProjector implements Projector {
         userId: user,
       },
       {
-        lastTime: new Date(),
+        lastTime: event.timestamp,
         $set: {
           'lessons.$[lesson].percent': completionPercentage,
           'lessons.$[lesson].time': lastSecondWatched,

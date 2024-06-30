@@ -73,6 +73,7 @@ export class MongoEventStore
           dispatcherId: event.stream,
           context: event.context,
           name: event.type,
+          timestamp: event.date,
         });
       }
     });

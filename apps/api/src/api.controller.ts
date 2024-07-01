@@ -5,6 +5,7 @@ import {
   DefaultValuePipe,
   Get,
   Inject,
+  NotFoundException,
   ParseArrayPipe,
   ParseIntPipe,
   Post,
@@ -13,7 +14,7 @@ import {
 import { ClientProxy } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { Model } from 'mongoose';
+import { Model, Models } from 'mongoose';
 import {
   EVENTS_QUEUE,
   EVENT_STORE,
@@ -32,11 +33,14 @@ import {
   AlgoliaSearchCoursesService,
   AlgoliaSearchBlogsService,
   GetPopularAlgoliaFacetsService,
+  MongoCourse,
 } from '@app/core';
 import { Auth, CurrentUser } from './auth/infrastructure/decorators';
 import { Credentials } from './auth/application/models/credentials.model';
 import { CommentResponse } from './comment/infrastructure/controllers/responses';
 import { CreateCommentCommandHandler } from './comment/application/commands/create-comment';
+import { CreateQuestionCommandHandler } from './course/application/commands/create-question';
+import { CreateQuestionCommand } from './course/application/commands/create-question/types';
 
 @Controller()
 export class ApiController {
@@ -56,6 +60,8 @@ export class ApiController {
     @Inject(LOGGER)
     private readonly logger: ILogger,
     private readonly searchTagsService: GetPopularAlgoliaFacetsService,
+    @InjectModel(MongoCourse.name)
+    private readonly courseModel: Model<MongoCourse>,
   ) {}
 
   @Get('health')
@@ -101,7 +107,8 @@ export class ApiController {
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
     @Query('perPage', new DefaultValuePipe(3), ParseIntPipe)
     perPage: number = 3,
-    @Query('tag', new DefaultValuePipe([]), ParseArrayPipe) tagParam: string[] = [],
+    @Query('tag', new DefaultValuePipe([]), ParseArrayPipe)
+    tagParam: string[] = [],
   ): Promise<SearchResponse> {
     const tags = tagParam.map((tag) => {
       const tagParts = tag.split('(');
@@ -274,6 +281,21 @@ export class ApiController {
       });
       return result.unwrap();
     }
-    // TODO: QUESTIONS
+    const service = new LoggingDecorator(
+      new CreateQuestionCommandHandler(this.uuidGenerator, this.eventStore),
+      this.logger,
+      'Create Question',
+    );
+    const course = await this.courseModel.findOne({
+      lessons: { $elemMatch: { id: createCommentDto.target } },
+    });
+    if (!course) throw new NotFoundException('Course not found');
+    const result = await service.execute({
+      content: createCommentDto.body,
+      user: credentials.userId,
+      courseId: course.id,
+      lesson: createCommentDto.target,
+    });
+    return result.unwrap();
   }
 }

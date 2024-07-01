@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes } from 'mongoose';
 
-export type CommentDocument = HydratedDocument<MongoComment>;
+export type CommentDocument = HydratedDocument<MongoQuestion>;
 
-@Schema({ collection: 'blogcomments', timestamps: false, versionKey: false })
-export class MongoComment {
+@Schema({ collection: 'questions', timestamps: false, versionKey: false })
+export class MongoQuestion {
   readonly _id: string;
 
   @Prop({
@@ -23,7 +23,7 @@ export class MongoComment {
     type: SchemaTypes.UUID,
     required: true,
   })
-  blog: string;
+  lesson: string;
 
   @Prop({
     type: {
@@ -50,35 +50,34 @@ export class MongoComment {
   };
 
   @Prop({
+    required: false,
+    type: {
+      instructorName: {
+        type: String,
+        required: true,
+      },
+      instructorImage: {
+        type: String,
+        required: false,
+      },
+      answer: {
+        type: String,
+        required: true,
+      },
+      _id: false,
+    },
+  })
+  answer?: {
+    instructorName: string;
+    instructorImage?: string;
+    answer: string;
+  };
+
+  @Prop({
     required: true,
   })
   publishDate: Date;
-
-  @Prop({
-    required: true,
-    default: [],
-  })
-  likes: string[];
-
-  @Prop({
-    required: true,
-    default: [],
-  })
-  dislikes: string[];
-
-  @Prop({
-    required: true,
-    default: 0,
-  })
-  numberOfLikes: number;
-
-  @Prop({
-    required: true,
-    default: 0,
-  })
-  numberOfDislikes: number;
 }
 
-export const CommentSchema = SchemaFactory.createForClass(MongoComment);
-CommentSchema.index({ blog: 1, publishDate: -1 });
-CommentSchema.index({ blog: 1, numberOfLikes: -1 });
+export const QuestionSchema = SchemaFactory.createForClass(MongoQuestion);
+QuestionSchema.index({ lesson: 1, publishDate: -1 });

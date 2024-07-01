@@ -10,6 +10,8 @@ import {
   MongoProgress,
   ProgressSchema,
   UUIDModule,
+  MongoQuestion,
+  QuestionSchema,
 } from '@app/core';
 import { AuthModule } from '../../auth/infrastructure';
 import { ProgressController } from './controllers/progress.controller';
@@ -25,6 +27,10 @@ import { ProgressController } from './controllers/progress.controller';
         name: MongoProgress.name,
         schema: ProgressSchema,
       },
+      {
+        name: MongoQuestion.name,
+        schema: QuestionSchema,
+      },
     ]),
     AuthModule,
     UUIDModule,
@@ -34,5 +40,6 @@ import { ProgressController } from './controllers/progress.controller';
   ],
   providers: [],
   controllers: [CourseController, ProgressController],
+  exports: [MongooseModule],
 })
 export class CourseModule {}

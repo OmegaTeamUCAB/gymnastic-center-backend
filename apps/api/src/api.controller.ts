@@ -14,7 +14,7 @@ import {
 import { ClientProxy } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { Model, Models } from 'mongoose';
+import { Model } from 'mongoose';
 import {
   EVENTS_QUEUE,
   EVENT_STORE,
@@ -34,13 +34,13 @@ import {
   AlgoliaSearchBlogsService,
   GetPopularAlgoliaFacetsService,
   MongoCourse,
+  CommentOrQuestionResponse,
+  MongoQuestion,
 } from '@app/core';
 import { Auth, CurrentUser } from './auth/infrastructure/decorators';
 import { Credentials } from './auth/application/models/credentials.model';
-import { CommentResponse } from './comment/infrastructure/controllers/responses';
 import { CreateCommentCommandHandler } from './comment/application/commands/create-comment';
 import { CreateQuestionCommandHandler } from './course/application/commands/create-question';
-import { CreateQuestionCommand } from './course/application/commands/create-question/types';
 
 @Controller()
 export class ApiController {
@@ -62,6 +62,8 @@ export class ApiController {
     private readonly searchTagsService: GetPopularAlgoliaFacetsService,
     @InjectModel(MongoCourse.name)
     private readonly courseModel: Model<MongoCourse>,
+    @InjectModel(MongoQuestion.name)
+    private readonly questionModel: Model<MongoQuestion>,
   ) {}
 
   @Get('health')
@@ -207,7 +209,7 @@ export class ApiController {
   @ApiResponse({
     status: 200,
     description: 'Returns all comments from a post or lesson',
-    type: [CommentResponse],
+    type: [CommentOrQuestionResponse],
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async GetAllComments(
@@ -217,7 +219,7 @@ export class ApiController {
     @Query('blog') blog?: string,
     @Query('lesson') lesson?: string,
     @Query('sort') sort?: 'LIKES' | 'DATE',
-  ): Promise<CommentResponse[]> {
+  ): Promise<CommentOrQuestionResponse[]> {
     if (!blog && !lesson)
       throw new BadRequestException('You must provide a blog or lesson id');
     if (blog && lesson)
@@ -232,7 +234,7 @@ export class ApiController {
         null,
         {
           skip: (page - 1) * perPage,
-          perPage,
+          limit: perPage,
           sort: sort === 'DATE' ? { publishDate: -1 } : { numberOfLikes: -1 },
         },
       );
@@ -249,7 +251,27 @@ export class ApiController {
         date: comment.publishDate,
       }));
     }
-    //TODO: QUESTIONS
+    const questions = await this.questionModel.find(
+      {
+        lesson,
+      },
+      null,
+      {
+        skip: (page - 1) * perPage,
+        limit: perPage,
+        sort: {
+          publishDate: -1,
+        },
+      },
+    );
+    return questions.map((question) => ({
+      id: question.id,
+      body: question.content,
+      date: question.publishDate,
+      user: question.publisher.name,
+      userImage: question.publisher.image,
+      answer: question.answer,
+    }));
   }
 
   @Post('comment/release')

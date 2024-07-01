@@ -9,7 +9,6 @@ export class Answer extends Entity<AnswerId> {
     id: AnswerId,
     protected _question: QuestionId,
     protected _instructor: InstructorId,
-    protected _lesson: LessonId,
     protected _content: AnswerContent,
     protected _date: AnswerDate,
   ) {
@@ -18,10 +17,6 @@ export class Answer extends Entity<AnswerId> {
 
   get instructor() {
     return this._instructor;
-  }
-
-  get lesson() {
-    return this._lesson;
   }
 
   get content() {

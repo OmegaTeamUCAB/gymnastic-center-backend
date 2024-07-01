@@ -1,16 +1,32 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-class AnswerResponse {
+class AnswerInstructorResponse {
   @ApiProperty()
-  instructorName: string;
+  id: string;
+
+  @ApiProperty()
+  name: string;
 
   @ApiProperty({
     nullable: true,
   })
-  instructorImage?: string;
+  image?: string;
+}
+
+class AnswerResponse {
+  @ApiProperty()
+  id: string;
 
   @ApiProperty()
   answer: string;
+
+  @ApiProperty()
+  date: Date;
+
+  @ApiProperty({
+    type: () => AnswerInstructorResponse,
+  })
+  instructor: AnswerInstructorResponse;
 }
 
 export class CommentOrQuestionResponse {

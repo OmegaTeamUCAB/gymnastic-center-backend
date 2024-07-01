@@ -1,1 +1,0 @@
-export const EXCEPTION_PARSER_SERVICE = 'ExceptionParserService';

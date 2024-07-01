@@ -1,20 +1,18 @@
-import { ApplicationService } from '../services/application-service';
-import { IExceptionParser } from '../exceptions/exception-parser.interface';
+import { Service } from '../services/application-service';
 import { Result } from '@app/core/utils';
 
-export class ExceptionParserDecorator<T, U> 
-    implements ApplicationService<T, U>
+export class ExceptionParserDecorator<T, U> implements Service<T, U>
 {
     constructor(
-        private readonly service: ApplicationService<T, U>,
-        private readonly exceptionParser: IExceptionParser
+        private readonly service: Service<T, U>,
+        private readonly errorHandler: (error: Result<U>) => void
     ) {}
 
     async execute(data: T): Promise<Result<U>> {
-        try {
-            return await this.service.execute(data);
-        } catch (error) {
-            throw this.exceptionParser.execute(error);
+        const result = await this.service.execute(data);
+        if (result.isFailure) {
+            this.errorHandler(result);
         }
+        return result;
     }
 }

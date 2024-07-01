@@ -17,7 +17,6 @@ export class AnswerCreated {
   answerId: string;
   questionId: string;
   instructor: string;
-  lesson: string;
   content: string;
   date: Date;
   static createEvent(
@@ -25,7 +24,6 @@ export class AnswerCreated {
     answerId: AnswerId,
     questionId: QuestionId,
     instructor: InstructorId,
-    lesson: LessonId,
     content: AnswerContent,
     date: AnswerDate,
   ): AnswerCreatedEvent {
@@ -36,7 +34,6 @@ export class AnswerCreated {
         answerId: answerId.value,
         questionId: questionId.value,
         instructor: instructor.value,
-        lesson: lesson.value,
         content: content.value,
         date: date.value,
       },

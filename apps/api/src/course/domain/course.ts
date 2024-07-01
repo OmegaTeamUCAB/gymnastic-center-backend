@@ -82,7 +82,8 @@ export class Course extends AggregateRoot<CourseId> {
           !this.lessons.find((lesson) => lesson.id.equals(progress.lesson)),
       ) ||
       !this._questions ||
-      !this._answers
+      !this._answers ||
+      this._answers.some((answer) => !answer.instructor.equals(this._instructor))
     ) {
       throw new InvalidCourseException();
     }
@@ -140,10 +141,6 @@ export class Course extends AggregateRoot<CourseId> {
 
   get lessons(): Lesson[] {
     return this._lessons;
-  }
-
-  get questions(): Question[] {
-    return this._questions;
   }
 
   updateName(name: CourseName): void {
@@ -213,7 +210,6 @@ export class Course extends AggregateRoot<CourseId> {
         answer.id,
         answer.question,
         answer.instructor,
-        answer.lesson,
         answer.content,
         answer.date,
       ),
@@ -386,7 +382,6 @@ export class Course extends AggregateRoot<CourseId> {
         new AnswerId(context.answerId),
         new QuestionId(context.questionId),
         new InstructorId(context.instructor),
-        new LessonId(context.lesson),
         new AnswerContent(context.content),
         new AnswerDate(context.date),
       ),

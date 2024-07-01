@@ -9,4 +9,3 @@ export { IdGenerator } from './id/id-generator.interface';
 export { CryptoService } from './crypto/crypto-service.interface';
 export { ILogger } from './logger/logger.interface';
 export { LoggingDecorator } from './decorators/logging.decorator';
-export { IExceptionParser } from './exceptions/exception-parser.interface';

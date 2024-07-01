@@ -191,6 +191,25 @@ export class Course extends AggregateRoot<CourseId> {
     this.apply(CourseStarted.createEvent(this.id, user));
   }
 
+  watchLesson(
+    lesson: LessonId,
+    user: UserId,
+    lastTime: LastSecondWatched,
+    progress: CompletionPercentage,
+  ): void {
+    if (!this.isBeingWatchedBy(user))
+      throw new CourseNotStartedByUserException();
+    this.apply(
+      CourseLessonWatched.createEvent(
+        this.id,
+        user,
+        lesson,
+        progress,
+        lastTime,
+      ),
+    );
+  }
+
   addQuestion(
     id: QuestionId,
     user: UserId,
@@ -219,7 +238,7 @@ export class Course extends AggregateRoot<CourseId> {
     instructor: InstructorId,
     content: AnswerContent,
   ): void {
-    if(!this._questions.some((q) => q.id.equals(question)))
+    if (!this._questions.some((q) => q.id.equals(question)))
       throw new QuestionNotFoundException();
     if (!instructor.equals(this._instructor))
       throw new InvalidInstructorToAnswerException();
@@ -233,28 +252,6 @@ export class Course extends AggregateRoot<CourseId> {
         instructor,
         content,
         new AnswerDate(new Date()),
-      ),
-    );
-  }
-
-  watchLesson(
-    lesson: LessonId,
-    user: UserId,
-    lastTime: LastSecondWatched,
-    progress: CompletionPercentage,
-  ): void {
-    const lessonProgress = this._progressHistory.find(
-      (progress) =>
-        progress.user.equals(user) && progress.lesson.equals(lesson),
-    );
-    if (!lessonProgress) throw new CourseNotStartedByUserException();
-    this.apply(
-      CourseLessonWatched.createEvent(
-        this.id,
-        user,
-        lesson,
-        progress,
-        lastTime,
       ),
     );
   }

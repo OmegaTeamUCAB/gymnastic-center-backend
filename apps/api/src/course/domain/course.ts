@@ -3,6 +3,8 @@ import {
   InvalidCourseException,
   CourseNotStartedByUserException,
   InvalidInstructorToAnswerException,
+  QuestionAlreadyAnsweredException,
+  QuestionNotFoundException,
 } from './exceptions';
 import {
   CourseDescription,
@@ -31,6 +33,7 @@ import {
   CourseLessonWatched,
   CourseCompleted,
   QuestionCreated,
+  QuestionAnswered,
 } from './events';
 import {
   LessonDescription,
@@ -51,7 +54,6 @@ import {
   QuestionDate,
   QuestionId,
 } from './entities/questions/value-objects';
-import { AnswerCreated } from './events/answer-created';
 import {
   AnswerContent,
   AnswerDate,
@@ -83,7 +85,9 @@ export class Course extends AggregateRoot<CourseId> {
       ) ||
       !this._questions ||
       !this._answers ||
-      this._answers.some((answer) => !answer.instructor.equals(this._instructor))
+      this._answers.some(
+        (answer) => !answer.instructor.equals(this._instructor),
+      )
     ) {
       throw new InvalidCourseException();
     }
@@ -187,31 +191,48 @@ export class Course extends AggregateRoot<CourseId> {
     this.apply(CourseStarted.createEvent(this.id, user));
   }
 
-  addQuestion(question: Question): void {
+  addQuestion(
+    id: QuestionId,
+    user: UserId,
+    lesson: LessonId,
+    content: QuestionContent,
+  ): void {
     this.apply(
       QuestionCreated.createEvent(
         this.id,
-        question.id,
-        question.user,
-        question.lesson,
-        question.content,
-        question.date,
+        id,
+        user,
+        lesson,
+        content,
+        new QuestionDate(new Date()),
       ),
     );
   }
 
-  addAnswer(answer: Answer): void {
-    if (answer.instructor !== this.instructor)
-      throw new InvalidInstructorToAnswerException();
+  questionIsAnswered(question: QuestionId): boolean {
+    return this._answers.some((answer) => answer.question.equals(question));
+  }
 
+  addAnswer(
+    id: AnswerId,
+    question: QuestionId,
+    instructor: InstructorId,
+    content: AnswerContent,
+  ): void {
+    if(!this._questions.some((q) => q.id.equals(question)))
+      throw new QuestionNotFoundException();
+    if (!instructor.equals(this._instructor))
+      throw new InvalidInstructorToAnswerException();
+    if (this.questionIsAnswered(question))
+      throw new QuestionAlreadyAnsweredException();
     this.apply(
-      AnswerCreated.createEvent(
+      QuestionAnswered.createEvent(
         this.id,
-        answer.id,
-        answer.question,
-        answer.instructor,
-        answer.content,
-        answer.date,
+        id,
+        question,
+        instructor,
+        content,
+        new AnswerDate(new Date()),
       ),
     );
   }
@@ -376,7 +397,7 @@ export class Course extends AggregateRoot<CourseId> {
     );
   }
 
-  [`on${AnswerCreated.name}`](context: AnswerCreated) {
+  [`on${QuestionAnswered.name}`](context: QuestionAnswered) {
     this._answers.push(
       new Answer(
         new AnswerId(context.answerId),

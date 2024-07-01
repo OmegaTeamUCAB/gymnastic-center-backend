@@ -10,4 +10,4 @@ export { CourseCategoryUpdated } from './course-category-updated';
 export { CourseCreated } from './course-created';
 export { CourseDurationUpdated } from './course-duration-updated';
 export { QuestionCreated } from './question-created';
-export { AnswerCreated } from './answer-created';
+export { QuestionAnswered } from './question-answered';

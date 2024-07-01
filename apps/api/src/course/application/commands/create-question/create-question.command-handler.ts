@@ -1,17 +1,10 @@
-import {
-  EventStore,
-  IdGenerator,
-  Result,
-  Service,
-} from '@app/core';
+import { EventStore, IdGenerator, Result, Service } from '@app/core';
 import { CreateQuestionCommand, CreateQuestionResponse } from './types';
 import { CourseNotFoundException } from '../../exceptions';
 import { Course } from '../../../domain';
 import { CourseId } from '../../../domain/value-objects';
-import { Question } from '../../../domain/entities/questions';
 import {
   QuestionContent,
-  QuestionDate,
   QuestionId,
 } from '../../../domain/entities/questions/value-objects';
 import { UserId } from 'apps/api/src/user/domain/value-objects';
@@ -22,7 +15,7 @@ export class CreateQuestionCommandHandler
 {
   constructor(
     private readonly idGenerator: IdGenerator<string>,
-    private readonly eventStore: EventStore
+    private readonly eventStore: EventStore,
   ) {}
   async execute(
     command: CreateQuestionCommand,
@@ -34,13 +27,10 @@ export class CreateQuestionCommandHandler
       events,
     );
     course.addQuestion(
-      new Question(
-        new QuestionId(this.idGenerator.generateId()),
-        new UserId(command.user),
-        new LessonId(command.lesson),
-        new QuestionContent(command.content),
-        new QuestionDate(new Date()),
-      ),
+      new QuestionId(this.idGenerator.generateId()),
+      new UserId(command.user),
+      new LessonId(command.lesson),
+      new QuestionContent(command.content),
     );
     const newEvents = course.pullEvents();
     await this.eventStore.appendEvents(command.courseId, newEvents);

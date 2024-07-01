@@ -1,5 +1,4 @@
 import {
-  EventHandler,
   EventStore,
   IdGenerator,
   Result,

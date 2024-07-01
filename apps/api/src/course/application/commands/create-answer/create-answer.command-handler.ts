@@ -1,5 +1,4 @@
 import {
-  EventHandler,
   EventStore,
   IdGenerator,
   Result,
@@ -11,7 +10,6 @@ import { CourseId } from '../../../domain/value-objects';
 import { Course } from '../../../domain';
 import { Answer } from '../../../domain/entities/answers/answer';
 import { InstructorId } from 'apps/api/src/instructor/domain/value-objects/instructor-id';
-import { LessonId } from '../../../domain/entities/lessons/value-objects';
 import {
   AnswerContent,
   AnswerDate,

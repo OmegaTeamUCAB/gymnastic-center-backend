@@ -151,6 +151,7 @@ export class CourseController {
       trainer: {
         id: course.trainer.id,
         name: course.trainer.name,
+        image: course.trainer.image,
       },
       lessons: course.lessons.map((lesson) => ({
         id: lesson.id,

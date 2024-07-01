@@ -12,3 +12,6 @@ export { InvalidCourseMinuteException } from './invalid-course-minute.exception'
 export { InvalidCourseImageException } from './invalid-course-image.exception';
 export { InvalidCourseException } from './invalid-course.exception';
 export { InvalidCourseDurationException } from './invalid-course-duration.exception';
+export { InvalidInstructorToAnswerException } from './invalid-instructor-to-answer.exception';
+export { QuestionAlreadyAnsweredException } from './question-already-answered.exception';
+export { QuestionNotFoundException } from './question-not-found.exception';

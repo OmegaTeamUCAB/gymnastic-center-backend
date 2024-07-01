@@ -10,9 +10,12 @@ import {
   MongoProgress,
   ProgressSchema,
   UUIDModule,
+  MongoQuestion,
+  QuestionSchema,
 } from '@app/core';
 import { AuthModule } from '../../auth/infrastructure';
 import { ProgressController } from './controllers/progress.controller';
+import { QuestionController } from './controllers/question.controller';
 
 @Module({
   imports: [
@@ -25,6 +28,10 @@ import { ProgressController } from './controllers/progress.controller';
         name: MongoProgress.name,
         schema: ProgressSchema,
       },
+      {
+        name: MongoQuestion.name,
+        schema: QuestionSchema,
+      },
     ]),
     AuthModule,
     UUIDModule,
@@ -33,6 +40,7 @@ import { ProgressController } from './controllers/progress.controller';
     LoggerModule,
   ],
   providers: [],
-  controllers: [CourseController, ProgressController],
+  controllers: [CourseController, ProgressController, QuestionController],
+  exports: [MongooseModule],
 })
 export class CourseModule {}

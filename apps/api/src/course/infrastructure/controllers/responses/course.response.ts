@@ -6,6 +6,11 @@ export class CourseTrainerResponse {
 
   @ApiProperty()
   name: string;
+
+  @ApiProperty({
+    nullable: true,
+  })
+  image?: string;
 }
 
 export class CourseResponse {

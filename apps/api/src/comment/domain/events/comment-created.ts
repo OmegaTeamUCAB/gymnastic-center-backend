@@ -11,12 +11,13 @@ export class CommentCreated {
   content: string;
   blog: string;
   publisher: string;
-
+  date: Date;
   static createEvent(
     dispatcher: CommentId,
     content: CommentContent,
     blog: BlogId,
     publisher: UserId,
+    date: CommentDate,
   ): CommentCreatedEvent {
     return DomainEventFactory<CommentCreated>({
       dispatcherId: dispatcher.value,
@@ -25,6 +26,7 @@ export class CommentCreated {
         content: content.value,
         blog: blog.value,
         publisher: publisher.value,
+        date: date.value,
       },
     });
   }

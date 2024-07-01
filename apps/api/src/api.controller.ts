@@ -5,6 +5,7 @@ import {
   DefaultValuePipe,
   Get,
   Inject,
+  NotFoundException,
   ParseArrayPipe,
   ParseIntPipe,
   Post,
@@ -32,11 +33,14 @@ import {
   AlgoliaSearchCoursesService,
   AlgoliaSearchBlogsService,
   GetPopularAlgoliaFacetsService,
+  MongoCourse,
+  CommentOrQuestionResponse,
+  MongoQuestion,
 } from '@app/core';
 import { Auth, CurrentUser } from './auth/infrastructure/decorators';
 import { Credentials } from './auth/application/models/credentials.model';
-import { CommentResponse } from './comment/infrastructure/controllers/responses';
 import { CreateCommentCommandHandler } from './comment/application/commands/create-comment';
+import { CreateQuestionCommandHandler } from './course/application/commands/create-question';
 
 @Controller()
 export class ApiController {
@@ -56,6 +60,10 @@ export class ApiController {
     @Inject(LOGGER)
     private readonly logger: ILogger,
     private readonly searchTagsService: GetPopularAlgoliaFacetsService,
+    @InjectModel(MongoCourse.name)
+    private readonly courseModel: Model<MongoCourse>,
+    @InjectModel(MongoQuestion.name)
+    private readonly questionModel: Model<MongoQuestion>,
   ) {}
 
   @Get('health')
@@ -101,7 +109,8 @@ export class ApiController {
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
     @Query('perPage', new DefaultValuePipe(3), ParseIntPipe)
     perPage: number = 3,
-    @Query('tag', new DefaultValuePipe([]), ParseArrayPipe) tagParam: string[] = [],
+    @Query('tag', new DefaultValuePipe([]), ParseArrayPipe)
+    tagParam: string[] = [],
   ): Promise<SearchResponse> {
     const tags = tagParam.map((tag) => {
       const tagParts = tag.split('(');
@@ -200,17 +209,17 @@ export class ApiController {
   @ApiResponse({
     status: 200,
     description: 'Returns all comments from a post or lesson',
-    type: [CommentResponse],
+    type: [CommentOrQuestionResponse],
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async GetAllComments(
+  async getAllComments(
     @CurrentUser() credentials: Credentials,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('perPage', new DefaultValuePipe(8), ParseIntPipe) perPage: number,
     @Query('blog') blog?: string,
     @Query('lesson') lesson?: string,
     @Query('sort') sort?: 'LIKES' | 'DATE',
-  ): Promise<CommentResponse[]> {
+  ): Promise<CommentOrQuestionResponse[]> {
     if (!blog && !lesson)
       throw new BadRequestException('You must provide a blog or lesson id');
     if (blog && lesson)
@@ -225,7 +234,7 @@ export class ApiController {
         null,
         {
           skip: (page - 1) * perPage,
-          perPage,
+          limit: perPage,
           sort: sort === 'DATE' ? { publishDate: -1 } : { numberOfLikes: -1 },
         },
       );
@@ -242,7 +251,38 @@ export class ApiController {
         date: comment.publishDate,
       }));
     }
-    //TODO: QUESTIONS
+    const questions = await this.questionModel.find(
+      {
+        lesson,
+      },
+      null,
+      {
+        skip: (page - 1) * perPage,
+        limit: perPage,
+        sort: {
+          publishDate: -1,
+        },
+      },
+    );
+    return questions.map((question) => ({
+      id: question.id,
+      body: question.content,
+      date: question.publishDate,
+      user: question.publisher.name,
+      userImage: question.publisher.image,
+      ...(question.answer && {
+        answer: {
+          id: question.answer.id,
+          answer: question.answer.answer,
+          date: question.answer.date,
+          instructor: {
+            id: question.answer.instructor.id,
+            name: question.answer.instructor.name,
+            image: question.answer.instructor.image,
+          },
+        },
+      }),
+    }));
   }
 
   @Post('comment/release')
@@ -274,6 +314,21 @@ export class ApiController {
       });
       return result.unwrap();
     }
-    // TODO: QUESTIONS
+    const service = new LoggingDecorator(
+      new CreateQuestionCommandHandler(this.uuidGenerator, this.eventStore),
+      this.logger,
+      'Create Question',
+    );
+    const course = await this.courseModel.findOne({
+      'lessons.id': createCommentDto.target,
+    });
+    if (!course) throw new NotFoundException('Course not found');
+    const result = await service.execute({
+      content: createCommentDto.body,
+      user: credentials.userId,
+      courseId: course.id,
+      lesson: createCommentDto.target,
+    });
+    return result.unwrap();
   }
 }

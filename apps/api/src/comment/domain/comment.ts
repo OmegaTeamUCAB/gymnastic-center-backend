@@ -125,6 +125,7 @@ export class Comment extends AggregateRoot<CommentId> {
         data.content,
         data.blog,
         data.publisher,
+        new CommentDate(new Date()),
       ),
     );
     return comment;
@@ -140,7 +141,7 @@ export class Comment extends AggregateRoot<CommentId> {
     this._content = new CommentContent(context.content);
     this._blog = new BlogId(context.blog);
     this._publisher = new UserId(context.publisher);
-    this._publishDate = new CommentDate(new Date());
+    this._publishDate = new CommentDate(context.date);
     this._likes = [];
     this._dislikes = [];
     this._isActive = true;

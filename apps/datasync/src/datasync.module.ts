@@ -33,8 +33,9 @@ import {
   MongoInstructorProjector,
   MongoProgressProjector,
   MongoUserProjector,
+  MongoBlogProjector,
+  MongoQuestionProjector,
 } from './projectors';
-import { MongoBlogProjector } from './projectors/blog/mongo-blog.projector';
 
 @Module({
   imports: [
@@ -99,6 +100,7 @@ import { MongoBlogProjector } from './projectors/blog/mongo-blog.projector';
     MongoCommentProjector,
     MongoInstructorProjector,
     MongoProgressProjector,
+    MongoQuestionProjector,
     {
       provide: 'PROJECTORS',
       useFactory: (
@@ -109,6 +111,7 @@ import { MongoBlogProjector } from './projectors/blog/mongo-blog.projector';
         commentProjector: MongoCommentProjector,
         courseProjector: MongoCourseProjector,
         progressProjector: MongoProgressProjector,
+        questionProjector: MongoQuestionProjector,
         algoliaBlogProjector: AlgoliaBlogProjector,
         algoliaCourseProjector: AlgoliaCourseProjector,
       ) => [
@@ -119,6 +122,7 @@ import { MongoBlogProjector } from './projectors/blog/mongo-blog.projector';
         commentProjector,
         courseProjector,
         progressProjector,
+        questionProjector,
         algoliaBlogProjector,
         algoliaCourseProjector,
       ],
@@ -130,6 +134,7 @@ import { MongoBlogProjector } from './projectors/blog/mongo-blog.projector';
         MongoBlogProjector,
         MongoCommentProjector,
         MongoProgressProjector,
+        MongoQuestionProjector,
         AlgoliaBlogProjector,
         AlgoliaCourseProjector,
       ],

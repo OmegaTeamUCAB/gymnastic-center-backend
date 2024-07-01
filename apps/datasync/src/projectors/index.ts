@@ -6,3 +6,5 @@ export { MongoCommentProjector } from './comment/mongo-comment.projector';
 export { MongoUserProjector } from './user/mongo-user.projector';
 export { MongoCategoryProjector } from './category/mongo-category.projector';
 export { MongoProgressProjector } from './progress/mongo-progress.projector';
+export { MongoBlogProjector } from './blog/mongo-blog.projector';
+export { MongoQuestionProjector } from './question/mongo-question.projector';

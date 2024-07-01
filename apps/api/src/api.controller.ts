@@ -212,7 +212,7 @@ export class ApiController {
     type: [CommentOrQuestionResponse],
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async GetAllComments(
+  async getAllComments(
     @CurrentUser() credentials: Credentials,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('perPage', new DefaultValuePipe(8), ParseIntPipe) perPage: number,
@@ -270,7 +270,18 @@ export class ApiController {
       date: question.publishDate,
       user: question.publisher.name,
       userImage: question.publisher.image,
-      answer: question.answer,
+      ...(question.answer && {
+        answer: {
+          id: question.answer.id,
+          answer: question.answer.answer,
+          date: question.answer.date,
+          instructor: {
+            id: question.answer.instructor.id,
+            name: question.answer.instructor.name,
+            image: question.answer.instructor.image,
+          },
+        },
+      }),
     }));
   }
 
@@ -309,7 +320,7 @@ export class ApiController {
       'Create Question',
     );
     const course = await this.courseModel.findOne({
-      lessons: { $elemMatch: { id: createCommentDto.target } },
+      'lessons.id': createCommentDto.target,
     });
     if (!course) throw new NotFoundException('Course not found');
     const result = await service.execute({

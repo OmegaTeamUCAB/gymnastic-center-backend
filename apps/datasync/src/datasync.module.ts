@@ -20,6 +20,8 @@ import {
   MongoBlog,
   MongoProgress,
   ProgressSchema,
+  MongoQuestion,
+  QuestionSchema,
 } from '@app/core';
 import { DatasyncController } from './datasync.controller';
 import {
@@ -79,6 +81,10 @@ import { MongoBlogProjector } from './projectors/blog/mongo-blog.projector';
       {
         name: MongoProgress.name,
         schema: ProgressSchema,
+      },
+      {
+        name: MongoQuestion.name,
+        schema: QuestionSchema,
       },
     ]),
   ],

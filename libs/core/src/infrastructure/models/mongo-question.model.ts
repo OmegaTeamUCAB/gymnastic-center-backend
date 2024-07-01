@@ -52,25 +52,44 @@ export class MongoQuestion {
   @Prop({
     required: false,
     type: {
-      instructorName: {
-        type: String,
+      id: {
+        type: SchemaTypes.UUID,
         required: true,
-      },
-      instructorImage: {
-        type: String,
-        required: false,
       },
       answer: {
         type: String,
         required: true,
       },
+      date: {
+        type: Date,
+        required: true,
+      },
+      instructor: {
+        id: {
+          type: SchemaTypes.UUID,
+          required: true,
+        },
+        name: {
+          type: String,
+          required: true,
+        },
+        image: {
+          type: String,
+          required: false,
+        },
+      },
       _id: false,
     },
   })
   answer?: {
-    instructorName: string;
-    instructorImage?: string;
+    id: string;
     answer: string;
+    date: Date;
+    instructor: {
+      id: string;
+      name: string;
+      image?: string;
+    };
   };
 
   @Prop({

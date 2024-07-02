@@ -1,12 +1,14 @@
-import { ApplicationService } from "../services/application-service";
-import { PerformanceMonitorService } from "../performance/performance.interface";
-import { Result } from "@app/core/utils";
+import { Service } from '../services/application-service';
+import { PerformanceMonitorService } from '../performance/performance.interface';
+import { Result } from '@app/core/utils';
+import { ILogger } from '../logger/logger.interface'
 
 export class PerformanceMonitorDecorator<T, U>
-    implements ApplicationService<T, U> {
+    implements Service<T, U> {
     constructor(
-        private readonly service: ApplicationService<T, U>,
+        private readonly service: Service<T, U>,
         private readonly perfMonitor: PerformanceMonitorService,
+        private readonly logger: ILogger
     ) { }
 
     async execute(data: T): Promise<Result<U>> {
@@ -14,8 +16,8 @@ export class PerformanceMonitorDecorator<T, U>
         this.perfMonitor.start(label);
 
         const result = await this.service.execute(data);
-
-        this.perfMonitor.stop(label);
+        const duration = this.perfMonitor.stop(label);
+        this.logger.log(`Execution time for ${label}: ${duration}ms`);
 
         return result;
     }

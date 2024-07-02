@@ -1,11 +1,21 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CourseController } from './controllers/course.controller';
-import { CourseSchema, MongoCourse } from './models/mongo-course.model';
-import { MongoCourseRepository } from './repositories/mongo-course.repository';
-import { COURSE_REPOSITORY } from './constants';
-import { UUIDModule } from '@app/core';
+import {
+  CourseSchema,
+  EventHandlerModule,
+  EventStoreModule,
+  LoggerModule,
+  MongoCourse,
+  MongoProgress,
+  ProgressSchema,
+  UUIDModule,
+  MongoQuestion,
+  QuestionSchema,
+} from '@app/core';
 import { AuthModule } from '../../auth/infrastructure';
+import { ProgressController } from './controllers/progress.controller';
+import { QuestionController } from './controllers/question.controller';
 
 @Module({
   imports: [
@@ -14,16 +24,23 @@ import { AuthModule } from '../../auth/infrastructure';
         name: MongoCourse.name,
         schema: CourseSchema,
       },
+      {
+        name: MongoProgress.name,
+        schema: ProgressSchema,
+      },
+      {
+        name: MongoQuestion.name,
+        schema: QuestionSchema,
+      },
     ]),
     AuthModule,
     UUIDModule,
+    EventStoreModule,
+    EventHandlerModule,
+    LoggerModule,
   ],
-  providers: [
-    {
-      provide: COURSE_REPOSITORY,
-      useClass: MongoCourseRepository,
-    },
-  ],
-  controllers: [CourseController],
+  providers: [],
+  controllers: [CourseController, ProgressController, QuestionController],
+  exports: [MongooseModule],
 })
 export class CourseModule {}

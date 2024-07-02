@@ -1,17 +1,29 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Inject, OnApplicationBootstrap } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { MongoCategory, RabbitMQService } from '@app/core';
-import { EventType } from './types';
+import { MongoEventProvider, RabbitMQService } from '@app/core';
+import { EventType, Projector } from './types';
+import { ConfigService } from '@nestjs/config';
 
 @Controller()
-export class DatasyncController {
+export class DatasyncController implements OnApplicationBootstrap {
   constructor(
     private readonly rmqService: RabbitMQService,
-    @InjectModel(MongoCategory.name)
-    private readonly categoryModel: Model<MongoCategory>,
+    private readonly eventProvider: MongoEventProvider,
+    @Inject('PROJECTORS')
+    private readonly projectors: Projector[],
+    private readonly configService: ConfigService,
   ) {}
+
+  async onApplicationBootstrap() {
+    if (this.configService.get('REPLAY') === 'true') {
+      const [events] = await Promise.all([
+        this.eventProvider.getEvents(),
+        ...this.projectors.map((p) => p.clear()),
+      ]);
+      for (const event of events)
+        await Promise.all(this.projectors.map((p) => p.project(event)));
+    }
+  }
 
   @EventPattern('health')
   async health(@Payload() data: any, @Ctx() context: RmqContext) {
@@ -19,49 +31,9 @@ export class DatasyncController {
     this.rmqService.ack(context);
   }
 
-  @EventPattern('CategoryCreated')
-  async onCategoryCreated(
-    @Payload()
-    data: EventType<{
-      name: string;
-      icon: string;
-    }>,
-    @Ctx() context: RmqContext,
-  ) {
-    try {
-      const { name, icon } = data.context;
-      await this.categoryModel.create({ id: data.dispatcherId, name, icon });
-      this.rmqService.ack(context);
-    } catch (error) {}
-  }
-
-  @EventPattern('CategoryNameUpdated')
-  async onCategoryNameUpdated(
-    @Payload()
-    data: EventType<{
-      name: string;
-    }>,
-    @Ctx() context: RmqContext,
-  ) {
-    try {
-      const { name } = data.context;
-      await this.categoryModel.updateOne({ id: data.dispatcherId }, { name });
-      this.rmqService.ack(context);
-    } catch (error) {}
-  }
-
-  @EventPattern('CategoryIconUpdated')
-  async onCategoryIconUpdated(
-    @Payload()
-    data: EventType<{
-      icon: string;
-    }>,
-    @Ctx() context: RmqContext,
-  ) {
-    try {
-      const { icon } = data.context;
-      await this.categoryModel.updateOne({ id: data.dispatcherId }, { icon });
-      this.rmqService.ack(context);
-    } catch (error) {}
+  @EventPattern('event')
+  async onEvent(@Payload() event: EventType, @Ctx() context: RmqContext) {
+    await Promise.all(this.projectors.map((p) => p.project(event)));
+    this.rmqService.ack(context);
   }
 }

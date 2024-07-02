@@ -15,7 +15,7 @@ import {
   VERIFICATION_EMAIL_HANDLER,
 } from './constants';
 import { MongoCredentialsRepository } from './repositories/mongo-credentials.repository';
-import { BcryptModule } from '@app/core';
+import { BcryptModule, LoggerModule } from '@app/core';
 import {
   FourDigitCodeGeneratorService,
   JwtGenerator,
@@ -48,6 +48,7 @@ import {
       },
     ]),
     BcryptModule,
+    LoggerModule,
   ],
   controllers: [AuthController],
   providers: [

@@ -1,30 +1,40 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
-  Param,
   Inject,
-  ParseUUIDPipe,
-  Query,
+  Param,
   ParseIntPipe,
   DefaultValuePipe,
   NotFoundException,
+  ParseUUIDPipe,
+  Query,
+  Post,
 } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   BlogNotFoundException,
-  CreateBlogCommand,
-  UpdateBlogCommand,
+  CreateBlogCommandHandler,
+  UpdateBlogCommandHandler,
 } from '../../application';
-import { CreateBlogCommentDto, CreateBlogDto, UpdateBlogDto } from './dtos';
-import { IdGenerator, IdResponse, UUIDGENERATOR } from '@app/core';
+import { CreateBlogDto, UpdateBlogDto } from './dtos';
+import {
+  CountResponse,
+  EVENT_STORE,
+  EventHandler,
+  EventStore,
+  ILogger,
+  IdGenerator,
+  IdResponse,
+  LOCAL_EVENT_HANDLER,
+  LOGGER,
+  LoggingDecorator,
+  MongoBlog,
+  UUIDGENERATOR,
+} from '@app/core';
 import { BlogLeanResponse, BlogResponse } from './responses';
-import { BlogRepository } from '../../domain';
-import { BLOG_REPOSITORY } from '../constants';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
 import { InjectModel } from '@nestjs/mongoose';
-import { MongoBlog } from '../models';
 import { Model } from 'mongoose';
 
 @Controller('blog')
@@ -32,12 +42,16 @@ import { Model } from 'mongoose';
 @Auth()
 export class BlogController {
   constructor(
-    @Inject(BLOG_REPOSITORY)
-    private readonly repository: BlogRepository,
     @Inject(UUIDGENERATOR)
     private readonly uuidGenerator: IdGenerator<string>,
+    @Inject(EVENT_STORE)
+    private readonly eventStore: EventStore,
+    @Inject(LOCAL_EVENT_HANDLER)
+    private readonly localEventHandler: EventHandler,
     @InjectModel(MongoBlog.name)
     private readonly blogModel: Model<MongoBlog>,
+    @Inject(LOGGER)
+    private readonly logger: ILogger,
   ) {}
 
   @Get('many')
@@ -76,7 +90,7 @@ export class BlogController {
   @ApiResponse({
     status: 200,
     description: 'Blogs list',
-    type: [BlogLeanResponse],
+    type: [BlogResponse],
   })
   async getAllBlogs(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -87,48 +101,52 @@ export class BlogController {
   ): Promise<BlogLeanResponse[]> {
     const blogs = await this.blogModel.find(
       {
-        ...(trainer && { instructorId: trainer }),
-        ...(category && { categoryId: category }),
+        ...(trainer && { 'trainer.id': trainer }),
+        ...(category && { 'category.id': category }),
       },
       null,
       {
         skip: (page - 1) * perPage,
         perPage,
+        sort: filter === 'POPULAR' ? { comments: -1 } : { uploadDate: -1 },
       },
     );
     return blogs.map((blog) => ({
       id: blog.id,
       title: blog.title,
-      image: blog.imageUrl,
-      trainer: blog.instructorId,
-      category: blog.categoryId,
-      date: blog.createdAt,
+      images: blog.images,
+      trainer: blog.trainer.name,
+      category: blog.category.name,
+      date: blog.uploadDate,
     }));
   }
 
+  @Get('one/:id')
   @ApiResponse({
     status: 200,
-    description: 'Blog details',
+    description: 'Blog found',
     type: BlogResponse,
   })
   @Get('one/:id')
   async getBlogById(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<BlogResponse> {
-    const blog = await this.blogModel.findOne({ aggregateId: id });
+    const blog = await this.blogModel.findOne({ id });
     if (!blog) throw new NotFoundException(new BlogNotFoundException());
     return {
       id: blog.id,
       title: blog.title,
       description: blog.content,
-      images: [blog.imageUrl],
+      images: blog.images,
       trainer: {
-        id: blog.instructorId,
-        name: 'El Tigre',
+        id: blog.trainer.id,
+        name: blog.trainer.name,
+        image: blog.trainer.image,
       },
-      category: blog.categoryId,
-      date: blog.createdAt,
+      category: blog.category.name,
+      date: blog.uploadDate,
       tags: blog.tags,
+      comments: blog.comments,
     };
   }
 
@@ -139,25 +157,73 @@ export class BlogController {
   })
   @Post()
   async createBlog(@Body() createBlogDto: CreateBlogDto) {
-    const service = new CreateBlogCommand(this.repository, this.uuidGenerator);
-    const result = await service.execute(createBlogDto);
-    const response = result.unwrap();
-    return response;
+    const service = new LoggingDecorator(
+      new CreateBlogCommandHandler(
+        this.uuidGenerator,
+        this.eventStore,
+        this.localEventHandler,
+      ),
+      this.logger,
+      'Create Blog',
+    );
+    const result = await service.execute({
+      ...createBlogDto,
+    });
+    return result.unwrap();
   }
 
   @ApiResponse({
     status: 200,
-    description: 'The blog has been successfully created',
+    description: 'The blog has been successfully updated',
     type: IdResponse,
   })
   @Post(':id')
+  @ApiResponse({
+    status: 200,
+    description: 'Blog updated',
+    type: IdResponse,
+  })
   async updateBlog(
-    @Body() updateBlogDto: UpdateBlogDto,
     @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateBlogDto: UpdateBlogDto,
   ) {
-    const service = new UpdateBlogCommand(this.repository);
-    const result = await service.execute({ ...updateBlogDto, id });
-    const response = result.unwrap();
-    return response;
+    const service = new LoggingDecorator(
+      new UpdateBlogCommandHandler(this.eventStore, this.localEventHandler),
+      this.logger,
+      'Update Blog',
+    );
+    const result = await service.execute({ id, ...updateBlogDto });
+    return result.unwrap();
+  }
+
+  @Get('count')
+  @ApiResponse({
+    status: 200,
+    description: 'Blogs count',
+    type: CountResponse,
+  })
+  @ApiQuery({
+    name: 'trainer',
+    required: false,
+    description: 'Instructor id filter',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'category',
+    required: false,
+    description: 'Category id filter',
+    type: String,
+  })
+  async countCourses(
+    @Query('trainer') instructorId?: string,
+    @Query('category') categoryId?: string,
+  ): Promise<CountResponse> {
+    const count = await this.blogModel.countDocuments({
+      ...(instructorId && { 'trainer.id': instructorId }),
+      ...(categoryId && { 'category.id': categoryId }),
+    });
+    return {
+      count,
+    };
   }
 }

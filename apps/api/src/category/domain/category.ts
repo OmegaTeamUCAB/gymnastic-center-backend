@@ -41,7 +41,7 @@ export class Category extends AggregateRoot<CategoryId> {
 
   static create(
     id: CategoryId,
-    data: {
+    data: { 
       name: CategoryName;
       icon: CategoryIcon;
     },
@@ -50,7 +50,7 @@ export class Category extends AggregateRoot<CategoryId> {
     category.apply(CategoryCreated.createEvent(id, data.name, data.icon));
     return category;
   }
-
+ 
   static loadFromHistory(id: CategoryId, events: DomainEvent[]): Category {
     const category = new Category(id);
     category.hydrate(events);

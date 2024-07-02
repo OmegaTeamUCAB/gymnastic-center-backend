@@ -7,5 +7,6 @@ async function bootstrap() {
   const rmqService = app.get<RabbitMQService>(RabbitMQService);
   app.connectMicroservice(rmqService.getOptions('EVENTS'));
   await app.startAllMicroservices();
+  await app.listen(3000);
 }
 bootstrap();

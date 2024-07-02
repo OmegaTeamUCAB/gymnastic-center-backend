@@ -5,33 +5,34 @@ export class CreateBlogDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  imageUrl: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty()
   title: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty()
-  description: string;
 
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
   content: string;
 
-  @IsString()
-  @IsUUID()
-  categoryId: string;
-
-  @IsString()
-  @IsUUID()
-  instructorId: string;
+  @IsArray()
+  @IsString({ each: true })
+  @IsNotEmpty()
+  @ApiProperty()
+  images: string[];
 
   @IsArray()
   @IsString({ each: true })
+  @IsNotEmpty()
   @ApiProperty()
   tags: string[];
+
+  @IsString()
+  @IsUUID()
+  @IsNotEmpty()
+  @ApiProperty()
+  category: string;
+
+  @IsString()
+  @IsUUID()
+  @IsNotEmpty()
+  @ApiProperty()
+  instructor: string;
 }

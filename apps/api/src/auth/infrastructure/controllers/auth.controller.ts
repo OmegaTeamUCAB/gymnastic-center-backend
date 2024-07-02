@@ -4,6 +4,7 @@ import {
   Body,
   Inject,
   Put,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
@@ -17,10 +18,10 @@ import {
   VERIFICATION_EMAIL_HANDLER,
 } from '../constants';
 import {
-  CheckVerificationCodeCommand,
+  CheckVerificationCodeCommandHandler,
   CredentialsRepository,
-  RequestVerificationCodeCommand,
-  ResetPasswordCommand,
+  RequestVerificationCodeCommandHandler,
+  ResetPasswordCommandHandler,
 } from '../../application';
 import {
   BCRYPT_SERVICE,
@@ -29,6 +30,9 @@ import {
   CodeGenerator,
   SuccessBasedResponse,
   DateBasedResponse,
+  ILogger,
+  LOGGER,
+  LoggingDecorator,
 } from '@app/core';
 
 @Controller('auth')
@@ -43,6 +47,8 @@ export class AuthController {
     private readonly codeGenerator: CodeGenerator<string>,
     @Inject(VERIFICATION_EMAIL_HANDLER)
     private readonly verificationEmailHandler: EmailHandler<{ code: string }>,
+    @Inject(LOGGER)
+    private readonly logger: ILogger,
   ) {}
 
   @Post('forget/password')
@@ -58,16 +64,24 @@ export class AuthController {
   async requestVerificationCode(
     @Body() requestVerificationCodeDto: RequestVerificationCodeDto,
   ) {
-    const service = new RequestVerificationCodeCommand(
-      this.repository,
-      this.verificationEmailHandler,
-      this.codeGenerator,
-    );
-    const result = await service.execute(requestVerificationCodeDto);
-    result.unwrap();
-    return {
-      date: new Date(),
-    };
+    try {
+      const service = new LoggingDecorator(
+        new RequestVerificationCodeCommandHandler(
+          this.repository,
+          this.verificationEmailHandler,
+          this.codeGenerator,
+        ),
+        this.logger,
+        'Request Verification Code',
+      );
+      const result = await service.execute(requestVerificationCodeDto);
+      result.unwrap();
+      return {
+        date: new Date(),
+      };
+    } catch (error) {
+      throw new UnauthorizedException(error.message);
+    }
   }
 
   @Post('code/validate')
@@ -79,12 +93,20 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid code' })
   @ApiResponse({ status: 400, description: 'Code expired' })
   async checkVerificationCode(@Body() checkCodeDto: CheckCodeDto) {
-    const service = new CheckVerificationCodeCommand(this.repository);
-    const result = await service.execute(checkCodeDto);
-    result.unwrap();
-    return {
-      success: true,
-    };
+    try {
+      const service = new LoggingDecorator(
+        new CheckVerificationCodeCommandHandler(this.repository),
+        this.logger,
+        'Check Verification Code',
+      );
+      const result = await service.execute(checkCodeDto);
+      result.unwrap();
+      return {
+        success: true,
+      };
+    } catch (error) {
+      throw new UnauthorizedException(error.message);
+    }
   }
 
   @Put('change/password')
@@ -97,18 +119,26 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid code' })
   @ApiResponse({ status: 400, description: 'Code expired' })
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    const service = new ResetPasswordCommand(
-      this.repository,
-      this.bcryptService,
-    );
-    const result = await service.execute({
-      email: resetPasswordDto.email,
-      newPassword: resetPasswordDto.password,
-      code: resetPasswordDto.code,
-    });
-    result.unwrap();
-    return {
-      success: true,
-    };
+    try {
+      const service = new LoggingDecorator(
+        new ResetPasswordCommandHandler(
+          this.repository,
+          this.bcryptService,
+        ),
+        this.logger,
+        'Reset Password',
+      );
+      const result = await service.execute({
+        email: resetPasswordDto.email,
+        newPassword: resetPasswordDto.password,
+        code: resetPasswordDto.code,
+      });
+      result.unwrap();
+      return {
+        success: true,
+      };
+    } catch (error) {
+      throw new UnauthorizedException(error.message);
+    }
   }
 }

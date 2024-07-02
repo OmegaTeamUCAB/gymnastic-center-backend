@@ -20,24 +20,15 @@ class CourseSearchResponse {
   title: string;
 
   @ApiProperty()
-  description: string;
-
-  @ApiProperty({
-    example: 'tag1 tag2 tag3',
-  })
-  tags: string;
+  image: string;
 
   @ApiProperty()
-  imageUrl: string;
+  category: string;
 
   @ApiProperty()
-  categoryName: string;
-
-  @ApiProperty()
-  instructorName: string;
+  trainer: string;
 }
 
 class BlogSearchResponse extends CourseSearchResponse {
-  @ApiProperty()
-  content: string;
+  
 }

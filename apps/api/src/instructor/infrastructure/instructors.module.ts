@@ -1,10 +1,15 @@
 import { Module } from '@nestjs/common';
-import { InstructorsController } from './controllers/instructor.controller';
-import { MongoInstructor, InstructorSchema } from './models/instructor.model';
 import { MongooseModule } from '@nestjs/mongoose';
-import { MongoInstructorRepository } from './repositories/mongo-instructor.repository';
-import { INSTRUCTORS_REPOSITORY } from './constants';
 import { AuthModule } from '../../auth/infrastructure';
+import { InstructorController } from './controllers/instructor.controller';
+import {
+  EventHandlerModule,
+  EventStoreModule,
+  UUIDModule,
+  MongoInstructor,
+  InstructorSchema,
+  LoggerModule,
+} from '@app/core';
 
 @Module({
   imports: [
@@ -12,13 +17,12 @@ import { AuthModule } from '../../auth/infrastructure';
       { name: MongoInstructor.name, schema: InstructorSchema },
     ]),
     AuthModule,
+    UUIDModule,
+    EventStoreModule,
+    EventHandlerModule,
+    LoggerModule,
   ],
-  controllers: [InstructorsController],
-  providers: [
-    {
-      provide: INSTRUCTORS_REPOSITORY,
-      useClass: MongoInstructorRepository,
-    },
-  ],
+  controllers: [InstructorController],
+  providers: [],
 })
 export class InstructorModule {}

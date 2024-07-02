@@ -1,5 +1,5 @@
 import {
-  ApplicationService,
+  Service,
   EventHandler,
   EventStore,
   Result,
@@ -12,7 +12,7 @@ import { CategoryIcon } from '../../../domain/value-objects/category-icon';
 import { CategoryId } from '../../../domain/value-objects/category-id';
 
 export class UpdateCategoryCommandHandler
-  implements ApplicationService<UpdateCategoryCommand, UpdateCategoryResponse>
+  implements Service<UpdateCategoryCommand, UpdateCategoryResponse>
 {
   constructor(
     private readonly eventStore: EventStore,

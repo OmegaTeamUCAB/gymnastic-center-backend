@@ -1,5 +1,5 @@
-export { CheckVerificationCodeCommand } from './check-verification-code.command.ts/check-verification-code.command';
-export { LoginCommand } from './login/login.command';
-export { SignUpCommand } from './signup/signup.command';
-export { RequestVerificationCodeCommand } from './request-verification-code/request-verification-code.command';
-export { ResetPasswordCommand } from './reset-password/reset-password.command';
+export { CheckVerificationCodeCommandHandler } from './check-verification-code.command.ts/check-verification-code.command-handler';
+export { LoginCommandHandler } from './login/login.command-handler';
+export { SignUpCommandHandler } from './signup/signup.command-handler';
+export { RequestVerificationCodeCommandHandler } from './request-verification-code/request-verification-code.command-handler';
+export { ResetPasswordCommandHandler } from './reset-password/reset-password.command-handler';

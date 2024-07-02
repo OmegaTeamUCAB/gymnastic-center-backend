@@ -4,7 +4,6 @@ import { UUIDModule } from '@app/core/infrastructure/uuid/uuid.module';
 import { CategoryController } from './controllers/category.controller';
 import { AuthModule } from '../../auth/infrastructure';
 import {
-  EventHandlerModule,
   EventStoreModule,
   CategorySchema,
   MongoCategory,
@@ -22,7 +21,6 @@ import {
     AuthModule,
     UUIDModule,
     EventStoreModule,
-    EventHandlerModule,
     LoggerModule,
   ],
   controllers: [CategoryController],

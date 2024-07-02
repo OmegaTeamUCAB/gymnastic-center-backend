@@ -1,4 +1,4 @@
-import { EventHandlerModule, EventStoreModule, LoggerModule, UUIDModule } from '@app/core';
+import { EventStoreModule, LoggerModule, UUIDModule } from '@app/core';
 import {
   CommentSchema,
   MongoComment,
@@ -6,7 +6,7 @@ import {
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from '../../auth/infrastructure';
-import { CommentController } from './controllers';
+import { CommentController } from './controllers/comment.controller';
 
 @Module({
   imports: [
@@ -19,7 +19,6 @@ import { CommentController } from './controllers';
     AuthModule,
     UUIDModule,
     EventStoreModule,
-    EventHandlerModule,
     LoggerModule,
   ],
   controllers: [CommentController],

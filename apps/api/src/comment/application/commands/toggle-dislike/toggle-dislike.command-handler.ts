@@ -1,9 +1,4 @@
-import {
-  Service,
-  EventHandler,
-  EventStore,
-  Result,
-} from '@app/core';
+import { Service, EventStore, Result } from '@app/core';
 import { ToggleDislikeCommand, ToggleDislikeResponse } from './types';
 import { CommentNotFoundException } from '../../exceptions';
 import { Comment } from '../../../domain';
@@ -13,10 +8,7 @@ import { UserId } from 'apps/api/src/user/domain/value-objects';
 export class ToggleDislikeCommandHandler
   implements Service<ToggleDislikeCommand, ToggleDislikeResponse>
 {
-  constructor(
-    private readonly eventStore: EventStore,
-    private readonly eventHandler: EventHandler,
-  ) {}
+  constructor(private readonly eventStore: EventStore) {}
 
   async execute(
     command: ToggleDislikeCommand,
@@ -35,7 +27,6 @@ export class ToggleDislikeCommandHandler
     else comment.addDislike(user);
     const newEvents = comment.pullEvents();
     await this.eventStore.appendEvents(command.commentId, newEvents);
-    this.eventHandler.publishEvents(newEvents);
     return Result.success<ToggleDislikeResponse>({
       id: command.commentId,
     });

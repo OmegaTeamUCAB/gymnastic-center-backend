@@ -1,6 +1,5 @@
 import {
   Service,
-  EventHandler,
   EventStore,
   Result,
 } from '@app/core';
@@ -15,7 +14,6 @@ export class DeleteCommentCommandHandler
 {
   constructor(
     private readonly eventStore: EventStore,
-    private readonly eventHandler: EventHandler,
   ) {}
 
   async execute(
@@ -34,7 +32,6 @@ export class DeleteCommentCommandHandler
     comment.delete(data.commentId, data.userId);
     const events = comment.pullEvents();
     await this.eventStore.appendEvents(data.commentId.value, events);
-    this.eventHandler.publishEvents(events);
     return Result.success<DeleteCommentResponse>({
       id: data.commentId.value,
     });

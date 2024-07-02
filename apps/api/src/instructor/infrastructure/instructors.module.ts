@@ -3,7 +3,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from '../../auth/infrastructure';
 import { InstructorController } from './controllers/instructor.controller';
 import {
-  EventHandlerModule,
   EventStoreModule,
   UUIDModule,
   MongoInstructor,
@@ -19,7 +18,6 @@ import {
     AuthModule,
     UUIDModule,
     EventStoreModule,
-    EventHandlerModule,
     LoggerModule,
   ],
   controllers: [InstructorController],

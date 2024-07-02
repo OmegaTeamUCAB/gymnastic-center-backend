@@ -19,9 +19,9 @@ import {
 } from '@nestjs/common';
 import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import { Credentials } from 'apps/api/src/auth/application/models/credentials.model';
-import { ToggleLikeCommandHandler } from '../../application/commands/toggle-like';
-import { ToggleDislikeCommandHandler } from '../../application/commands/toggle-dislike';
 import { DeleteCommentCommandHandler } from '../../application/commands/delete-comment/delete-comment.command-handler';
+import { ToggleLikeCommandHandler } from '../../application/commands/toggle-like/toggle-like.command-handler';
+import { ToggleDislikeCommandHandler } from '../../application/commands/toggle-dislike/toggle-dislike.command-handler';
 
 @Controller('comment')
 @ApiTags('comments')
@@ -30,8 +30,6 @@ export class CommentController {
   constructor(
     @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
-    @Inject(LOCAL_EVENT_HANDLER)
-    private readonly localEventHandler: EventHandler,
     @Inject(LOGGER)
     private readonly logger: ILogger,
   ) {}
@@ -48,7 +46,7 @@ export class CommentController {
     @CurrentUser() credentials: Credentials,
   ) {
     const service = new LoggingDecorator(
-      new DeleteCommentCommandHandler(this.eventStore, this.localEventHandler),
+      new DeleteCommentCommandHandler(this.eventStore),
       this.logger,
       'Delete Comment',
     );
@@ -71,7 +69,7 @@ export class CommentController {
     @CurrentUser() credentials: Credentials,
   ) {
     const service = new LoggingDecorator(
-      new ToggleLikeCommandHandler(this.eventStore, this.localEventHandler),
+      new ToggleLikeCommandHandler(this.eventStore),
       this.logger,
       'Toggle Like',
     );
@@ -94,7 +92,7 @@ export class CommentController {
     @CurrentUser() credentials: Credentials,
   ) {
     const service = new LoggingDecorator(
-      new ToggleDislikeCommandHandler(this.eventStore, this.localEventHandler),
+      new ToggleDislikeCommandHandler(this.eventStore),
       this.logger,
       'Toggle Dislike',
     );

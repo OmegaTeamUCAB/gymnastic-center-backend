@@ -1,6 +1,5 @@
 import {
   Service,
-  EventHandler,
   EventStore,
   Result,
 } from '@app/core';
@@ -16,7 +15,6 @@ export class UpdateCategoryCommandHandler
 {
   constructor(
     private readonly eventStore: EventStore,
-    private readonly eventHandler: EventHandler,
   ) {}
 
   async execute(
@@ -29,7 +27,6 @@ export class UpdateCategoryCommandHandler
     if (command.icon) category.updateIcon(new CategoryIcon(command.icon));
     const newEvents = category.pullEvents();
     await this.eventStore.appendEvents(command.id, newEvents);
-    this.eventHandler.publishEvents(newEvents);
     return Result.success<UpdateCategoryResponse>({
       id: command.id,
     });

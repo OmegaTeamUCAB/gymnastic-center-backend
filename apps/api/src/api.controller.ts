@@ -39,8 +39,8 @@ import {
 } from '@app/core';
 import { Auth, CurrentUser } from './auth/infrastructure/decorators';
 import { Credentials } from './auth/application/models/credentials.model';
-import { CreateCommentCommandHandler } from './comment/application/commands/create-comment';
-import { CreateQuestionCommandHandler } from './course/application/commands/create-question';
+import { CreateCommentCommandHandler } from './comment/application/commands/create-comment/create-comment.command-handler';
+import { CreateQuestionCommandHandler } from './course/application/commands';
 
 @Controller()
 export class ApiController {
@@ -53,8 +53,6 @@ export class ApiController {
     private readonly uuidGenerator: IdGenerator<string>,
     @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
-    @Inject(LOCAL_EVENT_HANDLER)
-    private readonly localEventHandler: EventHandler,
     private readonly searchCoursesService: AlgoliaSearchCoursesService,
     private readonly searchBlogsService: AlgoliaSearchBlogsService,
     @Inject(LOGGER)
@@ -302,7 +300,6 @@ export class ApiController {
         new CreateCommentCommandHandler(
           this.uuidGenerator,
           this.eventStore,
-          this.localEventHandler,
         ),
         this.logger,
         'Create Comment',

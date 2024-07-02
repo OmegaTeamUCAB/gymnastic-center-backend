@@ -21,12 +21,10 @@ import { CreateBlogDto, UpdateBlogDto } from './dtos';
 import {
   CountResponse,
   EVENT_STORE,
-  EventHandler,
   EventStore,
   ILogger,
   IdGenerator,
   IdResponse,
-  LOCAL_EVENT_HANDLER,
   LOGGER,
   LoggingDecorator,
   MongoBlog,
@@ -46,8 +44,6 @@ export class BlogController {
     private readonly uuidGenerator: IdGenerator<string>,
     @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
-    @Inject(LOCAL_EVENT_HANDLER)
-    private readonly localEventHandler: EventHandler,
     @InjectModel(MongoBlog.name)
     private readonly blogModel: Model<MongoBlog>,
     @Inject(LOGGER)
@@ -158,11 +154,7 @@ export class BlogController {
   @Post()
   async createBlog(@Body() createBlogDto: CreateBlogDto) {
     const service = new LoggingDecorator(
-      new CreateBlogCommandHandler(
-        this.uuidGenerator,
-        this.eventStore,
-        this.localEventHandler,
-      ),
+      new CreateBlogCommandHandler(this.uuidGenerator, this.eventStore),
       this.logger,
       'Create Blog',
     );
@@ -188,7 +180,7 @@ export class BlogController {
     @Body() updateBlogDto: UpdateBlogDto,
   ) {
     const service = new LoggingDecorator(
-      new UpdateBlogCommandHandler(this.eventStore, this.localEventHandler),
+      new UpdateBlogCommandHandler(this.eventStore),
       this.logger,
       'Update Blog',
     );

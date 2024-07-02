@@ -1,11 +1,9 @@
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   EVENT_STORE,
-  EventHandler,
   EventStore,
   ILogger,
   IdResponse,
-  LOCAL_EVENT_HANDLER,
   LOGGER,
   LoggingDecorator,
 } from '@app/core';

@@ -11,7 +11,7 @@ import {
   UUIDGENERATOR,
 } from '@app/core';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
-import { CreateAnswerCommandHandler } from '../../application/commands/create-answer';
+import { CreateAnswerCommandHandler } from '../../application/commands';
 import { CreateAnswerDto } from './dtos';
 
 @Controller('answer')

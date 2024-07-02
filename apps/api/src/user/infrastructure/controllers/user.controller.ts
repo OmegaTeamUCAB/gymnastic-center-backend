@@ -19,7 +19,6 @@ import {
   ILogger,
   IdGenerator,
   IdResponse,
-  LOCAL_EVENT_HANDLER,
   LOGGER,
   LoggingDecorator,
   MongoUser,
@@ -41,13 +40,12 @@ import {
 import { AuthResponse } from 'apps/api/src/auth/infrastructure/controllers/responses';
 import { UserResponse } from './responses';
 import { Credentials } from 'apps/api/src/auth/application/models/credentials.model';
-import { LocalEventHandler } from '@app/core/infrastructure/event-handler/providers/local-event-handler';
-import { CreateUserCommandHandler } from '../../application/commands/create-user';
+import { CreateUserCommandHandler } from '../../application/commands/create-user/create-user.command-handler';
 import {
   UserAlreadyExistsException,
   UserNotFoundException,
 } from 'apps/api/src/auth/application/exceptions';
-import { UpdateUserCommandHandler } from '../../application/commands/update-user-by-id';
+import { UpdateUserCommandHandler } from '../../application/commands/update-user/update-user.command-handler';
 import { UserCreated, UserCreatedEvent } from '../../domain/events';
 
 @Controller()
@@ -56,8 +54,6 @@ export class UserController {
   constructor(
     @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
-    @Inject(LOCAL_EVENT_HANDLER)
-    private readonly localEventHandler: LocalEventHandler,
     @InjectModel(MongoUser.name)
     private readonly userModel: Model<MongoUser>,
     @Inject(AUTH_REPOSITORY)
@@ -131,7 +127,7 @@ export class UserController {
         this.logger,
         'Sign Up',
       );
-      const suscription = this.localEventHandler.subscribe(
+      const suscription = this.eventStore.subscribe(
         UserCreated.name,
         async (event: UserCreatedEvent) => {
           await signUpService.execute({
@@ -142,11 +138,7 @@ export class UserController {
         },
       );
       const service = new LoggingDecorator(
-        new CreateUserCommandHandler(
-          this.uuidGenerator,
-          this.eventStore,
-          this.localEventHandler,
-        ),
+        new CreateUserCommandHandler(this.uuidGenerator, this.eventStore),
         this.logger,
         'Create User',
       );
@@ -192,7 +184,7 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     const service = new LoggingDecorator(
-      new UpdateUserCommandHandler(this.eventStore, this.localEventHandler),
+      new UpdateUserCommandHandler(this.eventStore),
       this.logger,
       'Update User',
     );

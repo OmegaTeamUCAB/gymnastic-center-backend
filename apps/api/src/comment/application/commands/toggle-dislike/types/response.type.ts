@@ -1,3 +1,3 @@
 export type ToggleDislikeResponse = {
-    id: string;
-}
+  id: string;
+};

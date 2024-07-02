@@ -1,6 +1,5 @@
 import {
   Service,
-  EventHandler,
   EventStore,
   Result,
 } from '@app/core';
@@ -15,7 +14,6 @@ export class ToggleLikeCommandHandler
 {
   constructor(
     private readonly eventStore: EventStore,
-    private readonly eventHandler: EventHandler,
   ) {}
 
   async execute(
@@ -35,7 +33,6 @@ export class ToggleLikeCommandHandler
     else comment.addLike(user);
     const newEvents = comment.pullEvents();
     await this.eventStore.appendEvents(command.commentId, newEvents);
-    this.eventHandler.publishEvents(newEvents);
     return Result.success<ToggleLikeResponse>({
       id: command.commentId,
     });

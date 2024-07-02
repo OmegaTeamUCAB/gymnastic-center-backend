@@ -1,6 +1,5 @@
 import {
   Service,
-  EventHandler,
   EventStore,
   Result,
 } from '@app/core';
@@ -17,7 +16,6 @@ export class CreateCategoryCommandHandler
   constructor(
     private readonly idGenerator: IdGenerator<string>,
     private readonly eventStore: EventStore,
-    private readonly eventHandler: EventHandler,
   ) {}
 
   async execute(
@@ -31,7 +29,6 @@ export class CreateCategoryCommandHandler
     const category = Category.create(new CategoryId(id), data);
     const events = category.pullEvents();
     await this.eventStore.appendEvents(id, events);
-    this.eventHandler.publishEvents(events);
     return Result.success<CreateCategoryResponse>({
       id,
     });

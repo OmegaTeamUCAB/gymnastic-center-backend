@@ -1,9 +1,4 @@
-import {
-  Service,
-  EventHandler,
-  EventStore,
-  Result,
-} from '@app/core';
+import { Service, EventStore, Result } from '@app/core';
 import { UpdateCourseCommand, UpdateCourseResponse } from './types';
 import { CourseNotFoundException } from '../../exceptions';
 import { Course } from '../../../domain';
@@ -21,10 +16,7 @@ import { CategoryId } from 'apps/api/src/category/domain/value-objects/category-
 export class UpdateCourseCommandHandler
   implements Service<UpdateCourseCommand, UpdateCourseResponse>
 {
-  constructor(
-    private readonly eventStore: EventStore,
-    private readonly eventHandler: EventHandler,
-  ) {}
+  constructor(private readonly eventStore: EventStore) {}
 
   async execute(
     command: UpdateCourseCommand,
@@ -48,7 +40,6 @@ export class UpdateCourseCommandHandler
       course.updateCategory(new CategoryId(command.categoryId));
     const newEvents = course.pullEvents();
     await this.eventStore.appendEvents(command.id, newEvents);
-    this.eventHandler.publishEvents(newEvents);
     return Result.success<UpdateCourseResponse>({
       id: command.id,
     });

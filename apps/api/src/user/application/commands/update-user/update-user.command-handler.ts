@@ -1,6 +1,5 @@
 import {
   Service,
-  EventHandler,
   EventStore,
   Result,
 } from '@app/core';
@@ -19,7 +18,6 @@ export class UpdateUserCommandHandler
 {
   constructor(
     private readonly eventStore: EventStore,
-    private readonly eventHandler: EventHandler,
   ) {}
 
   async execute(
@@ -33,7 +31,6 @@ export class UpdateUserCommandHandler
     if (command.image) user.updateImage(new UserImage(command.image));
     const newEvents = user.pullEvents();
     await this.eventStore.appendEvents(command.id, newEvents);
-    this.eventHandler.publishEvents(newEvents);
     return Result.success<UpdateUserResponse>({
       id: command.id,
     });

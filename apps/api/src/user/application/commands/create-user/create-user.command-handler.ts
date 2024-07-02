@@ -1,16 +1,10 @@
-import {
-  Service,
-  EventHandler,
-  EventStore,
-  Result,
-} from '@app/core';
+import { Service, EventStore, Result } from '@app/core';
 import { CreateUserCommand, CreateUserResponse } from './types';
 import { IdGenerator } from '@app/core/application/id/id-generator.interface';
 import { User } from '../../../domain';
 import {
   UserEmail,
   UserId,
-  UserImage,
   UserName,
   UserPhone,
 } from '../../../domain/value-objects';
@@ -21,7 +15,6 @@ export class CreateUserCommandHandler
   constructor(
     private readonly idGenerator: IdGenerator<string>,
     private readonly eventStore: EventStore,
-    private readonly eventHandler: EventHandler,
   ) {}
 
   async execute(
@@ -38,7 +31,6 @@ export class CreateUserCommandHandler
 
     const events = user.pullEvents();
     await this.eventStore.appendEvents(id, events);
-    this.eventHandler.publishEvents(events);
     return Result.success<CreateUserResponse>({
       id,
     });

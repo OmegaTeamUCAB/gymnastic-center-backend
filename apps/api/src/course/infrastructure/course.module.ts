@@ -3,7 +3,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CourseController } from './controllers/course.controller';
 import {
   CourseSchema,
-  EventHandlerModule,
   EventStoreModule,
   LoggerModule,
   MongoCourse,
@@ -36,7 +35,6 @@ import { QuestionController } from './controllers/question.controller';
     AuthModule,
     UUIDModule,
     EventStoreModule,
-    EventHandlerModule,
     LoggerModule,
   ],
   providers: [],

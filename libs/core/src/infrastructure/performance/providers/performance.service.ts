@@ -15,14 +15,15 @@ export class NativePerformanceMonitor
         this.timers.set(label, Date.now());
     }
     
-    stop(label: string): void {
+    stop(label: string): number | undefined {
         const startTime = this.timers.get(label);
         if (startTime) {
             const duration = Date.now() - startTime;
-            this.logger.log(`Execution time for ${label}: ${duration}ms`);
             this.timers.delete(label);
+            return duration;
         } else {
             this.logger.warn(`No timer found for ${label}`);
+            return undefined;
         }
     }
 }

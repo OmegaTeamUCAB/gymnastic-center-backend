@@ -18,11 +18,9 @@ import { Model } from 'mongoose';
 import {
   EVENTS_QUEUE,
   EVENT_STORE,
-  EventHandler,
   EventStore,
   IdGenerator,
   IdResponse,
-  LOCAL_EVENT_HANDLER,
   MongoComment,
   SearchResponse,
   UUIDGENERATOR,

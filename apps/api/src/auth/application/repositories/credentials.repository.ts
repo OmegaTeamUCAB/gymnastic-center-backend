@@ -19,4 +19,11 @@ export interface CredentialsRepository {
     userId: string;
     deviceId: string;
   }): Promise<void>;
+  removeDevice({
+    userId,
+    deviceId,
+  }: {
+    userId: string;
+    deviceId: string;
+  }): Promise<void>;
 }

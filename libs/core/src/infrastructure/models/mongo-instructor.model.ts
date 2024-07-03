@@ -25,6 +25,12 @@ export class MongoInstructor {
 
   @Prop({ type: [SchemaTypes.UUID], default: [] })
   followers: string[];
+
+  @Prop({ required: true })
+  city: string;
+
+  @Prop({ required: true })
+  country: string;
 }
 
 export const InstructorSchema = SchemaFactory.createForClass(MongoInstructor);

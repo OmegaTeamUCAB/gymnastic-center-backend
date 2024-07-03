@@ -37,6 +37,7 @@
     "class-validator": "^0.14.1",
     "joi": "^17.13.0",
     "mongoose": "^8.3.2",
+    "nestjs-firebase": "^10.5.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",

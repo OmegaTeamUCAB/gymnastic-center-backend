@@ -3,6 +3,7 @@ export class Credentials {
     public userId: string,
     public email: string,
     public password: string,
+    public devices: string[] = [],
     public verificationCode?: string,
     public codeExpirationDate?: Date,
   ) {}

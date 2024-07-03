@@ -25,13 +25,17 @@ export class MongoInstructorProjector implements Projector {
     event: EventType<{
       name: string;
       image: string;
+      city: string;
+      country: string;
     }>,
   ) {
-    const { name, image } = event.context;
+    const { name, image, city, country } = event.context;
     await this.instructorModel.create({
       id: event.dispatcherId,
       name,
       image,
+      city,
+      country,
       followerCount: 0,
       followers: [],
     });

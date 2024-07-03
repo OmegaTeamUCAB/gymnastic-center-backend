@@ -21,6 +21,7 @@ import { CourseModule } from './course/infrastructure/course.module';
 import { BlogModule } from './blog/infrastructure/blog.module';
 import { CommentModule } from './comment/infrastructure';
 import { ClientProxy } from '@nestjs/microservices';
+import { NotificationsModule } from './notifications/infrastructure/notifications.module';
 
 @Module({
   imports: [
@@ -37,12 +38,16 @@ import { ClientProxy } from '@nestjs/microservices';
         VERIFICATION_EMAIL_TEMPLATE: Joi.string().required(),
         ALGOLIA_ID: Joi.string().required(),
         ALGOLIA_KEY: Joi.string().required(),
+        FIREBASE_PROJECT_ID: Joi.string().required(),
+        FIREBASE_PRIVATE_KEY: Joi.string().required(),
+        FIREBASE_CLIENT_EMAIL: Joi.string().required(),
       }),
       envFilePath: './apps/api/.env',
     }),
     RabbitMQModule.registerClient({
       queue: EVENTS_QUEUE,
     }),
+    NotificationsModule,
     MongooseModule.forRoot(process.env.MONGODB_CNN),
     AuthModule,
     CategoryModule,

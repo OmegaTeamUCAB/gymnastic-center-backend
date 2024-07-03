@@ -45,22 +45,22 @@ export class MongoCredentialsRepository implements CredentialsRepository {
         user.devices,
         user.verificationCode,
         user.codeExpirationDate,
-      )
+      ),
     );
   }
 
-  async findCredentialsByEmail(email: string): Promise<Credentials | null> {
+  async findCredentialsByEmail(email: string): Promise<Optional<Credentials>> {
     const user = await this.mongoCredentialsModel.findOne({ email });
-    if (!user) {
-      return null;
-    }
-    return new Credentials(
-      user.userId,
-      user.email,
-      user.password,
-      user.devices,
-      user.verificationCode,
-      user.codeExpirationDate,
+    if (!user) return Optional.empty();
+    return Optional.of(
+      new Credentials(
+        user.userId,
+        user.email,
+        user.password,
+        user.devices,
+        user.verificationCode,
+        user.codeExpirationDate,
+      ),
     );
   }
 

@@ -3,7 +3,7 @@ import { Credentials } from '../models/credentials.model';
 
 export interface CredentialsRepository {
   findCredentialsByUserId(userId: string): Promise<Optional<Credentials>>;
-  findCredentialsByEmail(email: string): Promise<Credentials | null>;
+  findCredentialsByEmail(email: string): Promise<Optional<Credentials>>;
   saveCredentials(credentials: Credentials): Promise<void>;
   hasDevice({
     userId,

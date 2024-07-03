@@ -11,6 +11,7 @@ import { NotificationsController } from './controllers/notifications.controller'
 import { GetUserNotificationsQuery, NotReadCountQuery } from './queries';
 import { NOTIFICATION_REPOSITORY } from './constants';
 import { MongoNotificationsRepository } from './repositories/mongo-notifications.repository';
+import { PushSenderService } from './provider/push-sender.service';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { MongoNotificationsRepository } from './repositories/mongo-notifications
   ],
   controllers: [NotificationsController],
   providers: [
+    PushSenderService,
     GetUserNotificationsQuery,
     NotReadCountQuery,
     {
@@ -40,5 +42,6 @@ import { MongoNotificationsRepository } from './repositories/mongo-notifications
       useClass: MongoNotificationsRepository,
     },
   ],
+  exports: [PushSenderService],
 })
 export class NotificationsModule {}

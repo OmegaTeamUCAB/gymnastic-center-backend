@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Injectable } from '@nestjs/common';
 import { CredentialsRepository } from '../../application/repositories/credentials.repository';
 import { MongoCredentials } from '../models/mongo-credentials.model';
+import { Optional } from '@app/core';
 
 @Injectable()
 export class MongoCredentialsRepository implements CredentialsRepository {
@@ -28,6 +29,23 @@ export class MongoCredentialsRepository implements CredentialsRepository {
       {
         upsert: true,
       },
+    );
+  }
+
+  async findCredentialsByUserId(
+    userId: string,
+  ): Promise<Optional<Credentials>> {
+    const user = await this.mongoCredentialsModel.findOne({ userId });
+    if (!user) return Optional.empty();
+    return Optional.of(
+      new Credentials(
+        user.userId,
+        user.email,
+        user.password,
+        user.devices,
+        user.verificationCode,
+        user.codeExpirationDate,
+      )
     );
   }
 

@@ -1,6 +1,8 @@
+import { Optional } from '@app/core';
 import { Credentials } from '../models/credentials.model';
 
 export interface CredentialsRepository {
+  findCredentialsByUserId(userId: string): Promise<Optional<Credentials>>;
   findCredentialsByEmail(email: string): Promise<Credentials | null>;
   saveCredentials(credentials: Credentials): Promise<void>;
   hasDevice({

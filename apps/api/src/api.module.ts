@@ -21,7 +21,7 @@ import { CourseModule } from './course/infrastructure/course.module';
 import { BlogModule } from './blog/infrastructure/blog.module';
 import { CommentModule } from './comment/infrastructure';
 import { ClientProxy } from '@nestjs/microservices';
-import { FirebaseModule } from 'nestjs-firebase';
+import { NotificationsModule } from './notifications/infrastructure/notifications.module';
 
 @Module({
   imports: [
@@ -47,13 +47,7 @@ import { FirebaseModule } from 'nestjs-firebase';
     RabbitMQModule.registerClient({
       queue: EVENTS_QUEUE,
     }),
-    FirebaseModule.forRoot({
-      googleApplicationCredential: {
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      },
-    }),
+    NotificationsModule,
     MongooseModule.forRoot(process.env.MONGODB_CNN),
     AuthModule,
     CategoryModule,

@@ -40,8 +40,30 @@ export class MongoCredentialsRepository implements CredentialsRepository {
       user.userId,
       user.email,
       user.password,
+      user.devices,
       user.verificationCode,
       user.codeExpirationDate,
+    );
+  }
+
+  async hasDevice(userId: string, deviceId: string): Promise<boolean> {
+    const user = await this.mongoCredentialsModel.findOne({
+      userId,
+      devices: deviceId,
+    });
+    return !!user;
+  }
+
+  async addDevice(userId: string, deviceId: string): Promise<void> {
+    await this.mongoCredentialsModel.updateOne(
+      {
+        userId,
+      },
+      {
+        $push: {
+          devices: deviceId,
+        },
+      },
     );
   }
 }

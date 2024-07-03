@@ -96,4 +96,23 @@ export class MongoCredentialsRepository implements CredentialsRepository {
       },
     );
   }
+
+  async removeDevice({
+    userId,
+    deviceId,
+  }: {
+    userId: string;
+    deviceId: string;
+  }): Promise<void> {
+    await this.mongoCredentialsModel.updateOne(
+      {
+        userId,
+      },
+      {
+        $pull: {
+          devices: deviceId,
+        },
+      },
+    );
+  }
 }

@@ -24,6 +24,7 @@ import {
   DeleteAllNotificationsCommandHandler,
   LinkDeviceCommandHandler,
   MarkReadCommandHandler,
+  UnlinkDeviceCommandHandler,
 } from '../../application/commands';
 import { AUTH_REPOSITORY } from 'apps/api/src/auth/infrastructure/constants';
 import { CredentialsRepository } from 'apps/api/src/auth/application';
@@ -123,6 +124,18 @@ export class NotificationsController {
     @Body() linkDeviceDto: LinkDeviceDto,
   ) {
     const service = new LinkDeviceCommandHandler(this.credentialsRepository);
+    await service.execute({
+      deviceId: linkDeviceDto.token,
+      userId: credentials.userId,
+    });
+  }
+
+  @Post('removetoken')
+  async removeToken(
+    @CurrentUser() credentials: Credentials,
+    @Body() linkDeviceDto: LinkDeviceDto,
+  ) {
+    const service = new UnlinkDeviceCommandHandler(this.credentialsRepository);
     await service.execute({
       deviceId: linkDeviceDto.token,
       userId: credentials.userId,

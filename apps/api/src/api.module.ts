@@ -21,6 +21,7 @@ import { CourseModule } from './course/infrastructure/course.module';
 import { BlogModule } from './blog/infrastructure/blog.module';
 import { CommentModule } from './comment/infrastructure';
 import { ClientProxy } from '@nestjs/microservices';
+import { FirebaseModule } from 'nestjs-firebase';
 
 @Module({
   imports: [
@@ -37,11 +38,21 @@ import { ClientProxy } from '@nestjs/microservices';
         VERIFICATION_EMAIL_TEMPLATE: Joi.string().required(),
         ALGOLIA_ID: Joi.string().required(),
         ALGOLIA_KEY: Joi.string().required(),
+        FIREBASE_PROJECT_ID: Joi.string().required(),
+        FIREBASE_PRIVATE_KEY: Joi.string().required(),
+        FIREBASE_CLIENT_EMAIL: Joi.string().required(),
       }),
       envFilePath: './apps/api/.env',
     }),
     RabbitMQModule.registerClient({
       queue: EVENTS_QUEUE,
+    }),
+    FirebaseModule.forRoot({
+      googleApplicationCredential: {
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      },
     }),
     MongooseModule.forRoot(process.env.MONGODB_CNN),
     AuthModule,

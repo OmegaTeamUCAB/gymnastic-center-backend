@@ -46,7 +46,13 @@ export class MongoCredentialsRepository implements CredentialsRepository {
     );
   }
 
-  async hasDevice(userId: string, deviceId: string): Promise<boolean> {
+  async hasDevice({
+    userId,
+    deviceId,
+  }: {
+    userId: string;
+    deviceId: string;
+  }): Promise<boolean> {
     const user = await this.mongoCredentialsModel.findOne({
       userId,
       devices: deviceId,
@@ -54,7 +60,13 @@ export class MongoCredentialsRepository implements CredentialsRepository {
     return !!user;
   }
 
-  async addDevice(userId: string, deviceId: string): Promise<void> {
+  async addDevice({
+    userId,
+    deviceId,
+  }: {
+    userId: string;
+    deviceId: string;
+  }): Promise<void> {
     await this.mongoCredentialsModel.updateOne(
       {
         userId,

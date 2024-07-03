@@ -27,7 +27,7 @@ import {
 } from '@app/core';
 import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import { InstructorResponse } from '../responses/instructor.response';
-import { CreateInstructorDto } from './dtos';
+import { CreateInstructorDto } from './dtos/create-instructor.dto';
 import { InstructorNotFoundException } from '../../application/exceptions/instructor-not-found.exception';
 import {
   CreateInstructorCommandHandler,
@@ -97,7 +97,7 @@ export class InstructorController {
       name: instructor.name,
       followers: instructor.followerCount,
       userFollow: instructor.followers.includes(credentials.userId),
-      location: 'Caracas, Venezuela',
+      location: `${instructor.city}, ${instructor.country}`,
       image: instructor.image,
     }));
   }
@@ -126,7 +126,7 @@ export class InstructorController {
       name: instructor.name,
       followers: instructor.followerCount,
       userFollow: instructor.followers.includes(credentials.userId),
-      location: 'Caracas, Venezuela',
+      location: `${instructor.city}, ${instructor.country}`,
       image: instructor.image,
     };
   }

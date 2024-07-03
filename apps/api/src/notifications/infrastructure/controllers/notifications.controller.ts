@@ -1,7 +1,9 @@
 import {
+  Body,
   Controller,
   DefaultValuePipe,
   Get,
+  Inject,
   NotFoundException,
   Param,
   ParseIntPipe,
@@ -15,19 +17,30 @@ import {
   ManyNotificationsResponse,
   OneNotificationResponse,
 } from './responses';
-import { CountResponse } from '@app/core';
+import { CountResponse, ILogger, LOGGER, LoggingDecorator } from '@app/core';
+import { GetUserNotificationsQuery, NotReadCountQuery } from '../queries';
+import { NOTIFICATION_REPOSITORY } from '../constants';
 import {
-  GetNotificationQuery,
-  GetUserNotificationsQuery,
-  NotReadCountQuery,
-} from '../queries';
+  DeleteAllNotificationsCommandHandler,
+  LinkDeviceCommandHandler,
+  MarkReadCommandHandler,
+} from '../../application/commands';
+import { AUTH_REPOSITORY } from 'apps/api/src/auth/infrastructure/constants';
+import { CredentialsRepository } from 'apps/api/src/auth/application';
+import { LinkDeviceDto } from './dtos/link-device.dto';
+import { NotificationsRepository } from '../../application/repositories/notifications.repository';
 
 @Controller('notifications')
 @ApiTags('Notifications')
 @Auth()
 export class NotificationsController {
   constructor(
-    private readonly getNotificationQuery: GetNotificationQuery,
+    @Inject(AUTH_REPOSITORY)
+    private readonly credentialsRepository: CredentialsRepository,
+    @Inject(NOTIFICATION_REPOSITORY)
+    private readonly notificationsRepository: NotificationsRepository,
+    @Inject(LOGGER)
+    private readonly logger: ILogger,
     private readonly getUserNotificationsQuery: GetUserNotificationsQuery,
     private readonly notReadCountQuery: NotReadCountQuery,
   ) {}
@@ -87,16 +100,44 @@ export class NotificationsController {
   async getNotification(
     @Param('id') id: string,
   ): Promise<OneNotificationResponse> {
-    const notification = await this.getNotificationQuery.execute({
-      id,
-    });
-    if (notification.hasValue) return notification.unwrap();
+    const notification = await this.notificationsRepository.getNotification(id);
+    if (notification.hasValue) {
+      if (!notification.unwrap().read) {
+        const service = new LoggingDecorator(
+          new MarkReadCommandHandler(this.notificationsRepository),
+          this.logger,
+          'Read Notification',
+        );
+        service.execute({
+          notificationId: id,
+        });
+      }
+      return notification.unwrap();
+    }
     throw new NotFoundException('Notification not found');
   }
 
   @Post('savetoken')
-  async saveToken() {}
+  async saveToken(
+    @CurrentUser() credentials: Credentials,
+    @Body() linkDeviceDto: LinkDeviceDto,
+  ) {
+    const service = new LinkDeviceCommandHandler(this.credentialsRepository);
+    await service.execute({
+      deviceId: linkDeviceDto.token,
+      userId: credentials.userId,
+    });
+  }
 
   @Post('delete/all')
-  async deleteAll() {}
+  async deleteAll(@CurrentUser() credentials: Credentials) {
+    const service = new LoggingDecorator(
+      new DeleteAllNotificationsCommandHandler(this.notificationsRepository),
+      this.logger,
+      'Delete Notifications',
+    );
+    await service.execute({
+      userId: credentials.userId,
+    });
+  }
 }

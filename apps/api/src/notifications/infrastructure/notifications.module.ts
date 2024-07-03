@@ -6,13 +6,11 @@ import {
   NotificationSchema,
 } from './models/mongo-notification.model';
 import { AuthModule } from '../../auth/infrastructure';
-import { UUIDModule } from '@app/core';
+import { LoggerModule, UUIDModule } from '@app/core';
 import { NotificationsController } from './controllers/notifications.controller';
-import {
-  GetNotificationQuery,
-  GetUserNotificationsQuery,
-  NotReadCountQuery,
-} from './queries';
+import { GetUserNotificationsQuery, NotReadCountQuery } from './queries';
+import { NOTIFICATION_REPOSITORY } from './constants';
+import { MongoNotificationsRepository } from './repositories/mongo-notifications.repository';
 
 @Module({
   imports: [
@@ -31,12 +29,16 @@ import {
     }),
     AuthModule,
     UUIDModule,
+    LoggerModule,
   ],
   controllers: [NotificationsController],
   providers: [
-    GetNotificationQuery,
     GetUserNotificationsQuery,
     NotReadCountQuery,
+    {
+      provide: NOTIFICATION_REPOSITORY,
+      useClass: MongoNotificationsRepository,
+    },
   ],
 })
 export class NotificationsModule {}

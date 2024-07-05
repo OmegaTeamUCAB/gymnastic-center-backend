@@ -3,15 +3,15 @@ import { ITimer } from '../timer/timer.interface';
 import { Result } from '@app/core/utils';
 import { ILogger } from '../logger/logger.interface';
 
-export class PerformanceMonitorDecorator<T, U> implements Service<T, U> {
+export class PerformanceMonitorDecorator<T, R> implements Service<T, R> {
   constructor(
-    private readonly service: Service<T, U>,
+    private readonly service: Service<T, R>,
     private readonly timer: ITimer,
     private readonly logger: ILogger,
     private readonly operationName: string,
   ) {}
 
-  async execute(data: T): Promise<Result<U>> {
+  async execute(data: T): Promise<Result<R>> {
     this.timer.start();
     const result = await this.service.execute(data);
     const duration = this.timer.stop();

@@ -24,6 +24,8 @@ import {
   ILogger,
   LOGGER,
   LoggingDecorator,
+  PerformanceMonitorDecorator,
+  NativeTimer,
 } from '@app/core';
 import {
   CreateCategoryCommandHandler,
@@ -114,10 +116,16 @@ export class CategoryController {
     type: IdResponse,
   })
   async createCategory(@Body() createCategoryDto: CreateCategoryDto) {
+    const operationName = 'Create Category';
     const service = new LoggingDecorator(
-      new CreateCategoryCommandHandler(this.uuidGenerator, this.eventStore),
+      new PerformanceMonitorDecorator(
+        new CreateCategoryCommandHandler(this.uuidGenerator, this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Create Category',
+      operationName,
     );
     const result = await service.execute(createCategoryDto);
     return result.unwrap();
@@ -133,10 +141,16 @@ export class CategoryController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
   ) {
+    const operationName = 'Update Category';
     const service = new LoggingDecorator(
-      new UpdateCategoryCommandHandler(this.eventStore),
+      new PerformanceMonitorDecorator(
+        new UpdateCategoryCommandHandler(this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Update Category',
+      operationName,
     );
     const result = await service.execute({ id, ...updateCategoryDto });
     return result.unwrap();

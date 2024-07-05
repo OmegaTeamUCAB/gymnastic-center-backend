@@ -24,6 +24,8 @@ import {
   ILogger,
   LOGGER,
   LoggingDecorator,
+  PerformanceMonitorDecorator,
+  NativeTimer,
 } from '@app/core';
 import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import { InstructorResponse } from '../responses/instructor.response';
@@ -141,10 +143,16 @@ export class InstructorController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() credentials: Credentials,
   ) {
+    const operationName = 'Toggle Follow';
     const service = new LoggingDecorator(
-      new ToggleFollowCommandHandler(this.eventStore),
+      new PerformanceMonitorDecorator(
+        new ToggleFollowCommandHandler(this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Toggle Follow',
+      operationName,
     );
     const result = await service.execute({
       instructorId: id,
@@ -160,13 +168,16 @@ export class InstructorController {
     type: IdResponse,
   })
   async createInstructor(@Body() createInstructorDto: CreateInstructorDto) {
+    const operationName = 'Create Instructor';
     const service = new LoggingDecorator(
-      new CreateInstructorCommandHandler(
-        this.uuidGenerator,
-        this.eventStore,
+      new PerformanceMonitorDecorator(
+        new CreateInstructorCommandHandler(this.uuidGenerator, this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
       ),
       this.logger,
-      'Create Instructor',
+      operationName,
     );
     const result = await service.execute(createInstructorDto);
     return result.unwrap();

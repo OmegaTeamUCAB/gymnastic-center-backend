@@ -23,6 +23,8 @@ import {
   IdResponse,
   LOGGER,
   LoggingDecorator,
+  NativeTimer,
+  PerformanceMonitorDecorator,
   UUIDGENERATOR,
 } from '@app/core';
 import { CreateCourseDto, UpdateCourseDto } from './dtos';
@@ -165,10 +167,16 @@ export class CourseController {
     type: IdResponse,
   })
   async createCourse(@Body() createCourseDto: CreateCourseDto) {
+    const operationName = 'Create Course';
     const service = new LoggingDecorator(
-      new CreateCourseCommandHandler(this.uuidGenerator, this.eventStore),
+      new PerformanceMonitorDecorator(
+        new CreateCourseCommandHandler(this.uuidGenerator, this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Create Course',
+      operationName,
     );
     const result = await service.execute({ ...createCourseDto });
     return result.unwrap();
@@ -184,10 +192,16 @@ export class CourseController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCourseDto: UpdateCourseDto,
   ) {
+    const operationName = 'Update Course';
     const service = new LoggingDecorator(
-      new UpdateCourseCommandHandler(this.eventStore),
+      new PerformanceMonitorDecorator(
+        new UpdateCourseCommandHandler(this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Update Course',
+      operationName,
     );
     const result = await service.execute({ id, ...updateCourseDto });
     const response = result.unwrap();

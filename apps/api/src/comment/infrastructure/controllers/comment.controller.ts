@@ -6,6 +6,8 @@ import {
   IdResponse,
   LOGGER,
   LoggingDecorator,
+  NativeTimer,
+  PerformanceMonitorDecorator,
 } from '@app/core';
 import {
   Controller,
@@ -43,10 +45,16 @@ export class CommentController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() credentials: Credentials,
   ) {
+    const operationName = 'Delete Comment';
     const service = new LoggingDecorator(
-      new DeleteCommentCommandHandler(this.eventStore),
+      new PerformanceMonitorDecorator(
+        new DeleteCommentCommandHandler(this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Delete Comment',
+      operationName,
     );
     const result = await service.execute({
       commentId: id,
@@ -66,10 +74,16 @@ export class CommentController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() credentials: Credentials,
   ) {
+    const operationName = 'Toggle Like';
     const service = new LoggingDecorator(
-      new ToggleLikeCommandHandler(this.eventStore),
+      new PerformanceMonitorDecorator(
+        new ToggleLikeCommandHandler(this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Toggle Like',
+      operationName,
     );
     const result = await service.execute({
       commentId: id,
@@ -89,10 +103,16 @@ export class CommentController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() credentials: Credentials,
   ) {
+    const operationName = 'Toggle Dislike';
     const service = new LoggingDecorator(
-      new ToggleDislikeCommandHandler(this.eventStore),
+      new PerformanceMonitorDecorator(
+        new ToggleDislikeCommandHandler(this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Toggle Dislike',
+      operationName,
     );
     const result = await service.execute({
       commentId: id,

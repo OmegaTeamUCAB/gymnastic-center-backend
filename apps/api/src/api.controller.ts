@@ -34,6 +34,8 @@ import {
   MongoCourse,
   CommentOrQuestionResponse,
   MongoQuestion,
+  PerformanceMonitorDecorator,
+  NativeTimer,
 } from '@app/core';
 import { Auth, CurrentUser } from './auth/infrastructure/decorators';
 import { Credentials } from './auth/application/models/credentials.model';
@@ -112,15 +114,27 @@ export class ApiController {
       const tagParts = tag.split('(');
       return tagParts[0].trim();
     });
+    let operationName = 'Search Courses';
     const searchCoursesService = new LoggingDecorator(
-      this.searchCoursesService,
+      new PerformanceMonitorDecorator(
+        this.searchCoursesService,
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Search Courses',
+      operationName,
     );
+    operationName = 'Search Blogs';
     const searchBlogsService = new LoggingDecorator(
-      this.searchBlogsService,
+      new PerformanceMonitorDecorator(
+        this.searchBlogsService,
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Search Blogs',
+      operationName,
     );
     const [coursesResult, blogsResult] = await Promise.all([
       searchCoursesService.execute({ searchTerm, limit: perPage, page, tags }),
@@ -294,13 +308,16 @@ export class ApiController {
     @CurrentUser() credentials: Credentials,
   ) {
     if (createCommentDto.targetType === 'BLOG') {
+      const operationName = 'Create Comment';
       const service = new LoggingDecorator(
-        new CreateCommentCommandHandler(
-          this.uuidGenerator,
-          this.eventStore,
+        new PerformanceMonitorDecorator(
+          new CreateCommentCommandHandler(this.uuidGenerator, this.eventStore),
+          new NativeTimer(),
+          this.logger,
+          operationName,
         ),
         this.logger,
-        'Create Comment',
+        operationName,
       );
       const result = await service.execute({
         blog: createCommentDto.target,
@@ -309,10 +326,16 @@ export class ApiController {
       });
       return result.unwrap();
     }
+    const operationName = 'Create Question';
     const service = new LoggingDecorator(
-      new CreateQuestionCommandHandler(this.uuidGenerator, this.eventStore),
+      new PerformanceMonitorDecorator(
+        new CreateQuestionCommandHandler(this.uuidGenerator, this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Create Question',
+      operationName,
     );
     const course = await this.courseModel.findOne({
       'lessons.id': createCommentDto.target,

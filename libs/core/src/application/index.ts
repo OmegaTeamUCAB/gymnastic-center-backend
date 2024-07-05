@@ -7,4 +7,5 @@ export { ExceptionCatcherDecorator } from './decorators/exception-catcher';
 export { IdGenerator } from './id/id-generator.interface';
 export { CryptoService } from './crypto/crypto-service.interface';
 export { ILogger } from './logger/logger.interface';
-export { LoggingDecorator } from './decorators/logging.decorator';
+export * from './decorators'
+export { ITimer } from "./timer/timer.interface";

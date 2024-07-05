@@ -12,6 +12,8 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import {
   BlogNotFoundException,
   CreateBlogCommandHandler,
@@ -28,12 +30,12 @@ import {
   LOGGER,
   LoggingDecorator,
   MongoBlog,
+  NativeTimer,
   UUIDGENERATOR,
+  PerformanceMonitorDecorator,
 } from '@app/core';
 import { BlogLeanResponse, BlogResponse } from './responses';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 
 @Controller('blog')
 @ApiTags('Blogs')
@@ -153,10 +155,16 @@ export class BlogController {
   })
   @Post()
   async createBlog(@Body() createBlogDto: CreateBlogDto) {
+    const operationName = 'Create Blog';
     const service = new LoggingDecorator(
-      new CreateBlogCommandHandler(this.uuidGenerator, this.eventStore),
+      new PerformanceMonitorDecorator(
+        new CreateBlogCommandHandler(this.uuidGenerator, this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Create Blog',
+      operationName,
     );
     const result = await service.execute({
       ...createBlogDto,
@@ -179,10 +187,16 @@ export class BlogController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateBlogDto: UpdateBlogDto,
   ) {
+    const operationName = 'Update Blog';
     const service = new LoggingDecorator(
-      new UpdateBlogCommandHandler(this.eventStore),
+      new PerformanceMonitorDecorator(
+        new UpdateBlogCommandHandler(this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Update Blog',
+      operationName,
     );
     const result = await service.execute({ id, ...updateBlogDto });
     return result.unwrap();

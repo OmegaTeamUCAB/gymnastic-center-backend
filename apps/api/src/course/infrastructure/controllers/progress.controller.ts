@@ -22,6 +22,8 @@ import {
   LOGGER,
   LoggingDecorator,
   MongoProgress,
+  NativeTimer,
+  PerformanceMonitorDecorator,
 } from '@app/core';
 import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import { Credentials } from 'apps/api/src/auth/application/models/credentials.model';
@@ -59,10 +61,16 @@ export class ProgressController {
     @CurrentUser() credentials: Credentials,
     @Param('courseId', ParseUUIDPipe) courseId: string,
   ): Promise<IdResponse> {
+    const operationName = 'Start Course';
     const service = new LoggingDecorator(
-      new StartCourseCommandHandler(this.eventStore),
+      new PerformanceMonitorDecorator(
+        new StartCourseCommandHandler(this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Start Course',
+      operationName,
     );
     const result = await service.execute({
       courseId,
@@ -83,10 +91,16 @@ export class ProgressController {
   ): Promise<IdResponse> {
     const { courseId, lessonId, markAsCompleted, time, totalTime } =
       watchCourseDto;
+    const operationName = 'Watch Lesson';
     const service = new LoggingDecorator(
-      new WatchLessonCommandHandler(this.eventStore),
+      new PerformanceMonitorDecorator(
+        new WatchLessonCommandHandler(this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Watch Lesson',
+      operationName,
     );
     const result = await service.execute({
       courseId,

@@ -8,6 +8,8 @@ import {
   IdResponse,
   LOGGER,
   LoggingDecorator,
+  NativeTimer,
+  PerformanceMonitorDecorator,
   UUIDGENERATOR,
 } from '@app/core';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
@@ -36,10 +38,16 @@ export class QuestionController {
   async createAnswer(
     @Body() createAnswerDto: CreateAnswerDto,
   ): Promise<IdResponse> {
+    const operationName = 'Create Answer';
     const service = new LoggingDecorator(
-      new CreateAnswerCommandHandler(this.uuidGenerator, this.eventStore),
+      new PerformanceMonitorDecorator(
+        new CreateAnswerCommandHandler(this.uuidGenerator, this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Create Answer',
+      operationName,
     );
     const result = await service.execute({
       content: createAnswerDto.content,

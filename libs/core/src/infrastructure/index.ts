@@ -7,3 +7,4 @@ export * from './search';
 export * from './logger';
 export * from './models';
 export * from './dtos';
+export * from './timer';

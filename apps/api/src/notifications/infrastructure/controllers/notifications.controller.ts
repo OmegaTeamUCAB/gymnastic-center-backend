@@ -17,7 +17,14 @@ import {
   ManyNotificationsResponse,
   OneNotificationResponse,
 } from './responses';
-import { CountResponse, ILogger, LOGGER, LoggingDecorator } from '@app/core';
+import {
+  CountResponse,
+  ILogger,
+  LOGGER,
+  LoggingDecorator,
+  NativeTimer,
+  PerformanceMonitorDecorator,
+} from '@app/core';
 import { GetUserNotificationsQuery, NotReadCountQuery } from '../queries';
 import { NOTIFICATION_REPOSITORY } from '../constants';
 import {
@@ -104,10 +111,16 @@ export class NotificationsController {
     const notification = await this.notificationsRepository.getNotification(id);
     if (notification.hasValue) {
       if (!notification.unwrap().read) {
+        const operationName = 'Mark Read Notification';
         const service = new LoggingDecorator(
-          new MarkReadCommandHandler(this.notificationsRepository),
+          new PerformanceMonitorDecorator(
+            new MarkReadCommandHandler(this.notificationsRepository),
+            new NativeTimer(),
+            this.logger,
+            operationName,
+          ),
           this.logger,
-          'Read Notification',
+          operationName,
         );
         service.execute({
           notificationId: id,
@@ -144,10 +157,16 @@ export class NotificationsController {
 
   @Post('delete/all')
   async deleteAll(@CurrentUser() credentials: Credentials) {
+    const operationName = 'Delete Notifications';
     const service = new LoggingDecorator(
-      new DeleteAllNotificationsCommandHandler(this.notificationsRepository),
+      new PerformanceMonitorDecorator(
+        new DeleteAllNotificationsCommandHandler(this.notificationsRepository),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Delete Notifications',
+      operationName,
     );
     await service.execute({
       userId: credentials.userId,

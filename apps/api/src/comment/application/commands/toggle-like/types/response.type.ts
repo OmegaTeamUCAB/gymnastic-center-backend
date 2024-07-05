@@ -1,3 +1,3 @@
 export type ToggleLikeResponse = {
-    id: string;
-}
+  id: string;
+};

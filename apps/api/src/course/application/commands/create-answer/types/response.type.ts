@@ -1,3 +1,3 @@
 export type CreateAnswerResponse = {
-    id: string;
-}
+  id: string;
+};

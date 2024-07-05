@@ -20,8 +20,6 @@ import {
   IdGenerator,
   EVENT_STORE,
   EventStore,
-  LOCAL_EVENT_HANDLER,
-  EventHandler,
   MongoInstructor,
   ILogger,
   LOGGER,
@@ -29,7 +27,7 @@ import {
 } from '@app/core';
 import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import { InstructorResponse } from '../responses/instructor.response';
-import { CreateInstructorDto, UpdateInstructorDto } from './dtos';
+import { CreateInstructorDto } from './dtos/create-instructor.dto';
 import { InstructorNotFoundException } from '../../application/exceptions/instructor-not-found.exception';
 import {
   CreateInstructorCommandHandler,
@@ -46,8 +44,6 @@ export class InstructorController {
     private readonly uuidGenerator: IdGenerator<string>,
     @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
-    @Inject(LOCAL_EVENT_HANDLER)
-    private readonly localEventHandler: EventHandler,
     @InjectModel(MongoInstructor.name)
     private readonly instructorModel: Model<MongoInstructor>,
     @Inject(LOGGER)
@@ -101,7 +97,7 @@ export class InstructorController {
       name: instructor.name,
       followers: instructor.followerCount,
       userFollow: instructor.followers.includes(credentials.userId),
-      location: 'Caracas, Venezuela',
+      location: `${instructor.city}, ${instructor.country}`,
       image: instructor.image,
     }));
   }
@@ -130,7 +126,7 @@ export class InstructorController {
       name: instructor.name,
       followers: instructor.followerCount,
       userFollow: instructor.followers.includes(credentials.userId),
-      location: 'Caracas, Venezuela',
+      location: `${instructor.city}, ${instructor.country}`,
       image: instructor.image,
     };
   }
@@ -146,7 +142,7 @@ export class InstructorController {
     @CurrentUser() credentials: Credentials,
   ) {
     const service = new LoggingDecorator(
-      new ToggleFollowCommandHandler(this.eventStore, this.localEventHandler),
+      new ToggleFollowCommandHandler(this.eventStore),
       this.logger,
       'Toggle Follow',
     );
@@ -168,7 +164,6 @@ export class InstructorController {
       new CreateInstructorCommandHandler(
         this.uuidGenerator,
         this.eventStore,
-        this.localEventHandler,
       ),
       this.logger,
       'Create Instructor',

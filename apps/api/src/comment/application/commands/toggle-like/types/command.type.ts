@@ -1,4 +1,4 @@
 export type ToggleLikeCommand = {
-    commentId: string;
-    userId: string;
-}
+  commentId: string;
+  userId: string;
+};

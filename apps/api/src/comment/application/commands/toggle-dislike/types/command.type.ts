@@ -1,4 +1,4 @@
 export type ToggleDislikeCommand = {
-    commentId: string;
-    userId: string;
-}
+  commentId: string;
+  userId: string;
+};

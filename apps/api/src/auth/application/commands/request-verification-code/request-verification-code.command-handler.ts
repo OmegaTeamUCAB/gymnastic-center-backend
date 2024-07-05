@@ -20,10 +20,11 @@ export class RequestVerificationCodeCommandHandler
   async execute(
     command: RequestVerificationCodeCommand,
   ): Promise<Result<void>> {
-    const credentials = await this.credentialsRepository.findCredentialsByEmail(
+    const _credentials = await this.credentialsRepository.findCredentialsByEmail(
       command.email,
     );
-    if (!credentials) return Result.failure<void>(new UserNotFoundException());
+    if (!_credentials.hasValue) return Result.failure<void>(new UserNotFoundException());
+    const credentials = _credentials.unwrap();
     const code = this.codeGenerator.generateRandomCode();
     credentials.verificationCode = code;
     credentials.codeExpirationDate = new Date(Date.now() + 1000 * 60 * 15); // 15 minutes

@@ -1,9 +1,4 @@
-import {
-  Service,
-  EventHandler,
-  EventStore,
-  Result,
-} from '@app/core';
+import { Service, EventStore, Result } from '@app/core';
 import { IdGenerator } from '@app/core';
 import { CreateBlogCommand, CreateBlogResponse } from './types';
 import { Blog } from '../../../domain/blog';
@@ -11,7 +6,6 @@ import {
   BlogContent,
   BlogImage,
   BlogId,
-  BlogPublishDate,
   BlogTag,
   BlogTitle,
 } from '../../../domain/value-objects';
@@ -24,7 +18,6 @@ export class CreateBlogCommandHandler
   constructor(
     private readonly idGenerator: IdGenerator<string>,
     private readonly eventStore: EventStore,
-    private readonly eventHandler: EventHandler,
   ) {}
 
   async execute(
@@ -42,7 +35,6 @@ export class CreateBlogCommandHandler
     const blog = Blog.create(new BlogId(id), data);
     const events = blog.pullEvents();
     await this.eventStore.appendEvents(id, events);
-    this.eventHandler.publishEvents(events);
     return Result.success<CreateBlogResponse>({
       id,
     });

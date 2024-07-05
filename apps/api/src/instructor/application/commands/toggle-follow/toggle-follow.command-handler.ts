@@ -1,9 +1,4 @@
-import {
-  Service,
-  EventHandler,
-  EventStore,
-  Result,
-} from '@app/core';
+import { Service, EventStore, Result } from '@app/core';
 import { ToggleFollowCommand, ToggleFollowResponse } from './types';
 import { Instructor } from 'apps/api/src/instructor/domain/instructor';
 import { InstructorId } from 'apps/api/src/instructor/domain/value-objects/instructor-id';
@@ -13,10 +8,7 @@ import { InstructorNotFoundException } from '../../exceptions';
 export class ToggleFollowCommandHandler
   implements Service<ToggleFollowCommand, ToggleFollowResponse>
 {
-  constructor(
-    private readonly eventStore: EventStore,
-    private readonly eventHandler: EventHandler,
-  ) {}
+  constructor(private readonly eventStore: EventStore) {}
 
   async execute(
     command: ToggleFollowCommand,
@@ -35,7 +27,6 @@ export class ToggleFollowCommandHandler
     else instructor.addFollower(user);
     const newEvents = instructor.pullEvents();
     await this.eventStore.appendEvents(command.instructorId, newEvents);
-    this.eventHandler.publishEvents(newEvents);
     return Result.success<ToggleFollowResponse>({
       id: command.instructorId,
     });

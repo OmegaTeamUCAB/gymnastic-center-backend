@@ -17,12 +17,10 @@ import { Model } from 'mongoose';
 import {
   CountResponse,
   EVENT_STORE,
-  EventHandler,
   EventStore,
   ILogger,
   IdGenerator,
   IdResponse,
-  LOCAL_EVENT_HANDLER,
   LOGGER,
   LoggingDecorator,
   UUIDGENERATOR,
@@ -46,8 +44,6 @@ export class CourseController {
     private readonly uuidGenerator: IdGenerator<string>,
     @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
-    @Inject(LOCAL_EVENT_HANDLER)
-    private readonly localEventHandler: EventHandler,
     @InjectModel(MongoCourse.name)
     private readonly courseModel: Model<MongoCourse>,
     @Inject(LOGGER)
@@ -170,11 +166,7 @@ export class CourseController {
   })
   async createCourse(@Body() createCourseDto: CreateCourseDto) {
     const service = new LoggingDecorator(
-      new CreateCourseCommandHandler(
-        this.uuidGenerator,
-        this.eventStore,
-        this.localEventHandler,
-      ),
+      new CreateCourseCommandHandler(this.uuidGenerator, this.eventStore),
       this.logger,
       'Create Course',
     );
@@ -193,7 +185,7 @@ export class CourseController {
     @Body() updateCourseDto: UpdateCourseDto,
   ) {
     const service = new LoggingDecorator(
-      new UpdateCourseCommandHandler(this.eventStore, this.localEventHandler),
+      new UpdateCourseCommandHandler(this.eventStore),
       this.logger,
       'Update Course',
     );

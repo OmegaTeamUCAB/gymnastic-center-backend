@@ -11,6 +11,7 @@ import { InstructorId } from './value-objects/instructor-id';
 import { InstructorName } from './value-objects/instructor-name';
 import { InstructorImage } from './value-objects/instructor-image';
 import { InstructorImageUpdated } from './events/instructor-image-updated';
+import { InstructorLocation } from './value-objects/instructor-location';
 
 export class Instructor extends AggregateRoot<InstructorId> {
   private constructor(id: InstructorId) {
@@ -18,10 +19,17 @@ export class Instructor extends AggregateRoot<InstructorId> {
   }
   private _name: InstructorName;
   private _image: InstructorImage;
+  private _location: InstructorLocation;
   private _followers: UserId[];
 
   protected validateState(): void {
-    if (!this.id || !this._name || !this.image || !this._followers) {
+    if (
+      !this.id ||
+      !this._name ||
+      !this.image ||
+      this._location ||
+      !this._followers
+    ) {
       throw new InvalidInstructorException();
     }
   }
@@ -32,6 +40,10 @@ export class Instructor extends AggregateRoot<InstructorId> {
 
   get image(): InstructorImage {
     return this._image;
+  }
+
+  get location(): InstructorLocation {
+    return this._location;
   }
 
   get followers(): UserId[] {
@@ -61,10 +73,13 @@ export class Instructor extends AggregateRoot<InstructorId> {
     data: {
       name: InstructorName;
       image: InstructorImage;
+      location: InstructorLocation;
     },
   ): Instructor {
     const instructor = new Instructor(id);
-    instructor.apply(InstructorCreated.createEvent(id, data.name, data.image));
+    instructor.apply(
+      InstructorCreated.createEvent(id, data.name, data.image, data.location),
+    );
     return instructor;
   }
 
@@ -77,6 +92,7 @@ export class Instructor extends AggregateRoot<InstructorId> {
   [`on${InstructorCreated.name}`](context: InstructorCreated): void {
     this._name = new InstructorName(context.name);
     this._image = new InstructorImage(context.image);
+    this._location = new InstructorLocation(context.city, context.country);
     this._followers = [];
   }
 

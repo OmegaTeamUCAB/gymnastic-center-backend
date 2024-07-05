@@ -87,14 +87,16 @@ export class MongoEventStore
         const event: MongoEvent = change.fullDocument;
         const handlers = this.subscriptions
           .get('ALL')
-          .concat(this.subscriptions.get(event.type));
-        handlers.forEach((handler) =>
-          handler({
-            dispatcherId: event.stream,
-            name: event.type,
-            timestamp: event.date,
-            context: event.context,
-          }),
+          .concat(this.subscriptions.get(event.type) ?? []);
+        Promise.all(
+          handlers.map((handler) =>
+            handler({
+              dispatcherId: event.stream,
+              name: event.type,
+              timestamp: event.date,
+              context: event.context,
+            }),
+          ),
         );
       }
     });

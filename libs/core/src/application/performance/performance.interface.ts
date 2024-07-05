@@ -1,4 +1,4 @@
 export interface PerformanceMonitorService {
-    start(label: string): void;
-    stop(label: string): void;
+  start(label: string): void;
+  stop(label: string): void;
 }

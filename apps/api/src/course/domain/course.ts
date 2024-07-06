@@ -1,4 +1,11 @@
-import { InvalidCourseException } from './exceptions';
+import {
+  CourseAlreadyStartedByUserException,
+  InvalidCourseException,
+  CourseNotStartedByUserException,
+  InvalidInstructorToAnswerException,
+  QuestionAlreadyAnsweredException,
+  QuestionNotFoundException,
+} from './exceptions';
 import {
   CourseDescription,
   CourseDuration,
@@ -21,7 +28,12 @@ import {
   CourseImageUpdated,
   CourseLevelUpdated,
   CourseNameUpdated,
+  CourseStarted,
   CourseTagsUpdated,
+  CourseLessonWatched,
+  CourseCompleted,
+  QuestionCreated,
+  QuestionAnswered,
 } from './events';
 import {
   LessonDescription,
@@ -29,6 +41,24 @@ import {
   LessonTitle,
   LessonVideo,
 } from './entities/lessons/value-objects';
+import { UserProgress } from './entities/user-progress/user-progress';
+import { UserId } from '../../user/domain/value-objects';
+import {
+  CompletionPercentage,
+  LastSecondWatched,
+} from './entities/user-progress/value-objects';
+import { Question } from './entities/questions';
+import { Answer } from './entities/answers/answer';
+import {
+  QuestionContent,
+  QuestionDate,
+  QuestionId,
+} from './entities/questions/value-objects';
+import {
+  AnswerContent,
+  AnswerDate,
+  AnswerId,
+} from './entities/answers/value-objects';
 
 export class Course extends AggregateRoot<CourseId> {
   private constructor(id: CourseId) {
@@ -46,7 +76,18 @@ export class Course extends AggregateRoot<CourseId> {
       this._lessons.length === 0 ||
       !this._duration ||
       !this._category ||
-      !this._instructor
+      !this._instructor ||
+      !this._publishDate ||
+      !this._progressHistory ||
+      this._progressHistory.some(
+        (progress) =>
+          !this.lessons.find((lesson) => lesson.id.equals(progress.lesson)),
+      ) ||
+      !this._questions ||
+      !this._answers ||
+      this._answers.some(
+        (answer) => !answer.instructor.equals(this._instructor),
+      )
     ) {
       throw new InvalidCourseException();
     }
@@ -62,6 +103,9 @@ export class Course extends AggregateRoot<CourseId> {
   private _category: CategoryId;
   private _instructor: InstructorId;
   private _lessons: Lesson[];
+  private _progressHistory: UserProgress[];
+  private _questions: Question[];
+  private _answers: Answer[];
 
   get name(): CourseName {
     return this._name;
@@ -131,6 +175,87 @@ export class Course extends AggregateRoot<CourseId> {
     this.apply(CourseDurationUpdated.createEvent(this.id, duration));
   }
 
+  isBeingWatchedBy(user: UserId): boolean {
+    return this._progressHistory.some((progress) => progress.user.equals(user));
+  }
+
+  isCompletedBy(user: UserId): boolean {
+    return this._progressHistory.every((progress) =>
+      progress.user.equals(user) ? progress.isCompleted : true,
+    );
+  }
+
+  startWatching(user: UserId): void {
+    if (this.isBeingWatchedBy(user))
+      throw new CourseAlreadyStartedByUserException();
+    this.apply(CourseStarted.createEvent(this.id, user));
+  }
+
+  watchLesson(
+    lesson: LessonId,
+    user: UserId,
+    lastTime: LastSecondWatched,
+    progress: CompletionPercentage,
+  ): void {
+    if (!this.isBeingWatchedBy(user))
+      throw new CourseNotStartedByUserException();
+    this.apply(
+      CourseLessonWatched.createEvent(
+        this.id,
+        user,
+        lesson,
+        progress,
+        lastTime,
+      ),
+    );
+  }
+
+  addQuestion(
+    id: QuestionId,
+    user: UserId,
+    lesson: LessonId,
+    content: QuestionContent,
+  ): void {
+    this.apply(
+      QuestionCreated.createEvent(
+        this.id,
+        id,
+        user,
+        lesson,
+        content,
+        new QuestionDate(new Date()),
+      ),
+    );
+  }
+
+  questionIsAnswered(question: QuestionId): boolean {
+    return this._answers.some((answer) => answer.question.equals(question));
+  }
+
+  addAnswer(
+    id: AnswerId,
+    question: QuestionId,
+    instructor: InstructorId,
+    content: AnswerContent,
+  ): void {
+    if (!this._questions.some((q) => q.id.equals(question)))
+      throw new QuestionNotFoundException();
+    if (!instructor.equals(this._instructor))
+      throw new InvalidInstructorToAnswerException();
+    if (this.questionIsAnswered(question))
+      throw new QuestionAlreadyAnsweredException();
+    this.apply(
+      QuestionAnswered.createEvent(
+        this.id,
+        id,
+        question,
+        instructor,
+        content,
+        new AnswerDate(new Date()),
+      ),
+    );
+  }
+
   static create(
     id: CourseId,
     data: {
@@ -189,6 +314,9 @@ export class Course extends AggregateRoot<CourseId> {
           new LessonVideo(lesson.video),
         ),
     );
+    this._progressHistory = [];
+    this._questions = [];
+    this._answers = [];
   }
 
   [`on${CourseNameUpdated.name}`](context: CourseNameUpdated): void {
@@ -219,5 +347,62 @@ export class Course extends AggregateRoot<CourseId> {
 
   [`on${CourseDurationUpdated.name}`](context: CourseDurationUpdated): void {
     this._duration = new CourseDuration(context.weeks, context.minutes);
+  }
+
+  [`on${CourseStarted.name}`](context: CourseStarted) {
+    const progress = this.lessons.map((lesson) =>
+      UserProgress.start(new UserId(context.user), lesson.id),
+    );
+    progress.forEach((lessonProgress) =>
+      this._progressHistory.push(lessonProgress),
+    );
+  }
+
+  [`on${CourseLessonWatched.name}`](context: CourseLessonWatched) {
+    const user = new UserId(context.user);
+    const previouslyCompleted = this.isCompletedBy(user);
+    const lessonProgress = this._progressHistory.find(
+      (progress) =>
+        progress.user.equals(user) &&
+        progress.lesson.equals(new LessonId(context.lesson)),
+    );
+    lessonProgress.lastSecondWatched = new LastSecondWatched(
+      context.lastSecondWatched,
+    );
+    lessonProgress.completionPercentage = new CompletionPercentage(
+      context.completionPercentage,
+    );
+    if (
+      !previouslyCompleted &&
+      lessonProgress.isCompleted &&
+      this.isCompletedBy(user)
+    )
+      this.apply(CourseCompleted.createEvent(this.id, user));
+  }
+
+  [`on${CourseCompleted.name}`](context: CourseCompleted) {}
+
+  [`on${QuestionCreated.name}`](context: QuestionCreated) {
+    this._questions.push(
+      new Question(
+        new QuestionId(context.questionId),
+        new UserId(context.user),
+        new LessonId(context.lesson),
+        new QuestionContent(context.content),
+        new QuestionDate(context.date),
+      ),
+    );
+  }
+
+  [`on${QuestionAnswered.name}`](context: QuestionAnswered) {
+    this._answers.push(
+      new Answer(
+        new AnswerId(context.answerId),
+        new QuestionId(context.questionId),
+        new InstructorId(context.instructor),
+        new AnswerContent(context.content),
+        new AnswerDate(context.date),
+      ),
+    );
   }
 }

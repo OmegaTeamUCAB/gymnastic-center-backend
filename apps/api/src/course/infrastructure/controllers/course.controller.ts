@@ -17,14 +17,14 @@ import { Model } from 'mongoose';
 import {
   CountResponse,
   EVENT_STORE,
-  EventHandler,
   EventStore,
   ILogger,
   IdGenerator,
   IdResponse,
-  LOCAL_EVENT_HANDLER,
   LOGGER,
   LoggingDecorator,
+  NativeTimer,
+  PerformanceMonitorDecorator,
   UUIDGENERATOR,
 } from '@app/core';
 import { CreateCourseDto, UpdateCourseDto } from './dtos';
@@ -46,8 +46,6 @@ export class CourseController {
     private readonly uuidGenerator: IdGenerator<string>,
     @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
-    @Inject(LOCAL_EVENT_HANDLER)
-    private readonly localEventHandler: EventHandler,
     @InjectModel(MongoCourse.name)
     private readonly courseModel: Model<MongoCourse>,
     @Inject(LOGGER)
@@ -151,6 +149,7 @@ export class CourseController {
       trainer: {
         id: course.trainer.id,
         name: course.trainer.name,
+        image: course.trainer.image,
       },
       lessons: course.lessons.map((lesson) => ({
         id: lesson.id,
@@ -168,14 +167,16 @@ export class CourseController {
     type: IdResponse,
   })
   async createCourse(@Body() createCourseDto: CreateCourseDto) {
+    const operationName = 'Create Course';
     const service = new LoggingDecorator(
-      new CreateCourseCommandHandler(
-        this.uuidGenerator,
-        this.eventStore,
-        this.localEventHandler,
+      new PerformanceMonitorDecorator(
+        new CreateCourseCommandHandler(this.uuidGenerator, this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
       ),
       this.logger,
-      'Create Course',
+      operationName,
     );
     const result = await service.execute({ ...createCourseDto });
     return result.unwrap();
@@ -191,10 +192,16 @@ export class CourseController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCourseDto: UpdateCourseDto,
   ) {
+    const operationName = 'Update Course';
     const service = new LoggingDecorator(
-      new UpdateCourseCommandHandler(this.eventStore, this.localEventHandler),
+      new PerformanceMonitorDecorator(
+        new UpdateCourseCommandHandler(this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Update Course',
+      operationName,
     );
     const result = await service.execute({ id, ...updateCourseDto });
     const response = result.unwrap();

@@ -1,13 +1,13 @@
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   EVENT_STORE,
-  EventHandler,
   EventStore,
   ILogger,
   IdResponse,
-  LOCAL_EVENT_HANDLER,
   LOGGER,
   LoggingDecorator,
+  NativeTimer,
+  PerformanceMonitorDecorator,
 } from '@app/core';
 import {
   Controller,
@@ -19,9 +19,9 @@ import {
 } from '@nestjs/common';
 import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import { Credentials } from 'apps/api/src/auth/application/models/credentials.model';
-import { ToggleLikeCommandHandler } from '../../application/commands/toggle-like';
-import { ToggleDislikeCommandHandler } from '../../application/commands/toggle-dislike';
 import { DeleteCommentCommandHandler } from '../../application/commands/delete-comment/delete-comment.command-handler';
+import { ToggleLikeCommandHandler } from '../../application/commands/toggle-like/toggle-like.command-handler';
+import { ToggleDislikeCommandHandler } from '../../application/commands/toggle-dislike/toggle-dislike.command-handler';
 
 @Controller('comment')
 @ApiTags('comments')
@@ -30,8 +30,6 @@ export class CommentController {
   constructor(
     @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
-    @Inject(LOCAL_EVENT_HANDLER)
-    private readonly localEventHandler: EventHandler,
     @Inject(LOGGER)
     private readonly logger: ILogger,
   ) {}
@@ -47,10 +45,16 @@ export class CommentController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() credentials: Credentials,
   ) {
+    const operationName = 'Delete Comment';
     const service = new LoggingDecorator(
-      new DeleteCommentCommandHandler(this.eventStore, this.localEventHandler),
+      new PerformanceMonitorDecorator(
+        new DeleteCommentCommandHandler(this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Delete Comment',
+      operationName,
     );
     const result = await service.execute({
       commentId: id,
@@ -70,10 +74,16 @@ export class CommentController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() credentials: Credentials,
   ) {
+    const operationName = 'Toggle Like';
     const service = new LoggingDecorator(
-      new ToggleLikeCommandHandler(this.eventStore, this.localEventHandler),
+      new PerformanceMonitorDecorator(
+        new ToggleLikeCommandHandler(this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Toggle Like',
+      operationName,
     );
     const result = await service.execute({
       commentId: id,
@@ -93,10 +103,16 @@ export class CommentController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() credentials: Credentials,
   ) {
+    const operationName = 'Toggle Dislike';
     const service = new LoggingDecorator(
-      new ToggleDislikeCommandHandler(this.eventStore, this.localEventHandler),
+      new PerformanceMonitorDecorator(
+        new ToggleDislikeCommandHandler(this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Toggle Dislike',
+      operationName,
     );
     const result = await service.execute({
       commentId: id,

@@ -1,6 +1,5 @@
 import {
   Service,
-  EventHandler,
   EventStore,
   Result,
 } from '@app/core';
@@ -21,7 +20,6 @@ export class UpdateBlogCommandHandler
 {
   constructor(
     private readonly eventStore: EventStore,
-    private readonly eventHandler: EventHandler,
   ) {}
 
   async execute(
@@ -39,7 +37,6 @@ export class UpdateBlogCommandHandler
     if (command.content) blog.updateContent(new BlogContent(command.content));
     const newEvents = blog.pullEvents();
     await this.eventStore.appendEvents(command.id, newEvents);
-    this.eventHandler.publishEvents(newEvents);
     return Result.success<UpdateBlogResponse>({
       id: command.id,
     });

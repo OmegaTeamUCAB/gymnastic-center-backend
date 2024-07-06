@@ -4,7 +4,6 @@ import { UserController } from './controllers/user.controller';
 import { AuthModule } from '../../auth/infrastructure';
 import {
   BcryptModule,
-  EventHandlerModule,
   EventStoreModule,
   LoggerModule,
   UUIDModule,
@@ -24,10 +23,10 @@ import {
     BcryptModule,
     UUIDModule,
     EventStoreModule,
-    EventHandlerModule,
     LoggerModule,
   ],
   controllers: [UserController],
   providers: [],
+  exports: [MongooseModule],
 })
 export class UserModule {}

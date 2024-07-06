@@ -19,10 +19,11 @@ import {
   ILogger,
   IdGenerator,
   IdResponse,
-  LOCAL_EVENT_HANDLER,
   LOGGER,
   LoggingDecorator,
   MongoUser,
+  NativeTimer,
+  PerformanceMonitorDecorator,
   UUIDGENERATOR,
 } from '@app/core';
 import { InjectModel } from '@nestjs/mongoose';
@@ -41,13 +42,12 @@ import {
 import { AuthResponse } from 'apps/api/src/auth/infrastructure/controllers/responses';
 import { UserResponse } from './responses';
 import { Credentials } from 'apps/api/src/auth/application/models/credentials.model';
-import { LocalEventHandler } from '@app/core/infrastructure/event-handler/providers/local-event-handler';
-import { CreateUserCommandHandler } from '../../application/commands/create-user';
+import { CreateUserCommandHandler } from '../../application/commands/create-user/create-user.command-handler';
 import {
   UserAlreadyExistsException,
   UserNotFoundException,
 } from 'apps/api/src/auth/application/exceptions';
-import { UpdateUserCommandHandler } from '../../application/commands/update-user-by-id';
+import { UpdateUserCommandHandler } from '../../application/commands/update-user/update-user.command-handler';
 import { UserCreated, UserCreatedEvent } from '../../domain/events';
 
 @Controller()
@@ -56,8 +56,6 @@ export class UserController {
   constructor(
     @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
-    @Inject(LOCAL_EVENT_HANDLER)
-    private readonly localEventHandler: LocalEventHandler,
     @InjectModel(MongoUser.name)
     private readonly userModel: Model<MongoUser>,
     @Inject(AUTH_REPOSITORY)
@@ -80,15 +78,21 @@ export class UserController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async login(@Body() loginDto: LoginDto) {
+    const operationName = 'Login';
     try {
       const loginService = new LoggingDecorator(
-        new LoginCommandHandler(
-          this.repository,
-          this.jwtService,
-          this.bcryptService,
+        new PerformanceMonitorDecorator(
+          new LoginCommandHandler(
+            this.repository,
+            this.jwtService,
+            this.bcryptService,
+          ),
+          new NativeTimer(),
+          this.logger,
+          operationName,
         ),
         this.logger,
-        'Login',
+        operationName,
       );
       const loginResult = await loginService.execute(loginDto);
       const { token, id } = loginResult.unwrap();
@@ -119,19 +123,25 @@ export class UserController {
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async signUp(@Body() signUpDto: SignUpDto) {
+    const signUpOperationName = 'Sign Up';
     try {
       if (await this.repository.findCredentialsByEmail(signUpDto.email))
         throw new UserAlreadyExistsException(signUpDto.email);
       const signUpService = new LoggingDecorator(
-        new SignUpCommandHandler(
-          this.repository,
-          this.jwtService,
-          this.bcryptService,
+        new PerformanceMonitorDecorator(
+          new SignUpCommandHandler(
+            this.repository,
+            this.jwtService,
+            this.bcryptService,
+          ),
+          new NativeTimer(),
+          this.logger,
+          signUpOperationName,
         ),
         this.logger,
-        'Sign Up',
+        signUpOperationName,
       );
-      const suscription = this.localEventHandler.subscribe(
+      const suscription = this.eventStore.subscribe(
         UserCreated.name,
         async (event: UserCreatedEvent) => {
           await signUpService.execute({
@@ -141,14 +151,16 @@ export class UserController {
           });
         },
       );
+      const createUserOperationName = 'Create User';
       const service = new LoggingDecorator(
-        new CreateUserCommandHandler(
-          this.uuidGenerator,
-          this.eventStore,
-          this.localEventHandler,
+        new PerformanceMonitorDecorator(
+          new CreateUserCommandHandler(this.uuidGenerator, this.eventStore),
+          new NativeTimer(),
+          this.logger,
+          createUserOperationName,
         ),
         this.logger,
-        'Create User',
+        createUserOperationName,
       );
       const result = await service.execute({ ...signUpDto });
       suscription.unsubscribe();
@@ -191,10 +203,16 @@ export class UserController {
     @CurrentUser() credentials: Credentials,
     @Body() updateUserDto: UpdateUserDto,
   ) {
+    const operationName = 'Update User';
     const service = new LoggingDecorator(
-      new UpdateUserCommandHandler(this.eventStore, this.localEventHandler),
+      new PerformanceMonitorDecorator(
+        new UpdateUserCommandHandler(this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Update User',
+      operationName,
     );
     const result = await service.execute({
       id: credentials.userId,

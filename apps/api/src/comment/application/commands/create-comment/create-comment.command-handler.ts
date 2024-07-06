@@ -1,6 +1,5 @@
 import {
   Service,
-  EventHandler,
   EventStore,
   IdGenerator,
   Result,
@@ -17,7 +16,6 @@ export class CreateCommentCommandHandler
   constructor(
     private readonly idGenerator: IdGenerator<string>,
     private readonly eventStore: EventStore,
-    private readonly eventHandler: EventHandler,
   ) {}
 
   async execute(
@@ -35,7 +33,6 @@ export class CreateCommentCommandHandler
 
     const events = comment.pullEvents();
     await this.eventStore.appendEvents(id, events);
-    this.eventHandler.publishEvents(events);
     return Result.success<CreateCommentResponse>({
       id,
     });

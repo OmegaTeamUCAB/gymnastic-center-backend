@@ -26,6 +26,9 @@ export class MongoCredentials {
   @Prop({ type: Date })
   codeExpirationDate?: Date;
 
+  @Prop({ default: [] })
+  devices: string[];
+
   readonly createdAt: Date;
 
   readonly updatedAt: Date;

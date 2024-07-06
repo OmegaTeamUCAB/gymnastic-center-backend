@@ -12,6 +12,8 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import {
   BlogNotFoundException,
   CreateBlogCommandHandler,
@@ -21,21 +23,19 @@ import { CreateBlogDto, UpdateBlogDto } from './dtos';
 import {
   CountResponse,
   EVENT_STORE,
-  EventHandler,
   EventStore,
   ILogger,
   IdGenerator,
   IdResponse,
-  LOCAL_EVENT_HANDLER,
   LOGGER,
   LoggingDecorator,
   MongoBlog,
+  NativeTimer,
   UUIDGENERATOR,
+  PerformanceMonitorDecorator,
 } from '@app/core';
 import { BlogLeanResponse, BlogResponse } from './responses';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 
 @Controller('blog')
 @ApiTags('Blogs')
@@ -46,8 +46,6 @@ export class BlogController {
     private readonly uuidGenerator: IdGenerator<string>,
     @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
-    @Inject(LOCAL_EVENT_HANDLER)
-    private readonly localEventHandler: EventHandler,
     @InjectModel(MongoBlog.name)
     private readonly blogModel: Model<MongoBlog>,
     @Inject(LOGGER)
@@ -157,14 +155,16 @@ export class BlogController {
   })
   @Post()
   async createBlog(@Body() createBlogDto: CreateBlogDto) {
+    const operationName = 'Create Blog';
     const service = new LoggingDecorator(
-      new CreateBlogCommandHandler(
-        this.uuidGenerator,
-        this.eventStore,
-        this.localEventHandler,
+      new PerformanceMonitorDecorator(
+        new CreateBlogCommandHandler(this.uuidGenerator, this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
       ),
       this.logger,
-      'Create Blog',
+      operationName,
     );
     const result = await service.execute({
       ...createBlogDto,
@@ -187,10 +187,16 @@ export class BlogController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateBlogDto: UpdateBlogDto,
   ) {
+    const operationName = 'Update Blog';
     const service = new LoggingDecorator(
-      new UpdateBlogCommandHandler(this.eventStore, this.localEventHandler),
+      new PerformanceMonitorDecorator(
+        new UpdateBlogCommandHandler(this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Update Blog',
+      operationName,
     );
     const result = await service.execute({ id, ...updateBlogDto });
     return result.unwrap();

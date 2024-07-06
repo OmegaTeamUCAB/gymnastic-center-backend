@@ -17,11 +17,17 @@ export class LoginCommandHandler
   ) {}
 
   public async execute(command: LoginCommand): Promise<Result<LoginResponse>> {
-    const credentials = await this.credentialsRepository.findCredentialsByEmail(command.email);
-    if (!credentials) {
+    const _credentials =
+      await this.credentialsRepository.findCredentialsByEmail(command.email);
+    if (!_credentials.hasValue)
       return Result.failure<LoginResponse>(new UserNotFoundException());
-    }
-    if (!(await this.cryptoService.compare(command.password, credentials.password))) {
+    const credentials = _credentials.unwrap();
+    if (
+      !(await this.cryptoService.compare(
+        command.password,
+        credentials.password,
+      ))
+    ) {
       return Result.failure<LoginResponse>(new InvalidPasswordException());
     }
     const payload = { id: credentials.userId };

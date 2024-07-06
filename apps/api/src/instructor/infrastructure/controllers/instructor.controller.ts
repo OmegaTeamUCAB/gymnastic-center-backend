@@ -20,16 +20,16 @@ import {
   IdGenerator,
   EVENT_STORE,
   EventStore,
-  LOCAL_EVENT_HANDLER,
-  EventHandler,
   MongoInstructor,
   ILogger,
   LOGGER,
   LoggingDecorator,
+  PerformanceMonitorDecorator,
+  NativeTimer,
 } from '@app/core';
 import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import { InstructorResponse } from '../responses/instructor.response';
-import { CreateInstructorDto, UpdateInstructorDto } from './dtos';
+import { CreateInstructorDto } from './dtos/create-instructor.dto';
 import { InstructorNotFoundException } from '../../application/exceptions/instructor-not-found.exception';
 import {
   CreateInstructorCommandHandler,
@@ -46,8 +46,6 @@ export class InstructorController {
     private readonly uuidGenerator: IdGenerator<string>,
     @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
-    @Inject(LOCAL_EVENT_HANDLER)
-    private readonly localEventHandler: EventHandler,
     @InjectModel(MongoInstructor.name)
     private readonly instructorModel: Model<MongoInstructor>,
     @Inject(LOGGER)
@@ -101,7 +99,7 @@ export class InstructorController {
       name: instructor.name,
       followers: instructor.followerCount,
       userFollow: instructor.followers.includes(credentials.userId),
-      location: 'Caracas, Venezuela',
+      location: `${instructor.city}, ${instructor.country}`,
       image: instructor.image,
     }));
   }
@@ -130,7 +128,7 @@ export class InstructorController {
       name: instructor.name,
       followers: instructor.followerCount,
       userFollow: instructor.followers.includes(credentials.userId),
-      location: 'Caracas, Venezuela',
+      location: `${instructor.city}, ${instructor.country}`,
       image: instructor.image,
     };
   }
@@ -145,10 +143,16 @@ export class InstructorController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() credentials: Credentials,
   ) {
+    const operationName = 'Toggle Follow';
     const service = new LoggingDecorator(
-      new ToggleFollowCommandHandler(this.eventStore, this.localEventHandler),
+      new PerformanceMonitorDecorator(
+        new ToggleFollowCommandHandler(this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Toggle Follow',
+      operationName,
     );
     const result = await service.execute({
       instructorId: id,
@@ -164,14 +168,16 @@ export class InstructorController {
     type: IdResponse,
   })
   async createInstructor(@Body() createInstructorDto: CreateInstructorDto) {
+    const operationName = 'Create Instructor';
     const service = new LoggingDecorator(
-      new CreateInstructorCommandHandler(
-        this.uuidGenerator,
-        this.eventStore,
-        this.localEventHandler,
+      new PerformanceMonitorDecorator(
+        new CreateInstructorCommandHandler(this.uuidGenerator, this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
       ),
       this.logger,
-      'Create Instructor',
+      operationName,
     );
     const result = await service.execute(createInstructorDto);
     return result.unwrap();

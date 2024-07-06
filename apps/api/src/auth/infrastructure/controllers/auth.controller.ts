@@ -33,6 +33,8 @@ import {
   ILogger,
   LOGGER,
   LoggingDecorator,
+  PerformanceMonitorDecorator,
+  NativeTimer,
 } from '@app/core';
 
 @Controller('auth')
@@ -64,15 +66,21 @@ export class AuthController {
   async requestVerificationCode(
     @Body() requestVerificationCodeDto: RequestVerificationCodeDto,
   ) {
+    const operationName = 'Request Verification Code';
     try {
       const service = new LoggingDecorator(
-        new RequestVerificationCodeCommandHandler(
-          this.repository,
-          this.verificationEmailHandler,
-          this.codeGenerator,
+        new PerformanceMonitorDecorator(
+          new RequestVerificationCodeCommandHandler(
+            this.repository,
+            this.verificationEmailHandler,
+            this.codeGenerator,
+          ),
+          new NativeTimer(),
+          this.logger,
+          operationName,
         ),
         this.logger,
-        'Request Verification Code',
+        operationName,
       );
       const result = await service.execute(requestVerificationCodeDto);
       result.unwrap();
@@ -93,11 +101,17 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid code' })
   @ApiResponse({ status: 400, description: 'Code expired' })
   async checkVerificationCode(@Body() checkCodeDto: CheckCodeDto) {
+    const operationName = 'Check Verification Code';
     try {
       const service = new LoggingDecorator(
-        new CheckVerificationCodeCommandHandler(this.repository),
+        new PerformanceMonitorDecorator(
+          new CheckVerificationCodeCommandHandler(this.repository),
+          new NativeTimer(),
+          this.logger,
+          operationName,
+        ),
         this.logger,
-        'Check Verification Code',
+        operationName,
       );
       const result = await service.execute(checkCodeDto);
       result.unwrap();
@@ -119,14 +133,17 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid code' })
   @ApiResponse({ status: 400, description: 'Code expired' })
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    const operationName = 'Reset Password';
     try {
       const service = new LoggingDecorator(
-        new ResetPasswordCommandHandler(
-          this.repository,
-          this.bcryptService,
+        new PerformanceMonitorDecorator(
+          new ResetPasswordCommandHandler(this.repository, this.bcryptService),
+          new NativeTimer(),
+          this.logger,
+          operationName,
         ),
         this.logger,
-        'Reset Password',
+        operationName,
       );
       const result = await service.execute({
         email: resetPasswordDto.email,

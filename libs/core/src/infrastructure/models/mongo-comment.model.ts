@@ -77,8 +77,6 @@ export class MongoComment {
     default: 0,
   })
   numberOfDislikes: number;
-
-  createdAt: Date;
 }
 
 export const CommentSchema = SchemaFactory.createForClass(MongoComment);

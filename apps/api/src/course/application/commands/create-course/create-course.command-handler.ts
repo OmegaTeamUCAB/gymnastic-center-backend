@@ -1,9 +1,4 @@
-import {
-  Service,
-  EventHandler,
-  EventStore,
-  Result,
-} from '@app/core';
+import { Service, EventStore, Result } from '@app/core';
 import { CreateCourseResponse } from './types';
 import { IdGenerator } from '@app/core/application/id/id-generator.interface';
 import { CreateCourseCommand } from './types/command.type';
@@ -32,14 +27,12 @@ export class CreateCourseCommandHandler
   constructor(
     private readonly idGenerator: IdGenerator<string>,
     private readonly eventStore: EventStore,
-    private readonly eventHandler: EventHandler,
   ) {}
 
   async execute(
     command: CreateCourseCommand,
   ): Promise<Result<CreateCourseResponse>> {
     const id = this.idGenerator.generateId();
-    const lessonId = this.idGenerator.generateId();
     const data = {
       name: new CourseName(command.name),
       description: new CourseDescription(command.description),
@@ -52,7 +45,7 @@ export class CreateCourseCommandHandler
       lessons: command.lessons.map(
         (lesson) =>
           new Lesson(
-            new LessonId(lessonId),
+            new LessonId(this.idGenerator.generateId()),
             new LessonTitle(lesson.title),
             new LessonDescription(lesson.description),
             new LessonVideo(lesson.video),
@@ -62,7 +55,6 @@ export class CreateCourseCommandHandler
     const course = Course.create(new CourseId(id), data);
     const events = course.pullEvents();
     await this.eventStore.appendEvents(id, events);
-    this.eventHandler.publishEvents(events);
     return Result.success<CreateCourseResponse>({
       id,
     });

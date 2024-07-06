@@ -83,3 +83,4 @@ CourseSchema.index({ 'category.id': 1 });
 CourseSchema.index({ 'trainer.id': 1 });
 CourseSchema.index({ publishDate: -1 });
 CourseSchema.index({ views: -1 });
+CourseSchema.index({ 'lessons.id': 1 });

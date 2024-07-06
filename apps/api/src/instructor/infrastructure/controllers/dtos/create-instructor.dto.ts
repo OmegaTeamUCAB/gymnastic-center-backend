@@ -10,4 +10,14 @@ export class CreateInstructorDto {
   @IsString()
   @IsUrl()
   image: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  city: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  country: string;
 }

@@ -20,12 +20,12 @@ import {
   IdGenerator,
   EVENT_STORE,
   EventStore,
-  LOCAL_EVENT_HANDLER,
-  EventHandler,
   MongoCategory,
   ILogger,
   LOGGER,
   LoggingDecorator,
+  PerformanceMonitorDecorator,
+  NativeTimer,
 } from '@app/core';
 import {
   CreateCategoryCommandHandler,
@@ -45,8 +45,6 @@ export class CategoryController {
     private readonly uuidGenerator: IdGenerator<string>,
     @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
-    @Inject(LOCAL_EVENT_HANDLER)
-    private readonly localEventHandler: EventHandler,
     @InjectModel(MongoCategory.name)
     private readonly categoryModel: Model<MongoCategory>,
     @Inject(LOGGER)
@@ -118,14 +116,16 @@ export class CategoryController {
     type: IdResponse,
   })
   async createCategory(@Body() createCategoryDto: CreateCategoryDto) {
+    const operationName = 'Create Category';
     const service = new LoggingDecorator(
-      new CreateCategoryCommandHandler(
-        this.uuidGenerator,
-        this.eventStore,
-        this.localEventHandler,
+      new PerformanceMonitorDecorator(
+        new CreateCategoryCommandHandler(this.uuidGenerator, this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
       ),
       this.logger,
-      'Create Category',
+      operationName,
     );
     const result = await service.execute(createCategoryDto);
     return result.unwrap();
@@ -141,10 +141,16 @@ export class CategoryController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
   ) {
+    const operationName = 'Update Category';
     const service = new LoggingDecorator(
-      new UpdateCategoryCommandHandler(this.eventStore, this.localEventHandler),
+      new PerformanceMonitorDecorator(
+        new UpdateCategoryCommandHandler(this.eventStore),
+        new NativeTimer(),
+        this.logger,
+        operationName,
+      ),
       this.logger,
-      'Update Category',
+      operationName,
     );
     const result = await service.execute({ id, ...updateCategoryDto });
     return result.unwrap();

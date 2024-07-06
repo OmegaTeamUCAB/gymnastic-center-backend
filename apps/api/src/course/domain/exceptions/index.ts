@@ -1,3 +1,5 @@
+export { CourseAlreadyStartedByUserException } from './course-already-started-by-user.exception';
+export { CourseNotStartedByUserException } from './course-not-started-by-user.exception';
 export { InvalidLessonQuantityException } from './invalid-lesson-quantity.exception';
 export { InvalidVideoQuantityException } from './invalid-video-quantity.exception';
 export { InvalidCourseIdException } from './invalid-course-id.exception';
@@ -10,3 +12,6 @@ export { InvalidCourseMinuteException } from './invalid-course-minute.exception'
 export { InvalidCourseImageException } from './invalid-course-image.exception';
 export { InvalidCourseException } from './invalid-course.exception';
 export { InvalidCourseDurationException } from './invalid-course-duration.exception';
+export { InvalidInstructorToAnswerException } from './invalid-instructor-to-answer.exception';
+export { QuestionAlreadyAnsweredException } from './question-already-answered.exception';
+export { QuestionNotFoundException } from './question-not-found.exception';

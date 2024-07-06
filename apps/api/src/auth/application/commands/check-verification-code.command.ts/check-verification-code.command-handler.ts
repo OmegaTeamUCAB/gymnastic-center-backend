@@ -13,10 +13,11 @@ export class CheckVerificationCodeCommandHandler
   constructor(private readonly credentialsRepository: CredentialsRepository) {}
 
   async execute(command: CheckVerificationCodeCommand): Promise<Result<void>> {
-    const credentials = await this.credentialsRepository.findCredentialsByEmail(
-      command.email,
-    );
-    if (!credentials) return Result.failure(new UserNotFoundException());
+    const _credentials =
+      await this.credentialsRepository.findCredentialsByEmail(command.email);
+    if (!_credentials.hasValue)
+      return Result.failure(new UserNotFoundException());
+    const credentials = _credentials.unwrap();
     if (
       !credentials.verificationCode ||
       credentials.verificationCode !== command.code

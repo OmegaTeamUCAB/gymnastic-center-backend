@@ -16,6 +16,7 @@ import {
   CryptoService,
   EVENT_STORE,
   EventStore,
+  ExceptionParserDecorator,
   ILogger,
   IdGenerator,
   IdResponse,
@@ -25,6 +26,7 @@ import {
   NativeTimer,
   PerformanceMonitorDecorator,
   UUIDGENERATOR,
+  baseExceptionParser,
 } from '@app/core';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -82,8 +84,8 @@ export class UserController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async login(@Body() loginDto: LoginDto) {
     const operationName = 'Login';
-    try {
-      const loginService = new LoggingDecorator(
+    const loginService = new ExceptionParserDecorator(
+      new LoggingDecorator(
         new PerformanceMonitorDecorator(
           new LoginCommandHandler(
             this.repository,
@@ -96,24 +98,25 @@ export class UserController {
         ),
         this.logger,
         operationName,
-      );
-      const loginResult = await loginService.execute(loginDto);
-      const { token, id } = loginResult.unwrap();
-      const user = await this.getUserInformationQuery.execute(id);
-      if (!user) throw new NotFoundException(new UserNotFoundException());
-      return {
-        token,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-          image: user.image,
-        },
-      };
-    } catch (error) {
-      throw new UnauthorizedException(error.message);
-    }
+      ),
+      (error) => {
+        throw new UnauthorizedException(error.message);
+      },
+    );
+    const loginResult = await loginService.execute(loginDto);
+    const { token, id } = loginResult.unwrap();
+    const user = await this.getUserInformationQuery.execute(id);
+    if (!user) throw new NotFoundException(new UserNotFoundException());
+    return {
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        image: user.image,
+      },
+    };
   }
 
   @Post('auth/register')
@@ -125,35 +128,40 @@ export class UserController {
   @ApiResponse({ status: 400, description: 'Bad request' })
   async signUp(@Body() signUpDto: SignUpDto) {
     const signUpOperationName = 'Sign Up';
-    try {
-      if (await this.repository.findCredentialsByEmail(signUpDto.email))
-        throw new UserAlreadyExistsException(signUpDto.email);
-      const signUpService = new LoggingDecorator(
-        new PerformanceMonitorDecorator(
-          new SignUpCommandHandler(
-            this.repository,
-            this.jwtService,
-            this.bcryptService,
-          ),
-          new NativeTimer(),
-          this.logger,
-          signUpOperationName,
+    const existingCredentials = await this.repository.findCredentialsByEmail(
+      signUpDto.email,
+    );
+    if (existingCredentials.hasValue)
+      throw new UnauthorizedException(
+        new UserAlreadyExistsException(signUpDto.email).message,
+      );
+    const signUpService = new LoggingDecorator(
+      new PerformanceMonitorDecorator(
+        new SignUpCommandHandler(
+          this.repository,
+          this.jwtService,
+          this.bcryptService,
         ),
+        new NativeTimer(),
         this.logger,
         signUpOperationName,
-      );
-      const suscription = this.eventStore.subscribe(
-        UserCreated.name,
-        async (event: UserCreatedEvent) => {
-          await signUpService.execute({
-            id: event.dispatcherId,
-            email: event.context.email,
-            password: signUpDto.password,
-          });
-        },
-      );
-      const createUserOperationName = 'Create User';
-      const service = new LoggingDecorator(
+      ),
+      this.logger,
+      signUpOperationName,
+    );
+    const suscription = this.eventStore.subscribe(
+      UserCreated.name,
+      async (event: UserCreatedEvent) => {
+        await signUpService.execute({
+          id: event.dispatcherId,
+          email: event.context.email,
+          password: signUpDto.password,
+        });
+      },
+    );
+    const createUserOperationName = 'Create User';
+    const service = new ExceptionParserDecorator(
+      new LoggingDecorator(
         new PerformanceMonitorDecorator(
           new CreateUserCommandHandler(this.uuidGenerator, this.eventStore),
           new NativeTimer(),
@@ -162,13 +170,15 @@ export class UserController {
         ),
         this.logger,
         createUserOperationName,
-      );
-      const result = await service.execute({ ...signUpDto });
-      suscription.unsubscribe();
-      return result.unwrap();
-    } catch (error) {
-      throw new UnauthorizedException(error.message);
-    }
+      ),
+      (error) => {
+        suscription.unsubscribe();
+        throw new UnauthorizedException(error.message);
+      },
+    );
+    const result = await service.execute({ ...signUpDto });
+    suscription.unsubscribe();
+    return result.unwrap();
   }
 
   @Get('auth/current')
@@ -195,15 +205,18 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     const operationName = 'Update User';
-    const service = new LoggingDecorator(
-      new PerformanceMonitorDecorator(
-        new UpdateUserCommandHandler(this.eventStore),
-        new NativeTimer(),
+    const service = new ExceptionParserDecorator(
+      new LoggingDecorator(
+        new PerformanceMonitorDecorator(
+          new UpdateUserCommandHandler(this.eventStore),
+          new NativeTimer(),
+          this.logger,
+          operationName,
+        ),
         this.logger,
         operationName,
       ),
-      this.logger,
-      operationName,
+      baseExceptionParser,
     );
     const result = await service.execute({
       id: credentials.userId,

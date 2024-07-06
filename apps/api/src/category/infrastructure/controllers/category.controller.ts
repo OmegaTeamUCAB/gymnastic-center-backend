@@ -22,6 +22,8 @@ import {
   LoggingDecorator,
   PerformanceMonitorDecorator,
   NativeTimer,
+  ExceptionParserDecorator,
+  baseExceptionParser,
 } from '@app/core';
 import {
   CreateCategoryCommandHandler,
@@ -97,15 +99,18 @@ export class CategoryController {
   })
   async createCategory(@Body() createCategoryDto: CreateCategoryDto) {
     const operationName = 'Create Category';
-    const service = new LoggingDecorator(
-      new PerformanceMonitorDecorator(
-        new CreateCategoryCommandHandler(this.uuidGenerator, this.eventStore),
-        new NativeTimer(),
+    const service = new ExceptionParserDecorator(
+      new LoggingDecorator(
+        new PerformanceMonitorDecorator(
+          new CreateCategoryCommandHandler(this.uuidGenerator, this.eventStore),
+          new NativeTimer(),
+          this.logger,
+          operationName,
+        ),
         this.logger,
         operationName,
       ),
-      this.logger,
-      operationName,
+      baseExceptionParser,
     );
     const result = await service.execute(createCategoryDto);
     return result.unwrap();
@@ -122,15 +127,18 @@ export class CategoryController {
     @Body() updateCategoryDto: UpdateCategoryDto,
   ) {
     const operationName = 'Update Category';
-    const service = new LoggingDecorator(
-      new PerformanceMonitorDecorator(
-        new UpdateCategoryCommandHandler(this.eventStore),
-        new NativeTimer(),
+    const service = new ExceptionParserDecorator(
+      new LoggingDecorator(
+        new PerformanceMonitorDecorator(
+          new UpdateCategoryCommandHandler(this.eventStore),
+          new NativeTimer(),
+          this.logger,
+          operationName,
+        ),
         this.logger,
         operationName,
       ),
-      this.logger,
-      operationName,
+      baseExceptionParser,
     );
     const result = await service.execute({ id, ...updateCategoryDto });
     return result.unwrap();

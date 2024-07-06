@@ -2,12 +2,14 @@ import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   EVENT_STORE,
   EventStore,
+  ExceptionParserDecorator,
   ILogger,
   IdResponse,
   LOGGER,
   LoggingDecorator,
   NativeTimer,
   PerformanceMonitorDecorator,
+  baseExceptionParser,
 } from '@app/core';
 import {
   Controller,
@@ -46,15 +48,18 @@ export class CommentController {
     @CurrentUser() credentials: Credentials,
   ) {
     const operationName = 'Delete Comment';
-    const service = new LoggingDecorator(
-      new PerformanceMonitorDecorator(
-        new DeleteCommentCommandHandler(this.eventStore),
-        new NativeTimer(),
+    const service = new ExceptionParserDecorator(
+      new LoggingDecorator(
+        new PerformanceMonitorDecorator(
+          new DeleteCommentCommandHandler(this.eventStore),
+          new NativeTimer(),
+          this.logger,
+          operationName,
+        ),
         this.logger,
         operationName,
       ),
-      this.logger,
-      operationName,
+      baseExceptionParser,
     );
     const result = await service.execute({
       commentId: id,
@@ -75,15 +80,18 @@ export class CommentController {
     @CurrentUser() credentials: Credentials,
   ) {
     const operationName = 'Toggle Like';
-    const service = new LoggingDecorator(
-      new PerformanceMonitorDecorator(
-        new ToggleLikeCommandHandler(this.eventStore),
-        new NativeTimer(),
+    const service = new ExceptionParserDecorator(
+      new LoggingDecorator(
+        new PerformanceMonitorDecorator(
+          new ToggleLikeCommandHandler(this.eventStore),
+          new NativeTimer(),
+          this.logger,
+          operationName,
+        ),
         this.logger,
         operationName,
       ),
-      this.logger,
-      operationName,
+      baseExceptionParser,
     );
     const result = await service.execute({
       commentId: id,
@@ -104,16 +112,19 @@ export class CommentController {
     @CurrentUser() credentials: Credentials,
   ) {
     const operationName = 'Toggle Dislike';
-    const service = new LoggingDecorator(
-      new PerformanceMonitorDecorator(
-        new ToggleDislikeCommandHandler(this.eventStore),
-        new NativeTimer(),
+    const service = new ExceptionParserDecorator(
+      new LoggingDecorator(
+        new PerformanceMonitorDecorator(
+          new ToggleDislikeCommandHandler(this.eventStore),
+          new NativeTimer(),
+          this.logger,
+          operationName,
+        ),
         this.logger,
         operationName,
       ),
-      this.logger,
-      operationName,
-    );
+      baseExceptionParser,
+    )
     const result = await service.execute({
       commentId: id,
       userId: credentials.userId,

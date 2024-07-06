@@ -3,6 +3,7 @@ import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   EVENT_STORE,
   EventStore,
+  ExceptionParserDecorator,
   ILogger,
   IdGenerator,
   IdResponse,
@@ -11,6 +12,7 @@ import {
   NativeTimer,
   PerformanceMonitorDecorator,
   UUIDGENERATOR,
+  baseExceptionParser,
 } from '@app/core';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
 import { CreateAnswerCommandHandler } from '../../application/commands';
@@ -39,15 +41,18 @@ export class QuestionController {
     @Body() createAnswerDto: CreateAnswerDto,
   ): Promise<IdResponse> {
     const operationName = 'Create Answer';
-    const service = new LoggingDecorator(
-      new PerformanceMonitorDecorator(
-        new CreateAnswerCommandHandler(this.uuidGenerator, this.eventStore),
-        new NativeTimer(),
+    const service = new ExceptionParserDecorator(
+      new LoggingDecorator(
+        new PerformanceMonitorDecorator(
+          new CreateAnswerCommandHandler(this.uuidGenerator, this.eventStore),
+          new NativeTimer(),
+          this.logger,
+          operationName,
+        ),
         this.logger,
         operationName,
       ),
-      this.logger,
-      operationName,
+      baseExceptionParser,
     );
     const result = await service.execute({
       content: createAnswerDto.content,

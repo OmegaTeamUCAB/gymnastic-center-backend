@@ -15,6 +15,7 @@ import {
   CountResponse,
   EVENT_STORE,
   EventStore,
+  ExceptionParserDecorator,
   ILogger,
   IdGenerator,
   IdResponse,
@@ -23,6 +24,7 @@ import {
   NativeTimer,
   PerformanceMonitorDecorator,
   UUIDGENERATOR,
+  baseExceptionParser,
 } from '@app/core';
 import { CreateCourseDto, UpdateCourseDto } from './dtos';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
@@ -131,15 +133,18 @@ export class CourseController {
   })
   async createCourse(@Body() createCourseDto: CreateCourseDto) {
     const operationName = 'Create Course';
-    const service = new LoggingDecorator(
-      new PerformanceMonitorDecorator(
-        new CreateCourseCommandHandler(this.uuidGenerator, this.eventStore),
-        new NativeTimer(),
+    const service = new ExceptionParserDecorator(
+      new LoggingDecorator(
+        new PerformanceMonitorDecorator(
+          new CreateCourseCommandHandler(this.uuidGenerator, this.eventStore),
+          new NativeTimer(),
+          this.logger,
+          operationName,
+        ),
         this.logger,
         operationName,
       ),
-      this.logger,
-      operationName,
+      baseExceptionParser,
     );
     const result = await service.execute({ ...createCourseDto });
     return result.unwrap();
@@ -156,15 +161,18 @@ export class CourseController {
     @Body() updateCourseDto: UpdateCourseDto,
   ) {
     const operationName = 'Update Course';
-    const service = new LoggingDecorator(
-      new PerformanceMonitorDecorator(
-        new UpdateCourseCommandHandler(this.eventStore),
-        new NativeTimer(),
+    const service = new ExceptionParserDecorator(
+      new LoggingDecorator(
+        new PerformanceMonitorDecorator(
+          new UpdateCourseCommandHandler(this.eventStore),
+          new NativeTimer(),
+          this.logger,
+          operationName,
+        ),
         this.logger,
         operationName,
       ),
-      this.logger,
-      operationName,
+      baseExceptionParser,
     );
     const result = await service.execute({ id, ...updateCourseDto });
     const response = result.unwrap();

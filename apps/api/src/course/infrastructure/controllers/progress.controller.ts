@@ -17,6 +17,7 @@ import { Model } from 'mongoose';
 import {
   EVENT_STORE,
   EventStore,
+  ExceptionParserDecorator,
   ILogger,
   IdResponse,
   LOGGER,
@@ -24,6 +25,7 @@ import {
   MongoProgress,
   NativeTimer,
   PerformanceMonitorDecorator,
+  baseExceptionParser,
 } from '@app/core';
 import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import { Credentials } from 'apps/api/src/auth/application/models/credentials.model';
@@ -62,15 +64,18 @@ export class ProgressController {
     @Param('courseId', ParseUUIDPipe) courseId: string,
   ): Promise<IdResponse> {
     const operationName = 'Start Course';
-    const service = new LoggingDecorator(
-      new PerformanceMonitorDecorator(
-        new StartCourseCommandHandler(this.eventStore),
-        new NativeTimer(),
+    const service = new ExceptionParserDecorator(
+      new LoggingDecorator(
+        new PerformanceMonitorDecorator(
+          new StartCourseCommandHandler(this.eventStore),
+          new NativeTimer(),
+          this.logger,
+          operationName,
+        ),
         this.logger,
         operationName,
       ),
-      this.logger,
-      operationName,
+      baseExceptionParser,
     );
     const result = await service.execute({
       courseId,
@@ -92,15 +97,18 @@ export class ProgressController {
     const { courseId, lessonId, markAsCompleted, time, totalTime } =
       watchCourseDto;
     const operationName = 'Watch Lesson';
-    const service = new LoggingDecorator(
-      new PerformanceMonitorDecorator(
-        new WatchLessonCommandHandler(this.eventStore),
-        new NativeTimer(),
+    const service = new ExceptionParserDecorator(
+      new LoggingDecorator(
+        new PerformanceMonitorDecorator(
+          new WatchLessonCommandHandler(this.eventStore),
+          new NativeTimer(),
+          this.logger,
+          operationName,
+        ),
         this.logger,
         operationName,
       ),
-      this.logger,
-      operationName,
+      baseExceptionParser,
     );
     const result = await service.execute({
       courseId,

@@ -36,6 +36,8 @@ import {
   MongoQuestion,
   PerformanceMonitorDecorator,
   NativeTimer,
+  ExceptionParserDecorator,
+  baseExceptionParser,
 } from '@app/core';
 import { Auth, CurrentUser } from './auth/infrastructure/decorators';
 import { Credentials } from './auth/application/models/credentials.model';
@@ -309,15 +311,21 @@ export class ApiController {
   ) {
     if (createCommentDto.targetType === 'BLOG') {
       const operationName = 'Create Comment';
-      const service = new LoggingDecorator(
-        new PerformanceMonitorDecorator(
-          new CreateCommentCommandHandler(this.uuidGenerator, this.eventStore),
-          new NativeTimer(),
+      const service = new ExceptionParserDecorator(
+        new LoggingDecorator(
+          new PerformanceMonitorDecorator(
+            new CreateCommentCommandHandler(
+              this.uuidGenerator,
+              this.eventStore,
+            ),
+            new NativeTimer(),
+            this.logger,
+            operationName,
+          ),
           this.logger,
           operationName,
         ),
-        this.logger,
-        operationName,
+        baseExceptionParser,
       );
       const result = await service.execute({
         blog: createCommentDto.target,
@@ -327,15 +335,18 @@ export class ApiController {
       return result.unwrap();
     }
     const operationName = 'Create Question';
-    const service = new LoggingDecorator(
-      new PerformanceMonitorDecorator(
-        new CreateQuestionCommandHandler(this.uuidGenerator, this.eventStore),
-        new NativeTimer(),
+    const service = new ExceptionParserDecorator(
+      new LoggingDecorator(
+        new PerformanceMonitorDecorator(
+          new CreateQuestionCommandHandler(this.uuidGenerator, this.eventStore),
+          new NativeTimer(),
+          this.logger,
+          operationName,
+        ),
         this.logger,
         operationName,
       ),
-      this.logger,
-      operationName,
+      baseExceptionParser,
     );
     const course = await this.courseModel.findOne({
       'lessons.id': createCommentDto.target,

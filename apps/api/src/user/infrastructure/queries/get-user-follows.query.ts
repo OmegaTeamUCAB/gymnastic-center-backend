@@ -1,4 +1,4 @@
-import { CountResponse, MongoCourse, MongoUser } from '@app/core';
+import { CountResponse, MongoUser } from '@app/core';
 import { NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Credentials } from 'apps/api/src/auth/application/models/credentials.model';
@@ -10,7 +10,7 @@ type Dto = {
 
 export class GetUserFollowsQuery {
   constructor(
-    @InjectModel(MongoCourse.name)
+    @InjectModel(MongoUser.name)
     private readonly userModel: Model<MongoUser>,
   ) {}
 

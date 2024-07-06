@@ -99,9 +99,7 @@ export class UserController {
       );
       const loginResult = await loginService.execute(loginDto);
       const { token, id } = loginResult.unwrap();
-      const user = await this.userModel.findOne({
-        id,
-      });
+      const user = await this.getUserInformationQuery.execute(id);
       if (!user) throw new NotFoundException(new UserNotFoundException());
       return {
         token,
@@ -182,7 +180,7 @@ export class UserController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   currentUser(@CurrentUser() credentials: Credentials): Promise<UserResponse> {
-    return this.getUserInformationQuery.execute({ credentials });
+    return this.getUserInformationQuery.execute(credentials.userId);
   }
 
   @Put('user/update')

@@ -10,6 +10,7 @@ import {
   MongoUser,
   UserSchema,
 } from '@app/core';
+import { GetUserFollowsQuery, GetUserInformationQuery } from './queries';
 
 @Module({
   imports: [
@@ -26,7 +27,10 @@ import {
     LoggerModule,
   ],
   controllers: [UserController],
-  providers: [],
+  providers: [
+    GetUserInformationQuery,
+    GetUserFollowsQuery,
+  ],
   exports: [MongooseModule],
 })
 export class UserModule {}

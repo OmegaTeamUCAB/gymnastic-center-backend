@@ -1,12 +1,13 @@
 import { EventStoreModule, LoggerModule, UUIDModule } from '@app/core';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Module } from '@nestjs/common';
+import { Get, Module } from '@nestjs/common';
 import { BlogController } from './controllers/blog.controller';
 import { AuthModule } from '../../auth/infrastructure';
 import {
   BlogSchema,
   MongoBlog,
 } from '@app/core/infrastructure/models/mongo-blog.model';
+import { GetAllBlogsQuery, GetBlogByIdQuery, GetBlogCountQuery } from './queries';
 
 @Module({
   imports: [
@@ -22,6 +23,10 @@ import {
     LoggerModule,
   ],
   controllers: [BlogController],
-  providers: [],
+  providers: [
+    GetAllBlogsQuery,
+    GetBlogByIdQuery,
+    GetBlogCountQuery,
+  ],
 })
 export class BlogModule {}

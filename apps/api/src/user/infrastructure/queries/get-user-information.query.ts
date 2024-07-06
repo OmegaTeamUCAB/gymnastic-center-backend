@@ -1,4 +1,4 @@
-import { MongoCourse, MongoUser } from '@app/core';
+import { MongoUser } from '@app/core';
 import { NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserNotFoundException } from 'apps/api/src/auth/application/exceptions';
@@ -6,20 +6,16 @@ import { Credentials } from 'apps/api/src/auth/application/models/credentials.mo
 import { Model } from 'mongoose';
 import { UserResponse } from '../controllers/responses';
 
-type Dto = {
-  credentials: Credentials;
-};
 
 export class GetUserInformationQuery {
   constructor(
-    @InjectModel(MongoCourse.name)
+    @InjectModel(MongoUser.name)
     private readonly userModel: Model<MongoUser>,
   ) {}
 
-  async execute(dto: Dto): Promise<UserResponse> {
-    const { credentials } = dto;
+  async execute(id: string): Promise<UserResponse> {
     const user = await this.userModel.findOne({
-      id: credentials.userId,
+      id,
     });
     if (!user) throw new NotFoundException(new UserNotFoundException());
     return {

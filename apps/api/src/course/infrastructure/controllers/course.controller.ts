@@ -36,6 +36,7 @@ import {
   CreateCourseCommandHandler,
   UpdateCourseCommandHandler,
 } from '../../application';
+import { GetAllCoursesQuery, GetCourseByIdQuery } from '../queries';
 
 @Controller('course')
 @ApiTags('Courses')
@@ -50,6 +51,8 @@ export class CourseController {
     private readonly courseModel: Model<MongoCourse>,
     @Inject(LOGGER)
     private readonly logger: ILogger,
+    private readonly getAllCoursesQuery: GetAllCoursesQuery,
+    private readonly getCourseByIdQuery: GetCourseByIdQuery,
   ) {}
 
   @Get('many')
@@ -97,27 +100,13 @@ export class CourseController {
     @Query('trainer') instructorId?: string,
     @Query('category') categoryId?: string,
   ): Promise<CourseLeanResponse[]> {
-    const courses = await this.courseModel.find(
-      {
-        ...(instructorId && { 'trainer.id': instructorId }),
-        ...(categoryId && { 'category.id': categoryId }),
-      },
-      null,
-      {
-        skip: (page - 1) * perPage,
-        limit: perPage,
-        sort: filter === 'POPULAR' ? { views: -1 } : { publishDate: -1 },
-      },
-    );
-    return courses.map((course) => ({
-      id: course.id,
-      title: course.title,
-      description: course.description,
-      category: course.category.name,
-      trainer: course.trainer.name,
-      image: course.image,
-      date: course.publishDate,
-    }));
+    return this.getAllCoursesQuery.execute({
+      instructorId,
+      categoryId,
+      filter,
+      page,
+      perPage,
+    });
   }
 
   @Get('one/:id')
@@ -133,31 +122,7 @@ export class CourseController {
   async getCourseById(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<CourseResponse> {
-    const course = await this.courseModel.findOne({ id });
-    if (!course) throw new NotFoundException(new CourseNotFoundException());
-    return {
-      id: course.id,
-      title: course.title,
-      description: course.description,
-      level: course.level,
-      tags: course.tags,
-      durationMinutes: course.minutes,
-      durationWeeks: course.weeks,
-      image: course.image,
-      date: course.publishDate,
-      category: course.category.name,
-      trainer: {
-        id: course.trainer.id,
-        name: course.trainer.name,
-        image: course.trainer.image,
-      },
-      lessons: course.lessons.map((lesson) => ({
-        id: lesson.id,
-        title: lesson.title,
-        content: lesson.description,
-        video: lesson.video,
-      })),
-    };
+    return this.getCourseByIdQuery.execute({ id });
   }
 
   @Post()

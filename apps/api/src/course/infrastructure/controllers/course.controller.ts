@@ -4,16 +4,13 @@ import {
   DefaultValuePipe,
   Get,
   Inject,
-  NotFoundException,
   Param,
   ParseIntPipe,
   ParseUUIDPipe,
   Post,
   Query,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Model } from 'mongoose';
 import {
   CountResponse,
   EVENT_STORE,
@@ -30,13 +27,15 @@ import {
 import { CreateCourseDto, UpdateCourseDto } from './dtos';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
 import { CourseLeanResponse, CourseResponse } from './responses';
-import { MongoCourse } from '../../../../../../libs/core/src/infrastructure/models/mongo-course.model';
-import { CourseNotFoundException } from '../../application/exceptions';
 import {
   CreateCourseCommandHandler,
   UpdateCourseCommandHandler,
 } from '../../application';
-import { GetAllCoursesQuery, GetCourseByIdQuery } from '../queries';
+import {
+  GetAllCoursesQuery,
+  GetCourseByIdQuery,
+  GetCourseCountQuery,
+} from '../queries';
 
 @Controller('course')
 @ApiTags('Courses')
@@ -47,12 +46,11 @@ export class CourseController {
     private readonly uuidGenerator: IdGenerator<string>,
     @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
-    @InjectModel(MongoCourse.name)
-    private readonly courseModel: Model<MongoCourse>,
     @Inject(LOGGER)
     private readonly logger: ILogger,
     private readonly getAllCoursesQuery: GetAllCoursesQuery,
     private readonly getCourseByIdQuery: GetCourseByIdQuery,
+    private readonly getCourseCountQuery: GetCourseCountQuery,
   ) {}
 
   @Get('many')
@@ -195,12 +193,9 @@ export class CourseController {
     @Query('trainer') instructorId?: string,
     @Query('category') categoryId?: string,
   ): Promise<CountResponse> {
-    const count = await this.courseModel.countDocuments({
-      ...(instructorId && { 'trainer.id': instructorId }),
-      ...(categoryId && { 'category.id': categoryId }),
+    return this.getCourseCountQuery.execute({
+      instructorId,
+      categoryId,
     });
-    return {
-      count,
-    };
   }
 }

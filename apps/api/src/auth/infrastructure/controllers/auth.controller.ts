@@ -35,6 +35,7 @@ import {
   LoggingDecorator,
   PerformanceMonitorDecorator,
   NativeTimer,
+  ExceptionParserDecorator,
 } from '@app/core';
 
 @Controller('auth')
@@ -68,19 +69,24 @@ export class AuthController {
   ) {
     const operationName = 'Request Verification Code';
     try {
-      const service = new LoggingDecorator(
-        new PerformanceMonitorDecorator(
-          new RequestVerificationCodeCommandHandler(
-            this.repository,
-            this.verificationEmailHandler,
-            this.codeGenerator,
+      const service = new ExceptionParserDecorator(
+        new LoggingDecorator(
+          new PerformanceMonitorDecorator(
+            new RequestVerificationCodeCommandHandler(
+              this.repository,
+              this.verificationEmailHandler,
+              this.codeGenerator,
+            ),
+            new NativeTimer(),
+            this.logger,
+            operationName,
           ),
-          new NativeTimer(),
           this.logger,
           operationName,
         ),
-        this.logger,
-        operationName,
+        (error) => {
+          throw new UnauthorizedException(error.message);
+        },
       );
       const result = await service.execute(requestVerificationCodeDto);
       result.unwrap();
@@ -102,8 +108,8 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Code expired' })
   async checkVerificationCode(@Body() checkCodeDto: CheckCodeDto) {
     const operationName = 'Check Verification Code';
-    try {
-      const service = new LoggingDecorator(
+    const service = new ExceptionParserDecorator(
+      new LoggingDecorator(
         new PerformanceMonitorDecorator(
           new CheckVerificationCodeCommandHandler(this.repository),
           new NativeTimer(),
@@ -112,15 +118,16 @@ export class AuthController {
         ),
         this.logger,
         operationName,
-      );
-      const result = await service.execute(checkCodeDto);
-      result.unwrap();
-      return {
-        success: true,
-      };
-    } catch (error) {
-      throw new UnauthorizedException(error.message);
-    }
+      ),
+      (error) => {
+        throw new UnauthorizedException(error.message);
+      },
+    );
+    const result = await service.execute(checkCodeDto);
+    result.unwrap();
+    return {
+      success: true,
+    };
   }
 
   @Put('change/password')
@@ -134,8 +141,8 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Code expired' })
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     const operationName = 'Reset Password';
-    try {
-      const service = new LoggingDecorator(
+    const service = new ExceptionParserDecorator(
+      new LoggingDecorator(
         new PerformanceMonitorDecorator(
           new ResetPasswordCommandHandler(this.repository, this.bcryptService),
           new NativeTimer(),
@@ -144,18 +151,19 @@ export class AuthController {
         ),
         this.logger,
         operationName,
-      );
-      const result = await service.execute({
-        email: resetPasswordDto.email,
-        newPassword: resetPasswordDto.password,
-        code: resetPasswordDto.code,
-      });
-      result.unwrap();
-      return {
-        success: true,
-      };
-    } catch (error) {
-      throw new UnauthorizedException(error.message);
-    }
+      ),
+      (error) => {
+        throw new UnauthorizedException(error.message);
+      },
+    );
+    const result = await service.execute({
+      email: resetPasswordDto.email,
+      newPassword: resetPasswordDto.password,
+      code: resetPasswordDto.code,
+    });
+    result.unwrap();
+    return {
+      success: true,
+    };
   }
 }

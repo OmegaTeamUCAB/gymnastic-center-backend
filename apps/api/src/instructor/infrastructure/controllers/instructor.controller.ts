@@ -26,6 +26,8 @@ import {
   LoggingDecorator,
   PerformanceMonitorDecorator,
   NativeTimer,
+  ExceptionParserDecorator,
+  baseExceptionParser,
 } from '@app/core';
 import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import { InstructorResponse } from '../responses/instructor.response';
@@ -144,15 +146,18 @@ export class InstructorController {
     @CurrentUser() credentials: Credentials,
   ) {
     const operationName = 'Toggle Follow';
-    const service = new LoggingDecorator(
-      new PerformanceMonitorDecorator(
-        new ToggleFollowCommandHandler(this.eventStore),
-        new NativeTimer(),
+    const service = new ExceptionParserDecorator(
+      new LoggingDecorator(
+        new PerformanceMonitorDecorator(
+          new ToggleFollowCommandHandler(this.eventStore),
+          new NativeTimer(),
+          this.logger,
+          operationName,
+        ),
         this.logger,
         operationName,
       ),
-      this.logger,
-      operationName,
+      baseExceptionParser,
     );
     const result = await service.execute({
       instructorId: id,
@@ -169,15 +174,21 @@ export class InstructorController {
   })
   async createInstructor(@Body() createInstructorDto: CreateInstructorDto) {
     const operationName = 'Create Instructor';
-    const service = new LoggingDecorator(
-      new PerformanceMonitorDecorator(
-        new CreateInstructorCommandHandler(this.uuidGenerator, this.eventStore),
-        new NativeTimer(),
+    const service = new ExceptionParserDecorator(
+      new LoggingDecorator(
+        new PerformanceMonitorDecorator(
+          new CreateInstructorCommandHandler(
+            this.uuidGenerator,
+            this.eventStore,
+          ),
+          new NativeTimer(),
+          this.logger,
+          operationName,
+        ),
         this.logger,
         operationName,
       ),
-      this.logger,
-      operationName,
+      baseExceptionParser,
     );
     const result = await service.execute(createInstructorDto);
     return result.unwrap();

@@ -33,6 +33,8 @@ import {
   NativeTimer,
   UUIDGENERATOR,
   PerformanceMonitorDecorator,
+  ExceptionParserDecorator,
+  baseExceptionParser,
 } from '@app/core';
 import { BlogLeanResponse, BlogResponse } from './responses';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
@@ -156,15 +158,18 @@ export class BlogController {
   @Post()
   async createBlog(@Body() createBlogDto: CreateBlogDto) {
     const operationName = 'Create Blog';
-    const service = new LoggingDecorator(
-      new PerformanceMonitorDecorator(
-        new CreateBlogCommandHandler(this.uuidGenerator, this.eventStore),
-        new NativeTimer(),
+    const service = new ExceptionParserDecorator(
+      new LoggingDecorator(
+        new PerformanceMonitorDecorator(
+          new CreateBlogCommandHandler(this.uuidGenerator, this.eventStore),
+          new NativeTimer(),
+          this.logger,
+          operationName,
+        ),
         this.logger,
         operationName,
       ),
-      this.logger,
-      operationName,
+      baseExceptionParser,
     );
     const result = await service.execute({
       ...createBlogDto,
@@ -188,15 +193,18 @@ export class BlogController {
     @Body() updateBlogDto: UpdateBlogDto,
   ) {
     const operationName = 'Update Blog';
-    const service = new LoggingDecorator(
-      new PerformanceMonitorDecorator(
-        new UpdateBlogCommandHandler(this.eventStore),
-        new NativeTimer(),
+    const service = new ExceptionParserDecorator(
+      new LoggingDecorator(
+        new PerformanceMonitorDecorator(
+          new UpdateBlogCommandHandler(this.eventStore),
+          new NativeTimer(),
+          this.logger,
+          operationName,
+        ),
         this.logger,
         operationName,
       ),
-      this.logger,
-      operationName,
+      baseExceptionParser,
     );
     const result = await service.execute({ id, ...updateBlogDto });
     return result.unwrap();

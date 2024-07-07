@@ -24,8 +24,8 @@ export class CommentLikedPushNotificationEventHandler
       CommentLiked.name,
       async (event: CommentLikedEvent) => {
         const [comment, userWhoLiked] = await Promise.all([
-          this.commentModel.findById(event.dispatcherId),
-          this.userModel.findById(event.context.user),
+          this.commentModel.findOne({ id: event.dispatcherId }),
+          this.userModel.findById({ id: event.context.user }),
         ]);
         if (
           !comment ||

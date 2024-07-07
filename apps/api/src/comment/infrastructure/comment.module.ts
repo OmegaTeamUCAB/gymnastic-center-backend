@@ -10,6 +10,7 @@ import { CommentController } from './controllers/comment.controller';
 import { UserModule } from '../../user/infrastructure/user.module';
 import { CommentLikedPushNotificationEventHandler } from './event-handlers/comment-liked-push-notification.event-handler';
 import { NotificationsModule } from '../../notifications/infrastructure/notifications.module';
+import { MongoCommentRepository } from './repositories/mongo-comment.repository';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { NotificationsModule } from '../../notifications/infrastructure/notifica
     UserModule,
   ],
   controllers: [CommentController],
-  providers: [CommentLikedPushNotificationEventHandler],
+  providers: [CommentLikedPushNotificationEventHandler, MongoCommentRepository],
   exports: [MongooseModule],
 })
 export class CommentModule {}

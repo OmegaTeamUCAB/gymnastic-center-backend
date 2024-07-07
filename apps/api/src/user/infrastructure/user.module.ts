@@ -11,6 +11,8 @@ import {
   UserSchema,
 } from '@app/core';
 import { GetUserFollowsQuery, GetUserInformationQuery } from './queries';
+import { MongoUserRepository } from './repositories/mongo-user.repository';
+import { USER_REPOSITORY } from './constants';
 
 @Module({
   imports: [
@@ -30,7 +32,12 @@ import { GetUserFollowsQuery, GetUserInformationQuery } from './queries';
   providers: [
     GetUserInformationQuery,
     GetUserFollowsQuery,
+    MongoUserRepository,
+    {
+      provide: 'USER_REPOSITORY',
+      useClass: MongoUserRepository,
+    },
   ],
-  exports: [MongooseModule],
+  exports: [MongooseModule, USER_REPOSITORY],
 })
 export class UserModule {}

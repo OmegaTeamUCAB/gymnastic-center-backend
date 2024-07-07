@@ -1,12 +1,12 @@
 import { Result, Service } from '@app/core';
 import { DeleteAllNotificationsCommand } from './types/command.type';
-import { NotificationsRepository } from '../../repositories/notifications.repository';
+import { NotificationRepository } from '../../repositories/notification.repository';
 
 export class DeleteAllNotificationsCommandHandler
   implements Service<DeleteAllNotificationsCommand, void>
 {
   constructor(
-    private readonly notificationsRepository: NotificationsRepository,
+    private readonly notificationsRepository: NotificationRepository,
   ) {}
 
   async execute(command: DeleteAllNotificationsCommand): Promise<Result<void>> {

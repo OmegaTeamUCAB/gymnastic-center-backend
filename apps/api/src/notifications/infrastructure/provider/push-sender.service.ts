@@ -1,12 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { FirebaseAdmin, InjectFirebaseAdmin } from 'nestjs-firebase';
 import { CredentialsRepository } from 'apps/api/src/auth/application';
 import { AUTH_REPOSITORY } from 'apps/api/src/auth/infrastructure/constants';
 import { Notification } from '../../application/models/notification';
-import { MongoNotification } from '../models/mongo-notification.model';
 import { IdGenerator, Result, UUIDGENERATOR } from '@app/core';
+import { NOTIFICATION_REPOSITORY } from '../constants';
+import { NotificationRepository } from '../../application/repositories/notification.repository';
 
 @Injectable()
 export class PushSenderService {
@@ -14,10 +13,10 @@ export class PushSenderService {
     @InjectFirebaseAdmin() private readonly firebase: FirebaseAdmin,
     @Inject(AUTH_REPOSITORY)
     private readonly credentialsRepository: CredentialsRepository,
+    @Inject(NOTIFICATION_REPOSITORY)
+    private readonly notificationRepository: NotificationRepository,
     @Inject(UUIDGENERATOR)
     private readonly uuidGenerator: IdGenerator<string>,
-    @InjectModel(MongoNotification.name)
-    private readonly notificationModel: Model<MongoNotification>,
   ) {}
 
   async sendPushNotification(
@@ -30,11 +29,13 @@ export class PushSenderService {
     const devices = user.unwrap().devices;
     if (devices.length === 0) return Result.success(null);
     await Promise.all([
-      this.notificationModel.create({
-        ...data,
+      this.notificationRepository.saveNotification({
         id: this.uuidGenerator.generateId(),
-        date: new Date(),
+        body: data.body,
         read: false,
+        title: data.title,
+        user: data.user,
+        date: new Date(),
       }),
       this.firebase.messaging.sendEachForMulticast({
         tokens: devices,

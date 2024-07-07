@@ -36,7 +36,7 @@ import {
 import { AUTH_REPOSITORY } from 'apps/api/src/auth/infrastructure/constants';
 import { CredentialsRepository } from 'apps/api/src/auth/application';
 import { LinkDeviceDto } from './dtos/link-device.dto';
-import { NotificationsRepository } from '../../application/repositories/notifications.repository';
+import { NotificationRepository } from '../../application/repositories/notification.repository';
 
 @Controller('notifications')
 @ApiTags('Notifications')
@@ -46,7 +46,7 @@ export class NotificationsController {
     @Inject(AUTH_REPOSITORY)
     private readonly credentialsRepository: CredentialsRepository,
     @Inject(NOTIFICATION_REPOSITORY)
-    private readonly notificationsRepository: NotificationsRepository,
+    private readonly notificationsRepository: NotificationRepository,
     @Inject(LOGGER)
     private readonly logger: ILogger,
     private readonly getUserNotificationsQuery: GetUserNotificationsQuery,

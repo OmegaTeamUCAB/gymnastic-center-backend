@@ -10,7 +10,7 @@ import { LoggerModule, UUIDModule } from '@app/core';
 import { NotificationsController } from './controllers/notifications.controller';
 import { GetUserNotificationsQuery, NotReadCountQuery } from './queries';
 import { NOTIFICATION_REPOSITORY } from './constants';
-import { MongoNotificationsRepository } from './repositories/mongo-notifications.repository';
+import { MongoNotificationRepository } from './repositories/mongo-notification.repository';
 import { PushSenderService } from './provider/push-sender.service';
 
 @Module({
@@ -39,7 +39,7 @@ import { PushSenderService } from './provider/push-sender.service';
     NotReadCountQuery,
     {
       provide: NOTIFICATION_REPOSITORY,
-      useClass: MongoNotificationsRepository,
+      useClass: MongoNotificationRepository,
     },
   ],
   exports: [PushSenderService],

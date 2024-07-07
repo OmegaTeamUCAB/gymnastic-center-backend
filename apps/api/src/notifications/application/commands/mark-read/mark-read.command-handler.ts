@@ -1,13 +1,13 @@
 import { Result, Service } from '@app/core';
 import { MarkReadCommand, MarkReadResponse } from './types';
-import { NotificationsRepository } from '../../repositories/notifications.repository';
+import { NotificationRepository } from '../../repositories/notification.repository';
 import { NotificationNotFoundException } from '../../exceptions/notification-not-found.exception';
 
 export class MarkReadCommandHandler
   implements Service<MarkReadCommand, MarkReadResponse>
 {
   constructor(
-    private readonly notificationsRepository: NotificationsRepository,
+    private readonly notificationsRepository: NotificationRepository,
   ) {}
 
   async execute(command: MarkReadCommand): Promise<Result<MarkReadResponse>> {

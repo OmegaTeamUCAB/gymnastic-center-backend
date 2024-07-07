@@ -11,6 +11,7 @@ import { UserModule } from '../../user/infrastructure/user.module';
 import { CommentLikedPushNotificationEventHandler } from './event-handlers/comment-liked-push-notification.event-handler';
 import { NotificationsModule } from '../../notifications/infrastructure/notifications.module';
 import { MongoCommentRepository } from './repositories/mongo-comment.repository';
+import { COMMENT_REPOSITORY } from './constants';
 
 @Module({
   imports: [
@@ -28,7 +29,13 @@ import { MongoCommentRepository } from './repositories/mongo-comment.repository'
     UserModule,
   ],
   controllers: [CommentController],
-  providers: [CommentLikedPushNotificationEventHandler, MongoCommentRepository],
+  providers: [
+    CommentLikedPushNotificationEventHandler,
+    {
+      provide: COMMENT_REPOSITORY,
+      useClass: MongoCommentRepository,
+    },
+  ],
   exports: [MongooseModule],
 })
 export class CommentModule {}

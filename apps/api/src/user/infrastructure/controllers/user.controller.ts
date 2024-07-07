@@ -51,6 +51,7 @@ import {
 } from 'apps/api/src/auth/application/exceptions';
 import { UpdateUserCommandHandler } from '../../application/commands/update-user/update-user.command-handler';
 import { UserCreated, UserCreatedEvent } from '../../domain/events';
+import { GetUserFollowsQuery, GetUserInformationQuery } from '../queries';
 
 @Controller()
 @ApiTags('Users & Auth')
@@ -70,6 +71,8 @@ export class UserController {
     private readonly bcryptService: CryptoService,
     @Inject(LOGGER)
     private readonly logger: ILogger,
+    private readonly getUserInformationQuery: GetUserInformationQuery,
+    private readonly getUserFollowsQuery: GetUserFollowsQuery,
   ) {}
 
   @Post('auth/login')
@@ -102,9 +105,7 @@ export class UserController {
     );
     const loginResult = await loginService.execute(loginDto);
     const { token, id } = loginResult.unwrap();
-    const user = await this.userModel.findOne({
-      id,
-    });
+    const user = await this.getUserInformationQuery.execute(id);
     if (!user) throw new NotFoundException(new UserNotFoundException());
     return {
       token,
@@ -188,18 +189,8 @@ export class UserController {
     type: UserResponse,
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async currentUser(@CurrentUser() credentials: Credentials) {
-    const user = await this.userModel.findOne({
-      id: credentials.userId,
-    });
-    if (!user) throw new NotFoundException(new UserNotFoundException());
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      image: user.image,
-    };
+  currentUser(@CurrentUser() credentials: Credentials): Promise<UserResponse> {
+    return this.getUserInformationQuery.execute(credentials.userId);
   }
 
   @Put('user/update')
@@ -239,10 +230,6 @@ export class UserController {
   async countUserFollows(
     @CurrentUser() credentials: Credentials,
   ): Promise<CountResponse> {
-    const user = await this.userModel.findOne({ id: credentials.userId });
-    if (!user) throw new NotFoundException('User not found');
-    return {
-      count: user.follows,
-    };
+    return this.getUserFollowsQuery.execute({ credentials });
   }
 }

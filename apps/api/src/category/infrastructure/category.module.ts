@@ -9,6 +9,7 @@ import {
   MongoCategory,
   LoggerModule,
 } from '@app/core';
+import { GetAllCategoriesQuery, GetCategoryByIdQuery } from './queries';
 
 @Module({
   imports: [
@@ -24,6 +25,9 @@ import {
     LoggerModule,
   ],
   controllers: [CategoryController],
-  providers: [],
+  providers: [
+    GetAllCategoriesQuery,
+    GetCategoryByIdQuery,
+  ],
 })
 export class CategoryModule {}

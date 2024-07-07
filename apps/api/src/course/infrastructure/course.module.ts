@@ -15,6 +15,7 @@ import {
 import { AuthModule } from '../../auth/infrastructure';
 import { ProgressController } from './controllers/progress.controller';
 import { QuestionController } from './controllers/question.controller';
+import { GetAllCoursesQuery, GetCourseByIdQuery, GetCourseCountQuery } from './queries';
 
 @Module({
   imports: [
@@ -37,7 +38,11 @@ import { QuestionController } from './controllers/question.controller';
     EventStoreModule,
     LoggerModule,
   ],
-  providers: [],
+  providers: [
+    GetAllCoursesQuery,
+    GetCourseByIdQuery,
+    GetCourseCountQuery
+  ],
   controllers: [CourseController, ProgressController, QuestionController],
   exports: [MongooseModule],
 })

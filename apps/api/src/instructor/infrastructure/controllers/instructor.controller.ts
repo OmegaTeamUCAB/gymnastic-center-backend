@@ -4,23 +4,19 @@ import {
   DefaultValuePipe,
   Get,
   Inject,
-  NotFoundException,
   Param,
   ParseIntPipe,
   ParseUUIDPipe,
   Post,
   Query,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Model } from 'mongoose';
 import {
   IdResponse,
   UUIDGENERATOR,
   IdGenerator,
   EVENT_STORE,
   EventStore,
-  MongoInstructor,
   ILogger,
   LOGGER,
   LoggingDecorator,
@@ -32,12 +28,12 @@ import {
 import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import { InstructorResponse } from '../responses/instructor.response';
 import { CreateInstructorDto } from './dtos/create-instructor.dto';
-import { InstructorNotFoundException } from '../../application/exceptions/instructor-not-found.exception';
 import {
   CreateInstructorCommandHandler,
   ToggleFollowCommandHandler,
 } from '../../application/commands';
 import { Credentials } from 'apps/api/src/auth/application/models/credentials.model';
+import { GetAllInstructorsQuery, GetInstructorByIdQuery } from '../queries';
 
 @Controller('trainer')
 @ApiTags('instructors')
@@ -48,10 +44,10 @@ export class InstructorController {
     private readonly uuidGenerator: IdGenerator<string>,
     @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
-    @InjectModel(MongoInstructor.name)
-    private readonly instructorModel: Model<MongoInstructor>,
     @Inject(LOGGER)
     private readonly logger: ILogger,
+    private readonly getAllInstructorsQuery: GetAllInstructorsQuery,
+    private readonly getInstructorByIdQuery: GetInstructorByIdQuery,
   ) {}
 
   @Get('many')
@@ -86,24 +82,12 @@ export class InstructorController {
     @Query('perPage', new DefaultValuePipe(8), ParseIntPipe) perPage: number,
     @Query('filter') filter?: 'FOLLOWING',
   ): Promise<InstructorResponse[]> {
-    const instructors = await this.instructorModel.find(
-      {
-        ...(filter === 'FOLLOWING' && { followers: credentials.userId }),
-      },
-      null,
-      {
-        skip: (page - 1) * perPage,
-        limit: perPage,
-      },
-    );
-    return instructors.map((instructor) => ({
-      id: instructor.id,
-      name: instructor.name,
-      followers: instructor.followerCount,
-      userFollow: instructor.followers.includes(credentials.userId),
-      location: `${instructor.city}, ${instructor.country}`,
-      image: instructor.image,
-    }));
+    return this.getAllInstructorsQuery.execute({
+      credentials,
+      filter,
+      page,
+      perPage,
+    });
   }
 
   @Get('one/:id')
@@ -120,19 +104,10 @@ export class InstructorController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() credentials: Credentials,
   ): Promise<InstructorResponse> {
-    const instructor = await this.instructorModel.findOne({
+    return this.getInstructorByIdQuery.execute({
       id,
+      credentials,
     });
-    if (!instructor)
-      throw new NotFoundException(new InstructorNotFoundException());
-    return {
-      id: instructor.id,
-      name: instructor.name,
-      followers: instructor.followerCount,
-      userFollow: instructor.followers.includes(credentials.userId),
-      location: `${instructor.city}, ${instructor.country}`,
-      image: instructor.image,
-    };
   }
 
   @Post('toggle/follow/:id')

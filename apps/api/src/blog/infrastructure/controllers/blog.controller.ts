@@ -6,16 +6,12 @@ import {
   Param,
   ParseIntPipe,
   DefaultValuePipe,
-  NotFoundException,
   ParseUUIDPipe,
   Query,
   Post,
 } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import {
-  BlogNotFoundException,
   CreateBlogCommandHandler,
   UpdateBlogCommandHandler,
 } from '../../application';
@@ -29,7 +25,6 @@ import {
   IdResponse,
   LOGGER,
   LoggingDecorator,
-  MongoBlog,
   NativeTimer,
   UUIDGENERATOR,
   PerformanceMonitorDecorator,
@@ -38,6 +33,11 @@ import {
 } from '@app/core';
 import { BlogLeanResponse, BlogResponse } from './responses';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
+import {
+  GetAllBlogsQuery,
+  GetBlogByIdQuery,
+  GetBlogCountQuery,
+} from '../queries';
 
 @Controller('blog')
 @ApiTags('Blogs')
@@ -48,10 +48,11 @@ export class BlogController {
     private readonly uuidGenerator: IdGenerator<string>,
     @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
-    @InjectModel(MongoBlog.name)
-    private readonly blogModel: Model<MongoBlog>,
     @Inject(LOGGER)
     private readonly logger: ILogger,
+    private readonly getAllBlogsQuery: GetAllBlogsQuery,
+    private readonly getBlogByIdQuery: GetBlogByIdQuery,
+    private readonly getBlogCountQuery: GetBlogCountQuery,
   ) {}
 
   @Get('many')
@@ -99,26 +100,13 @@ export class BlogController {
     @Query('trainer') trainer?: string,
     @Query('category') category?: string,
   ): Promise<BlogLeanResponse[]> {
-    const blogs = await this.blogModel.find(
-      {
-        ...(trainer && { 'trainer.id': trainer }),
-        ...(category && { 'category.id': category }),
-      },
-      null,
-      {
-        skip: (page - 1) * perPage,
-        perPage,
-        sort: filter === 'POPULAR' ? { comments: -1 } : { uploadDate: -1 },
-      },
-    );
-    return blogs.map((blog) => ({
-      id: blog.id,
-      title: blog.title,
-      images: blog.images,
-      trainer: blog.trainer.name,
-      category: blog.category.name,
-      date: blog.uploadDate,
-    }));
+    return this.getAllBlogsQuery.execute({
+      category,
+      trainer,
+      filter,
+      page,
+      perPage,
+    });
   }
 
   @Get('one/:id')
@@ -131,23 +119,7 @@ export class BlogController {
   async getBlogById(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<BlogResponse> {
-    const blog = await this.blogModel.findOne({ id });
-    if (!blog) throw new NotFoundException(new BlogNotFoundException());
-    return {
-      id: blog.id,
-      title: blog.title,
-      description: blog.content,
-      images: blog.images,
-      trainer: {
-        id: blog.trainer.id,
-        name: blog.trainer.name,
-        image: blog.trainer.image,
-      },
-      category: blog.category.name,
-      date: blog.uploadDate,
-      tags: blog.tags,
-      comments: blog.comments,
-    };
+    return this.getBlogByIdQuery.execute({ id });
   }
 
   @ApiResponse({
@@ -232,12 +204,6 @@ export class BlogController {
     @Query('trainer') instructorId?: string,
     @Query('category') categoryId?: string,
   ): Promise<CountResponse> {
-    const count = await this.blogModel.countDocuments({
-      ...(instructorId && { 'trainer.id': instructorId }),
-      ...(categoryId && { 'category.id': categoryId }),
-    });
-    return {
-      count,
-    };
+    return this.getBlogCountQuery.execute({ instructorId, categoryId });
   }
 }

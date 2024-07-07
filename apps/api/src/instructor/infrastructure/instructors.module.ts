@@ -9,6 +9,7 @@ import {
   InstructorSchema,
   LoggerModule,
 } from '@app/core';
+import { GetAllInstructorsQuery, GetInstructorByIdQuery } from './queries';
 
 @Module({
   imports: [
@@ -21,6 +22,9 @@ import {
     LoggerModule,
   ],
   controllers: [InstructorController],
-  providers: [],
+  providers: [
+    GetAllInstructorsQuery,
+    GetInstructorByIdQuery,
+  ],
 })
 export class InstructorModule {}

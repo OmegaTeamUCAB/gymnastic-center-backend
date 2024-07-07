@@ -4,16 +4,13 @@ import {
   DefaultValuePipe,
   Get,
   Inject,
-  NotFoundException,
   Param,
   ParseIntPipe,
   ParseUUIDPipe,
   Post,
   Query,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Model } from 'mongoose';
 import {
   CountResponse,
   EVENT_STORE,
@@ -32,12 +29,15 @@ import {
 import { CreateCourseDto, UpdateCourseDto } from './dtos';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
 import { CourseLeanResponse, CourseResponse } from './responses';
-import { MongoCourse } from '../../../../../../libs/core/src/infrastructure/models/mongo-course.model';
-import { CourseNotFoundException } from '../../application/exceptions';
 import {
   CreateCourseCommandHandler,
   UpdateCourseCommandHandler,
 } from '../../application';
+import {
+  GetAllCoursesQuery,
+  GetCourseByIdQuery,
+  GetCourseCountQuery,
+} from '../queries';
 
 @Controller('course')
 @ApiTags('Courses')
@@ -48,10 +48,11 @@ export class CourseController {
     private readonly uuidGenerator: IdGenerator<string>,
     @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
-    @InjectModel(MongoCourse.name)
-    private readonly courseModel: Model<MongoCourse>,
     @Inject(LOGGER)
     private readonly logger: ILogger,
+    private readonly getAllCoursesQuery: GetAllCoursesQuery,
+    private readonly getCourseByIdQuery: GetCourseByIdQuery,
+    private readonly getCourseCountQuery: GetCourseCountQuery,
   ) {}
 
   @Get('many')
@@ -99,27 +100,13 @@ export class CourseController {
     @Query('trainer') instructorId?: string,
     @Query('category') categoryId?: string,
   ): Promise<CourseLeanResponse[]> {
-    const courses = await this.courseModel.find(
-      {
-        ...(instructorId && { 'trainer.id': instructorId }),
-        ...(categoryId && { 'category.id': categoryId }),
-      },
-      null,
-      {
-        skip: (page - 1) * perPage,
-        limit: perPage,
-        sort: filter === 'POPULAR' ? { views: -1 } : { publishDate: -1 },
-      },
-    );
-    return courses.map((course) => ({
-      id: course.id,
-      title: course.title,
-      description: course.description,
-      category: course.category.name,
-      trainer: course.trainer.name,
-      image: course.image,
-      date: course.publishDate,
-    }));
+    return this.getAllCoursesQuery.execute({
+      instructorId,
+      categoryId,
+      filter,
+      page,
+      perPage,
+    });
   }
 
   @Get('one/:id')
@@ -135,31 +122,7 @@ export class CourseController {
   async getCourseById(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<CourseResponse> {
-    const course = await this.courseModel.findOne({ id });
-    if (!course) throw new NotFoundException(new CourseNotFoundException());
-    return {
-      id: course.id,
-      title: course.title,
-      description: course.description,
-      level: course.level,
-      tags: course.tags,
-      durationMinutes: course.minutes,
-      durationWeeks: course.weeks,
-      image: course.image,
-      date: course.publishDate,
-      category: course.category.name,
-      trainer: {
-        id: course.trainer.id,
-        name: course.trainer.name,
-        image: course.trainer.image,
-      },
-      lessons: course.lessons.map((lesson) => ({
-        id: lesson.id,
-        title: lesson.title,
-        content: lesson.description,
-        video: lesson.video,
-      })),
-    };
+    return this.getCourseByIdQuery.execute({ id });
   }
 
   @Post()
@@ -238,12 +201,9 @@ export class CourseController {
     @Query('trainer') instructorId?: string,
     @Query('category') categoryId?: string,
   ): Promise<CountResponse> {
-    const count = await this.courseModel.countDocuments({
-      ...(instructorId && { 'trainer.id': instructorId }),
-      ...(categoryId && { 'category.id': categoryId }),
+    return this.getCourseCountQuery.execute({
+      instructorId,
+      categoryId,
     });
-    return {
-      count,
-    };
   }
 }

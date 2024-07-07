@@ -4,23 +4,19 @@ import {
   DefaultValuePipe,
   Get,
   Inject,
-  NotFoundException,
   Param,
   ParseIntPipe,
   ParseUUIDPipe,
   Post,
   Query,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Model } from 'mongoose';
 import {
   IdResponse,
   UUIDGENERATOR,
   IdGenerator,
   EVENT_STORE,
   EventStore,
-  MongoCategory,
   ILogger,
   LOGGER,
   LoggingDecorator,
@@ -36,7 +32,7 @@ import {
 import { CategoryResponse } from './responses';
 import { CreateCategoryDto, UpdateCategoryDto } from './dtos';
 import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
-import { CategoryNotFoundException } from '../../application/exceptions';
+import { GetAllCategoriesQuery, GetCategoryByIdQuery } from '../queries';
 
 @Controller('category')
 @ApiTags('Categories')
@@ -47,10 +43,10 @@ export class CategoryController {
     private readonly uuidGenerator: IdGenerator<string>,
     @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
-    @InjectModel(MongoCategory.name)
-    private readonly categoryModel: Model<MongoCategory>,
     @Inject(LOGGER)
     private readonly logger: ILogger,
+    private readonly getAllCategoriesQuery: GetAllCategoriesQuery,
+    private readonly getCategoryByIdQuery: GetCategoryByIdQuery,
   ) {}
 
   @Get('many')
@@ -72,19 +68,11 @@ export class CategoryController {
     description: 'Categories list',
     type: [CategoryResponse],
   })
-  async getCategories(
+  getCategories(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('perPage', new DefaultValuePipe(8), ParseIntPipe) perPage: number,
   ): Promise<CategoryResponse[]> {
-    const categories = await this.categoryModel.find({}, null, {
-      skip: (page - 1) * perPage,
-      limit: perPage,
-    });
-    return categories.map((category) => ({
-      id: category.id,
-      name: category.name,
-      icon: category.icon,
-    }));
+    return this.getAllCategoriesQuery.execute({ page, perPage });
   }
 
   @Get(':id')
@@ -100,15 +88,7 @@ export class CategoryController {
   async getCategoryById(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<CategoryResponse> {
-    const category = await this.categoryModel.findOne({
-      id,
-    });
-    if (!category) throw new NotFoundException(new CategoryNotFoundException());
-    return {
-      id: category.id,
-      name: category.name,
-      icon: category.icon,
-    };
+    return this.getCategoryByIdQuery.execute({ id });
   }
 
   @Post()

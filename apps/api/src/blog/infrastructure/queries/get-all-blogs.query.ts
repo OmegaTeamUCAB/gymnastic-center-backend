@@ -34,7 +34,7 @@ export class GetAllBlogsQuery {
     return blogs.map((blog) => ({
       id: blog.id,
       title: blog.title,
-      images: blog.images,
+      image: blog.images[0],
       trainer: blog.trainer.name,
       category: blog.category.name,
       date: blog.uploadDate,

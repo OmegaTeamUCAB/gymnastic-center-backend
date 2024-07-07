@@ -8,7 +8,7 @@ export class BlogLeanResponse {
   title: string;
 
   @ApiProperty()
-  images: string[];
+  image: string;
 
   @ApiProperty({
     description: 'Category name',

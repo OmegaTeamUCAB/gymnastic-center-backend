@@ -26,8 +26,9 @@ export class PushSenderService {
     const user = await this.credentialsRepository.findCredentialsByUserId(
       data.user,
     );
-    if (!user) return Result.failure(new Error('User not found'));
+    if (!user.hasValue) return Result.failure(new Error('User not found'));
     const devices = user.unwrap().devices;
+    if (devices.length === 0) return Result.success(null);
     await Promise.all([
       this.notificationModel.create({
         ...data,

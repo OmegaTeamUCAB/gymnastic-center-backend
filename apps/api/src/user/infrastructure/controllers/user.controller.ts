@@ -22,14 +22,11 @@ import {
   IdResponse,
   LOGGER,
   LoggingDecorator,
-  MongoUser,
   NativeTimer,
   PerformanceMonitorDecorator,
   UUIDGENERATOR,
   baseExceptionParser,
 } from '@app/core';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import {
   CredentialsRepository,
@@ -59,8 +56,6 @@ export class UserController {
   constructor(
     @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
-    @InjectModel(MongoUser.name)
-    private readonly userModel: Model<MongoUser>,
     @Inject(AUTH_REPOSITORY)
     private readonly repository: CredentialsRepository,
     @Inject(UUIDGENERATOR)

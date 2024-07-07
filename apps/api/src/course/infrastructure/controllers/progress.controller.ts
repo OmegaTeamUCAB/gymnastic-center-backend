@@ -4,16 +4,13 @@ import {
   DefaultValuePipe,
   Get,
   Inject,
-  NotFoundException,
   Param,
   ParseIntPipe,
   ParseUUIDPipe,
   Post,
   Query,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Model } from 'mongoose';
 import {
   EVENT_STORE,
   EventStore,
@@ -22,7 +19,6 @@ import {
   IdResponse,
   LOGGER,
   LoggingDecorator,
-  MongoProgress,
   NativeTimer,
   PerformanceMonitorDecorator,
   baseExceptionParser,
@@ -39,6 +35,11 @@ import {
   ProgressResponse,
   TrendingProgressResponse,
 } from './responses';
+import {
+  GetCourseProgressQuery,
+  GetLastWatchedCoursesQuery,
+  GetWatchingCoursesQuery,
+} from '../queries';
 
 @Controller('progress')
 @ApiTags('Progress')
@@ -49,8 +50,9 @@ export class ProgressController {
     private readonly eventStore: EventStore,
     @Inject(LOGGER)
     private readonly logger: ILogger,
-    @InjectModel(MongoProgress.name)
-    private readonly progressModel: Model<MongoProgress>,
+    private readonly getCourseProgressQuery: GetCourseProgressQuery,
+    private readonly getLastWatchedCoursesQuery: GetLastWatchedCoursesQuery,
+    private readonly getWatchingCoursesQuery: GetWatchingCoursesQuery,
   ) {}
 
   @Post('start/:courseId')
@@ -131,19 +133,7 @@ export class ProgressController {
     @CurrentUser() credentials: Credentials,
     @Param('courseId', ParseUUIDPipe) courseId: string,
   ): Promise<ProgressResponse> {
-    const progress = await this.progressModel.findOne({
-      courseId,
-      userId: credentials.userId,
-    });
-    if (!progress) throw new NotFoundException('Progress not found');
-    return {
-      percent: progress.percent,
-      lessons: progress.lessons.map((lesson) => ({
-        lessonId: lesson.id,
-        time: lesson.time,
-        percent: lesson.percent,
-      })),
-    };
+    return this.getCourseProgressQuery.execute({ credentials, courseId });
   }
 
   @Get('trending')
@@ -155,20 +145,7 @@ export class ProgressController {
   async getLastWatchedCourse(
     @CurrentUser() credentials: Credentials,
   ): Promise<TrendingProgressResponse> {
-    const progress = await this.progressModel.findOne(
-      {
-        userId: credentials.userId,
-      },
-      undefined,
-      { sort: { lastTime: -1 } },
-    );
-    if (!progress) throw new NotFoundException('Progress not found');
-    return {
-      percent: progress.percent,
-      courseId: progress.courseId,
-      courseTitle: progress.title,
-      lastTime: progress.lastTime,
-    };
+    return this.getLastWatchedCoursesQuery.execute(credentials);
   }
 
   @Get('courses')
@@ -195,21 +172,6 @@ export class ProgressController {
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('perPage', new DefaultValuePipe(8), ParseIntPipe) perPage: number,
   ): Promise<ProgressLeanResponse[]> {
-    const progress = await this.progressModel.find(
-      {
-        userId: credentials.userId,
-      },
-      undefined,
-      { skip: (page - 1) * perPage, limit: perPage, sort: { lastTime: -1 } },
-    );
-    return progress.map((p) => ({
-      id: p.courseId,
-      percent: p.percent,
-      title: p.title,
-      image: p.image,
-      date: p.publishDate,
-      category: p.category.name,
-      trainer: p.trainer.name,
-    }));
+    return this.getWatchingCoursesQuery.execute({ credentials, perPage, page });
   }
 }

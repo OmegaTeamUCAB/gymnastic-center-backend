@@ -15,7 +15,14 @@ import {
 import { AuthModule } from '../../auth/infrastructure';
 import { ProgressController } from './controllers/progress.controller';
 import { QuestionController } from './controllers/question.controller';
-import { GetAllCoursesQuery, GetCourseByIdQuery, GetCourseCountQuery } from './queries';
+import {
+  GetAllCoursesQuery,
+  GetCourseByIdQuery,
+  GetCourseCountQuery,
+  GetCourseProgressQuery,
+  GetLastWatchedCoursesQuery,
+  GetWatchingCoursesQuery,
+} from './queries';
 
 @Module({
   imports: [
@@ -41,7 +48,10 @@ import { GetAllCoursesQuery, GetCourseByIdQuery, GetCourseCountQuery } from './q
   providers: [
     GetAllCoursesQuery,
     GetCourseByIdQuery,
-    GetCourseCountQuery
+    GetCourseCountQuery,
+    GetCourseProgressQuery,
+    GetLastWatchedCoursesQuery,
+    GetWatchingCoursesQuery,
   ],
   controllers: [CourseController, ProgressController, QuestionController],
   exports: [MongooseModule],

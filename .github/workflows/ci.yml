@@ -34,5 +34,5 @@ jobs:
       - name: Build
         run: npm run build datasync
 
-      # - name: Test
-      #   run: npm run test
+      - name: Test
+        run: npm run test

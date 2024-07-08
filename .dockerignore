@@ -17,3 +17,4 @@ node_modules
 README.md
 /.husky
 commitlint.config.js
+/test-reports

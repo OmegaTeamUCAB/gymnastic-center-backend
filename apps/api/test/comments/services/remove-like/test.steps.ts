@@ -1,7 +1,6 @@
 import { Given, When, Then } from '@cucumber/cucumber';
 import assert from 'assert';
 import { ToggleLikeCommandHandler } from 'apps/api/src/comment/application/commands/toggle-like/toggle-like.command-handler';
-import { EventStore } from '@app/core';
 import { EventStoreMock } from 'apps/api/test/mocks/event-store.mock';
 import { IdGeneratorMock } from 'apps/api/test/mocks/id-generator.mock';
 import { DomainEventFactory } from '@app/core/domain/events/domain-event';
@@ -11,7 +10,7 @@ import {
   CommentLikeRemoved,
 } from 'apps/api/src/comment/domain/events';
 
-const eventStore: EventStore = new EventStoreMock();
+const eventStore = new EventStoreMock();
 const idGenerator = new IdGeneratorMock();
 const service = new ToggleLikeCommandHandler(eventStore);
 const userId = idGenerator.generateId();

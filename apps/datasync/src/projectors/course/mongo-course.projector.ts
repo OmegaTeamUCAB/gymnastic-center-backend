@@ -168,6 +168,24 @@ export class MongoCourseProjector implements Projector {
     );
   }
 
+  async onCourseLessonWatched(
+    event: EventType<{
+      user: string;
+      lesson: string;
+      completionPercentage: number;
+      lastSecondWatched: number;
+    }>,
+  ) {
+    await this.courseModel.updateOne(
+      {
+        id: event.dispatcherId,
+      },
+      {
+        $inc: { views: 1 },
+      },
+    );
+  }
+
   async onCategoryNameUpdated(
     event: EventType<{
       name: string;

@@ -82,13 +82,13 @@ export class MongoEventStore
   }
 
   onApplicationBootstrap() {
-    this.changeStream = this.eventStore.watch().on('change', (change) => {
+    this.changeStream = this.eventStore.watch().on('change', async (change) => {
       if (change.operationType === 'insert') {
         const event: MongoEvent = change.fullDocument;
         const handlers = this.subscriptions
           .get('ALL')
           .concat(this.subscriptions.get(event.type) ?? []);
-        Promise.all(
+        await Promise.all(
           handlers.map((handler) =>
             handler({
               dispatcherId: event.stream,

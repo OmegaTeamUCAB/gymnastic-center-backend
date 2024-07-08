@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { FirebaseModule } from 'nestjs-firebase';
 import {
@@ -21,12 +22,18 @@ import { PushSenderService } from './provider/push-sender.service';
         schema: NotificationSchema,
       },
     ]),
-    FirebaseModule.forRoot({
-      googleApplicationCredential: {
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      },
+    FirebaseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        googleApplicationCredential: {
+          projectId: configService.get('FIREBASE_PROJECT_ID'),
+          privateKey: configService
+            .get('FIREBASE_PRIVATE_KEY')
+            .replace(/\\n/g, '\n'),
+          clientEmail: configService.get('FIREBASE_CLIENT_EMAIL'),
+        },
+      }),
     }),
     AuthModule,
     UUIDModule,

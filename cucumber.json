@@ -1,0 +1,8 @@
+{
+  "default": {
+    "paths": ["apps/**/test/**/*.feature"],
+    "requireModule": ["ts-node/register", "tsconfig-paths/register"],
+    "require": ["apps/**/test/**/*.steps.ts"],
+    "format": ["@cucumber/pretty-formatter", "html:./test-reports/report.html"]
+  }
+}

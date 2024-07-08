@@ -29,12 +29,16 @@ export class MongoUserProjector implements Projector {
     }>,
   ) {
     const { name, email, phone } = event.context;
-    await this.userModel.create({
-      id: event.dispatcherId,
-      name,
-      email,
-      phone,
-    });
+    try {
+      await this.userModel.create({
+        id: event.dispatcherId,
+        name,
+        email,
+        phone,
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async onUserNameUpdated(

@@ -1,7 +1,8 @@
 import { IdGenerator } from '@app/core';
+import { v4 as uuidv4 } from 'uuid';
 
-export class idGeneratorMock implements IdGenerator<string> {
+export class IdGeneratorMock implements IdGenerator<string> {
   generateId(): string {
-    return '5efb0d66-7e21-46e8-97b6-6fc0443e81c2';
+    return uuidv4();
   }
 }

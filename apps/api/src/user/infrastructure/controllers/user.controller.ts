@@ -144,16 +144,6 @@ export class UserController {
       this.logger,
       signUpOperationName,
     );
-    const suscription = this.eventStore.subscribe(
-      UserCreated.name,
-      async (event: UserCreatedEvent) => {
-        await signUpService.execute({
-          id: event.dispatcherId,
-          email: event.context.email,
-          password: signUpDto.password,
-        });
-      },
-    );
     const createUserOperationName = 'Create User';
     const service = new ExceptionParserDecorator(
       new LoggingDecorator(
@@ -167,12 +157,15 @@ export class UserController {
         createUserOperationName,
       ),
       (error) => {
-        suscription.unsubscribe();
         throw new UnauthorizedException(error.message);
       },
     );
     const result = await service.execute({ ...signUpDto });
-    suscription.unsubscribe();
+    await signUpService.execute({
+      id: result.unwrap().id,
+      email: signUpDto.email,
+      password: signUpDto.password,
+    });
     return result.unwrap();
   }
 

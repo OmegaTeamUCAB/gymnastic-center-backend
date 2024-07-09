@@ -36,6 +36,7 @@ import {
   MongoBlogProjector,
   MongoQuestionProjector,
 } from './projectors';
+import { AlgoliaEventsProjector } from './projectors/events/algolia-events.projector';
 
 @Module({
   imports: [
@@ -101,6 +102,7 @@ import {
     MongoInstructorProjector,
     MongoProgressProjector,
     MongoQuestionProjector,
+    AlgoliaEventsProjector,
     {
       provide: 'PROJECTORS',
       useFactory: (

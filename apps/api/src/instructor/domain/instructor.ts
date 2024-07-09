@@ -27,7 +27,7 @@ export class Instructor extends AggregateRoot<InstructorId> {
       !this.id ||
       !this._name ||
       !this.image ||
-      this._location ||
+      !this._location ||
       !this._followers
     ) {
       throw new InvalidInstructorException();

@@ -10,6 +10,7 @@ import { CommentController } from './controllers/comment.controller';
 import { UserModule } from '../../user/infrastructure/user.module';
 import { CommentLikedPushNotificationEventHandler } from './event-handlers/comment-liked-push-notification.event-handler';
 import { NotificationsModule } from '../../notifications/infrastructure/notifications.module';
+import { CommentDislikedPushNotificationEventHandler } from './event-handlers/comment-disliked-push-notification.event-handler';
 
 @Module({
   imports: [
@@ -27,7 +28,10 @@ import { NotificationsModule } from '../../notifications/infrastructure/notifica
     UserModule,
   ],
   controllers: [CommentController],
-  providers: [CommentLikedPushNotificationEventHandler],
+  providers: [
+    CommentLikedPushNotificationEventHandler,
+    CommentDislikedPushNotificationEventHandler,
+  ],
   exports: [MongooseModule],
 })
 export class CommentModule {}

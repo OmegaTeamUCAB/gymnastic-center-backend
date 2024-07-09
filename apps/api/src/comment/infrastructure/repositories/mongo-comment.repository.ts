@@ -3,7 +3,9 @@ import { CommentRepository } from '../../application/repositories/comment.reposi
 import { MongoComment, Optional } from '@app/core';
 import { Model } from 'mongoose';
 import { Comment } from '../../application/models/comment.model';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class MongoCommentRepository implements CommentRepository {
   constructor(
     @InjectModel(MongoComment.name)

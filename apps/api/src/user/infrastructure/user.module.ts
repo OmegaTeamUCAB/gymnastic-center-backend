@@ -34,7 +34,7 @@ import { USER_REPOSITORY } from './constants';
     GetUserFollowsQuery,
     MongoUserRepository,
     {
-      provide: 'USER_REPOSITORY',
+      provide: USER_REPOSITORY,
       useClass: MongoUserRepository,
     },
   ],

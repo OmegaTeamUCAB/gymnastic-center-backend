@@ -32,7 +32,7 @@ export class CommentLikedPushNotificationEventHandler
         if (
           !comment.hasValue ||
           !userWhoLiked.hasValue ||
-          comment.unwrap().publisher.id === userWhoLiked.unwrap().id
+          comment.unwrap().publisher.id !== userWhoLiked.unwrap().id
         )
           return;
         this.pushSender.sendPushNotification({

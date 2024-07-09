@@ -42,6 +42,6 @@ import { PushSenderService } from './provider/push-sender.service';
       useClass: MongoNotificationRepository,
     },
   ],
-  exports: [PushSenderService],
+  exports: [PushSenderService, NOTIFICATION_REPOSITORY],
 })
 export class NotificationsModule {}

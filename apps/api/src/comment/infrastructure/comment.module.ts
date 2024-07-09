@@ -36,6 +36,6 @@ import { COMMENT_REPOSITORY } from './constants';
       useClass: MongoCommentRepository,
     },
   ],
-  exports: [MongooseModule],
+  exports: [MongooseModule, COMMENT_REPOSITORY],
 })
 export class CommentModule {}

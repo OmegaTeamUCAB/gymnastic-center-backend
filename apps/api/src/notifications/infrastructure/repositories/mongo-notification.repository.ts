@@ -4,16 +4,20 @@ import { MongoNotification } from '../models/mongo-notification.model';
 import { NotificationRepository } from '../../application/repositories/notification.repository';
 import { Optional } from '@app/core';
 import { Notification } from '../../application/models/notification';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class MongoNotificationRepository implements NotificationRepository {
   constructor(
     @InjectModel(MongoNotification.name)
     private readonly notificationModel: Model<MongoNotification>,
   ) {}
 
-  async getNotification(id: string): Promise<Optional<Notification>> {
+  async getNotification(
+    notificationId: string,
+  ): Promise<Optional<Notification>> {
     const notification = await this.notificationModel.findOne({
-      id,
+      id: notificationId,
     });
     return notification
       ? Optional.of({

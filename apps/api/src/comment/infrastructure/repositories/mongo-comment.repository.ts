@@ -12,20 +12,23 @@ export class MongoCommentRepository implements CommentRepository {
 
   async findCommentById(commentId: string): Promise<Optional<Comment>> {
     const comment = await this.commentModel.findOne({ id: commentId });
-    if (!comment) return Optional.empty();
 
-    return Optional.of(
-      new Comment(
-        comment.id,
-        comment.content,
-        comment.blog,
-        comment.publisher,
-        comment.publishDate,
-        comment.likes,
-        comment.dislikes,
-        comment.numberOfLikes,
-        comment.numberOfDislikes,
-      ),
-    );
+    return comment
+      ? Optional.of({
+          id: comment.id,
+          content: comment.content,
+          blog: comment.blog,
+          publisher: {
+            id: comment.publisher.id,
+            name: comment.publisher.name,
+            image: comment.publisher.image,
+          },
+          publishDate: comment.publishDate,
+          likes: comment.likes,
+          dislikes: comment.dislikes,
+          numberOfLikes: comment.numberOfLikes,
+          numberOfDislikes: comment.numberOfDislikes,
+        })
+      : Optional.empty();
   }
 }

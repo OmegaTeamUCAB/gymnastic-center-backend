@@ -23,6 +23,8 @@ import {
   GetLastWatchedCoursesQuery,
   GetWatchingCoursesQuery,
 } from './queries';
+import { MongoCourseRepository } from './repositories/mongo-course.repository';
+import { COURSE_REPOSITORY } from './constants';
 
 @Module({
   imports: [
@@ -52,6 +54,10 @@ import {
     GetCourseProgressQuery,
     GetLastWatchedCoursesQuery,
     GetWatchingCoursesQuery,
+    {
+      provide: COURSE_REPOSITORY,
+      useClass: MongoCourseRepository,
+    },
   ],
   controllers: [CourseController, ProgressController, QuestionController],
   exports: [MongooseModule],

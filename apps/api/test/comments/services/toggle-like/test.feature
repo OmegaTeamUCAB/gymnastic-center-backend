@@ -1,6 +1,6 @@
-Feature: Remove Like
+Feature: Toggle Like
 
-   Rule: If the user toggle the like button on a liked comment, the like should be removed from the comment
+   Rule: If the user toggle the like button on a liked comment, the like should be removed from the comment, otherwise the like is added
 
    Scenario: Toggle like button on a liked comment
       Given the comment is created

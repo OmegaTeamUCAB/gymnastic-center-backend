@@ -8,10 +8,15 @@ export class MongoUserRepository implements UserRepository {
 
   async findUserById(userId: string): Promise<Optional<User>> {
     const user = await this.userModel.findOne({ id: userId });
-    if (!user) return Optional.empty();
 
-    return Optional.of(
-      new User(user.id, user.name, user.email, user.phone, user.image),
-    );
+    return user
+      ? Optional.of({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          image: user.image,
+        })
+      : Optional.empty();
   }
 }

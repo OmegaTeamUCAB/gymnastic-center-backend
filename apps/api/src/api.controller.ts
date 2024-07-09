@@ -6,6 +6,7 @@ import {
   Get,
   Inject,
   NotFoundException,
+  Param,
   ParseArrayPipe,
   ParseIntPipe,
   Post,
@@ -15,6 +16,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { Model } from 'mongoose';
+import { InsightsClient } from 'search-insights';
 import {
   EVENTS_QUEUE,
   EVENT_STORE,
@@ -38,6 +40,7 @@ import {
   NativeTimer,
   ExceptionParserDecorator,
   baseExceptionParser,
+  InjectAlgoliaInsights,
 } from '@app/core';
 import { Auth, CurrentUser } from './auth/infrastructure/decorators';
 import { Credentials } from './auth/application/models/credentials.model';
@@ -64,6 +67,8 @@ export class ApiController {
     private readonly courseModel: Model<MongoCourse>,
     @InjectModel(MongoQuestion.name)
     private readonly questionModel: Model<MongoQuestion>,
+    @InjectAlgoliaInsights()
+    private readonly algolia: InsightsClient,
   ) {}
 
   @Get('health')
@@ -359,5 +364,19 @@ export class ApiController {
       lesson: createCommentDto.target,
     });
     return result.unwrap();
+  }
+
+  @Post('click/:id')
+  @Auth()
+  async click(
+    @Param('id') id: string,
+    @CurrentUser() credentials: Credentials,
+  ) {
+    this.algolia('clickedObjectIDs', {
+      eventName: 'Course Clicked',
+      index: 'course',
+      userToken: credentials.userId,
+      objectIDs: [id],
+    });
   }
 }

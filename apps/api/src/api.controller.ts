@@ -144,8 +144,18 @@ export class ApiController {
       operationName,
     );
     const [coursesResult, blogsResult] = await Promise.all([
-      searchCoursesService.execute({ searchTerm, limit: perPage, page, tags }),
-      searchBlogsService.execute({ searchTerm, limit: perPage, page, tags }),
+      searchCoursesService.execute({
+        searchTerm: searchTerm === '' ? ' ' : searchTerm,
+        limit: perPage,
+        page,
+        tags,
+      }),
+      searchBlogsService.execute({
+        searchTerm: searchTerm === '' ? ' ' : searchTerm,
+        limit: perPage,
+        page,
+        tags,
+      }),
     ]);
     const courseHits = coursesResult.unwrap();
     const blogHits = blogsResult.unwrap();

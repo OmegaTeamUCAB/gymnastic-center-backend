@@ -4,8 +4,8 @@ import { EventStoreMock } from 'apps/api/test/mocks/event-store.mock';
 import { IdGeneratorMock } from 'apps/api/test/mocks/id-generator.mock';
 
 When(
-  'the instructor with id {string} answer a question in the lesson with id {string}',
-  async (instructorId: string, lessonId: string) => {
+  'the instructor with id {string} answer the question',
+  async (instructorId: string) => {
     const courseId: string = world.courseId;
     const idGenerator = new IdGeneratorMock();
     const eventStore: EventStoreMock = world.eventStore;

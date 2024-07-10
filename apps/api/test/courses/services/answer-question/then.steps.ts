@@ -12,12 +12,12 @@ Then('The answer should be created in the lesson', async () => {
   const questionId: string = world.questionId;
   const eventStore: EventStoreMock = world.eventStore;
   const events = await eventStore.getEventsByStream(courseId);
-  assert.strictEqual(events.length, 2);
-  assert.strictEqual(events[1].name, QuestionAnswered.name);
-  assert.deepEqual(events[1].dispatcherId, courseId);
+  assert.strictEqual(events.length, 3);
+  assert.strictEqual(events[2].name, QuestionAnswered.name);
+  assert.deepEqual(events[2].dispatcherId, courseId);
   assert.deepEqual(
-    partialCompare(events[1].context, {
-      question: questionId,
+    partialCompare(events[2].context, {
+      questionId: questionId,
     }),
     true,
   );
@@ -30,7 +30,7 @@ Then('The answer should not be created in the lesson', async () => {
   assert.strictEqual(events.length, 1);
 });
 
-Then('The instructor can not answer', async () => {
+Then('The instructor cannot answer', async () => {
   const result: Result<CreateAnswerResponse> = world.result;
   assert.strictEqual(result.isFailure, true);
   assert.throws(() => result.unwrap(), InvalidInstructorToAnswerException);

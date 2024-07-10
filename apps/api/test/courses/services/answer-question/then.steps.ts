@@ -11,6 +11,8 @@ Then('The answer should be created in the lesson', async () => {
   const courseId: string = world.courseId;
   const questionId: string = world.questionId;
   const eventStore: EventStoreMock = world.eventStore;
+  const result: Result<CreateAnswerResponse> = world.result;
+  assert.strictEqual(result.isSuccessful, true);
   const events = await eventStore.getEventsByStream(courseId);
   assert.strictEqual(events.length, 3);
   assert.strictEqual(events[2].name, QuestionAnswered.name);
@@ -27,7 +29,7 @@ Then('The answer should not be created in the lesson', async () => {
   const eventStore: EventStoreMock = world.eventStore;
   const courseId: string = world.courseId;
   const events = await eventStore.getEventsByStream(courseId);
-  assert.strictEqual(events.length, 1);
+  assert.strictEqual(events.length, 2);
 });
 
 Then('The instructor cannot answer', async () => {

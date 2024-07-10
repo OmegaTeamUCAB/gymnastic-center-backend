@@ -31,4 +31,11 @@ export class UpdateUserDto {
     format: 'base64',
   })
   image: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    nullable: true,
+  })
+  password: string;
 }

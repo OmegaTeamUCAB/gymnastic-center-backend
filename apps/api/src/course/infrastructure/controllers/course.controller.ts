@@ -27,7 +27,7 @@ import {
   baseExceptionParser,
 } from '@app/core';
 import { CreateCourseDto, UpdateCourseDto } from './dtos';
-import { Auth } from 'apps/api/src/auth/infrastructure/decorators';
+import { Auth, CurrentUser } from 'apps/api/src/auth/infrastructure/decorators';
 import { CourseLeanResponse, CourseResponse } from './responses';
 import {
   CreateCourseCommandHandler,
@@ -37,7 +37,9 @@ import {
   GetAllCoursesQuery,
   GetCourseByIdQuery,
   GetCourseCountQuery,
+  GetRecommendedCoursesQuery,
 } from '../queries';
+import { Credentials } from 'apps/api/src/auth/application/models/credentials.model';
 
 @Controller('course')
 @ApiTags('Courses')
@@ -53,6 +55,7 @@ export class CourseController {
     private readonly getAllCoursesQuery: GetAllCoursesQuery,
     private readonly getCourseByIdQuery: GetCourseByIdQuery,
     private readonly getCourseCountQuery: GetCourseCountQuery,
+    private readonly getRecommendedCoursesQuery: GetRecommendedCoursesQuery,
   ) {}
 
   @Get('many')
@@ -74,7 +77,7 @@ export class CourseController {
     required: false,
     description: 'Course Sorting',
     type: String,
-    enum: ['POPULAR', 'RECENT'],
+    enum: ['POPULAR', 'RECENT', 'RECOMMENDED'],
   })
   @ApiQuery({
     name: 'trainer',
@@ -94,12 +97,18 @@ export class CourseController {
     type: [CourseLeanResponse],
   })
   async getCourses(
+    @CurrentUser() credentials: Credentials,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('perPage', new DefaultValuePipe(8), ParseIntPipe) perPage: number,
-    @Query('filter') filter?: 'POPULAR' | 'RECENT',
+    @Query('filter') filter?: 'POPULAR' | 'RECENT' | 'RECOMMENDED',
     @Query('trainer') instructorId?: string,
     @Query('category') categoryId?: string,
   ): Promise<CourseLeanResponse[]> {
+    if (filter === 'RECOMMENDED') {
+      return this.getRecommendedCoursesQuery.execute({
+        userId: credentials.userId,
+      });
+    }
     return this.getAllCoursesQuery.execute({
       instructorId,
       categoryId,

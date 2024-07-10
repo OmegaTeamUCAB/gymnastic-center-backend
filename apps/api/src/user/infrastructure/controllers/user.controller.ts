@@ -47,7 +47,6 @@ import {
   UserNotFoundException,
 } from 'apps/api/src/auth/application/exceptions';
 import { UpdateUserCommandHandler } from '../../application/commands/update-user/update-user.command-handler';
-import { UserCreated, UserCreatedEvent } from '../../domain/events';
 import { GetUserFollowsQuery, GetUserInformationQuery } from '../queries';
 
 @Controller()

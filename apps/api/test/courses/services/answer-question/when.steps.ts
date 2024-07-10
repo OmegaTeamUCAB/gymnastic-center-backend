@@ -21,7 +21,7 @@ When(
       courseId,
       content: 'answer content',
       instructor: instructorId,
-      question: questionId,
+      question: questionId ?? idGenerator.generateId(),
     });
     world.result = result;
   },

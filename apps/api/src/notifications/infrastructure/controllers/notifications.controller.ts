@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   DefaultValuePipe,
+  Delete,
   Get,
   Inject,
   NotFoundException,
@@ -143,7 +144,7 @@ export class NotificationsController {
     });
   }
 
-  @Post('removetoken')
+  @Delete('removetoken')
   async removeToken(
     @CurrentUser() credentials: Credentials,
     @Body() linkDeviceDto: LinkDeviceDto,
@@ -155,7 +156,7 @@ export class NotificationsController {
     });
   }
 
-  @Post('delete/all')
+  @Delete('delete/all')
   async deleteAll(@CurrentUser() credentials: Credentials) {
     const operationName = 'Delete Notifications';
     const service = new LoggingDecorator(

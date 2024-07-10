@@ -103,11 +103,11 @@ export class Comment extends AggregateRoot<CommentId> {
     this.apply(CommentDislikeRemoved.createEvent(this.id, _user));
   }
 
-  delete(id: CommentId, user: UserId): void {
+  delete(user: UserId): void {
     if (!this._isActive) throw new CommentDeletedException();
     if (!this._publisher.equals(user))
       throw new CommentIsntPublishedByException();
-    this.apply(CommentDeleted.createEvent(id));
+    this.apply(CommentDeleted.createEvent(this._id));
   }
 
   static create(

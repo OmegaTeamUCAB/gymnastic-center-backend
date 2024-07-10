@@ -27,23 +27,23 @@ export class PushSenderService {
       data.user,
     );
     if (!user.hasValue) return Result.failure(new Error('User not found'));
+    await this.notificationModel.create({
+      ...data,
+      id: this.uuidGenerator.generateId(),
+      date: new Date(),
+      read: false,
+    });
     const devices = user.unwrap().devices;
     if (devices.length === 0) return Result.success(null);
-    await Promise.all([
-      this.notificationModel.create({
-        ...data,
-        id: this.uuidGenerator.generateId(),
-        date: new Date(),
-        read: false,
-      }),
-      this.firebase.messaging.sendEachForMulticast({
+    try {
+      await this.firebase.messaging.sendEachForMulticast({
         tokens: devices,
         notification: {
           title: data.title,
           body: data.body,
         },
-      }),
-    ]);
+      });
+    } catch (error) {}
     return Result.success(null);
   }
 }

@@ -40,9 +40,6 @@ export class WatchLessonCommandHandler
       }),
     );
     const newEvents = course.pullEvents();
-
-    console.log(newEvents);
-
     await this.eventStore.appendEvents(course.id.value, newEvents);
     return Result.success<WatchLessonResponse>({
       courseId: course.id.value,

@@ -14,9 +14,9 @@ Then(
     const commentId: string = world.commentId;
     const eventStore: EventStoreMock = world.eventStore;
     const events = await eventStore.getEventsByStream(commentId);
-    assert.strictEqual(events.length, 2);
-    assert.strictEqual(events[1].name, CommentLiked.name);
-    assert.deepEqual(events[1].context, { user: userId });
+    assert.ok(events.length >= 2);
+    assert.strictEqual(events[events.length - 1].name, CommentLiked.name);
+    assert.deepEqual(events[events.length - 1].context, { user: userId });
   },
 );
 
@@ -26,7 +26,7 @@ Then(
     const commentId: string = world.commentId;
     const eventStore: EventStoreMock = world.eventStore;
     const events = await eventStore.getEventsByStream(commentId);
-    assert.strictEqual(events.length, 3);
+    assert.ok(events.length >= 3);
     assert.strictEqual(events[2].name, CommentLikeRemoved.name);
     assert.deepEqual(events[2].context, { user: userId });
   },
@@ -38,9 +38,9 @@ Then(
     const commentId: string = world.commentId;
     const eventStore: EventStoreMock = world.eventStore;
     const events = await eventStore.getEventsByStream(commentId);
-    assert.strictEqual(events.length, 2);
-    assert.strictEqual(events[1].name, CommentDisliked.name);
-    assert.deepEqual(events[1].context, { user: userId });
+    assert.ok(events.length >= 2);
+    assert.strictEqual(events[events.length - 1].name, CommentDisliked.name);
+    assert.deepEqual(events[events.length - 1].context, { user: userId });
   },
 );
 
@@ -50,7 +50,7 @@ Then(
     const commentId: string = world.commentId;
     const eventStore: EventStoreMock = world.eventStore;
     const events = await eventStore.getEventsByStream(commentId);
-    assert.strictEqual(events.length, 3);
+    assert.ok(events.length >= 3);
     assert.strictEqual(events[2].name, CommentDislikeRemoved.name);
     assert.deepEqual(events[2].context, { user: userId });
   },

@@ -24,7 +24,7 @@ export class AlgoliaCourseProjector
     @InjectModel(MongoCourse.name)
     private readonly courseModel: Model<MongoCourse>,
   ) {
-    this.index = this.algolia.initIndex('course');
+    this.index = this.algolia.initIndex('courses');
   }
 
   private index: SearchIndex;

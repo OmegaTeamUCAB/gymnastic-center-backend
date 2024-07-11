@@ -384,7 +384,7 @@ export class ApiController {
   ) {
     this.algolia('clickedObjectIDs', {
       eventName: 'Course Clicked',
-      index: 'course',
+      index: 'courses',
       userToken: credentials.userId,
       objectIDs: [id],
     });

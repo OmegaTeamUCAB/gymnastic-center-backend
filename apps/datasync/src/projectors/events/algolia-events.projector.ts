@@ -25,7 +25,7 @@ export class AlgoliaEventsProjector implements Projector {
   ) {
     this.algolia('convertedObjectIDs', {
       eventName: 'Course Started',
-      index: 'course',
+      index: 'courses',
       userToken: event.context.user,
       objectIDs: [event.dispatcherId],
     });
@@ -41,7 +41,7 @@ export class AlgoliaEventsProjector implements Projector {
   ) {
     this.algolia('convertedObjectIDs', {
       eventName: 'Course Watched',
-      index: 'course',
+      index: 'courses',
       userToken: event.context.user,
       objectIDs: [event.dispatcherId],
     });
@@ -54,7 +54,7 @@ export class AlgoliaEventsProjector implements Projector {
   ) {
     this.algolia('convertedObjectIDs', {
       eventName: 'Course Completed',
-      index: 'course',
+      index: 'courses',
       userToken: event.context.user,
       objectIDs: [event.dispatcherId],
     });

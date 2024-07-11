@@ -15,8 +15,8 @@ export class GetPopularAlgoliaFacetsService implements Service<DTO, string[]> {
     @InjectAlgolia()
     private readonly algolia: SearchClient,
   ) {
-    this.blogIndex = this.algolia.initIndex('blog');
-    this.courseIndex = this.algolia.initIndex('course');
+    this.blogIndex = this.algolia.initIndex('blogs');
+    this.courseIndex = this.algolia.initIndex('courses');
   }
 
   private blogIndex: SearchIndex;

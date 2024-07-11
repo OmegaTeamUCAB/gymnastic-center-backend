@@ -144,7 +144,7 @@ export class NotificationsController {
     });
   }
 
-  @Delete('removetoken')
+  @Post('removetoken')
   async removeToken(
     @CurrentUser() credentials: Credentials,
     @Body() linkDeviceDto: LinkDeviceDto,

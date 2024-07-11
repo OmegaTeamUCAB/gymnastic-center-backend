@@ -12,5 +12,5 @@ Then('it should not be updated', async () => {
     assert.ok(events.length >= 2);
     assert.strictEqual(events[events.length - 1].name, CategoryNameUpdated.name);
     assert(result.isFailure())
-    assert(result.unwrap instanceof InvalidCategoryNameException)
+    assert.strictEqual(result.errorMessage(), 'Invalid Category Name')
 },);

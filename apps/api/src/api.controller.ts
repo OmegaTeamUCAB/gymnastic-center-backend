@@ -270,8 +270,8 @@ export class ApiController {
         user: comment.publisher.name,
         userId: comment.publisher.id,
         userImage: comment.publisher.image,
-        countLikes: comment.numberOfLikes,
-        countDislikes: comment.numberOfDislikes,
+        countLikes: comment.likes.length,
+        countDislikes: comment.dislikes.length,
         userLiked: comment.likes.includes(credentials.userId),
         userDisliked: comment.dislikes.includes(credentials.userId),
         body: comment.content,
@@ -384,7 +384,7 @@ export class ApiController {
   ) {
     this.algolia('clickedObjectIDs', {
       eventName: 'Course Clicked',
-      index: 'course',
+      index: 'courses',
       userToken: credentials.userId,
       objectIDs: [id],
     });

@@ -23,7 +23,7 @@ export class AlgoliaSearchBlogsService implements Service<SearchDto, Response> {
     @InjectAlgolia()
     private readonly algolia: SearchClient,
   ) {
-    this.index = this.algolia.initIndex('blog');
+    this.index = this.algolia.initIndex('blogs');
   }
 
   private index: SearchIndex;

@@ -25,7 +25,7 @@ export class AlgoliaSearchCoursesService
     @InjectAlgolia()
     private readonly algolia: SearchClient,
   ) {
-    this.index = this.algolia.initIndex('course');
+    this.index = this.algolia.initIndex('courses');
   }
 
   private index: SearchIndex;

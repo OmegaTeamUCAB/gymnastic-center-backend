@@ -22,7 +22,7 @@ export class AlgoliaBlogProjector implements Projector, OnModuleInit {
     @InjectModel(MongoBlog.name)
     private readonly blogModel: Model<MongoBlog>,
   ) {
-    this.index = this.algolia.initIndex('blog');
+    this.index = this.algolia.initIndex('blogs');
   }
 
   private index: SearchIndex;

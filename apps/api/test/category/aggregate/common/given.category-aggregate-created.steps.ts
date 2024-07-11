@@ -10,7 +10,7 @@ import {
 Given('the category aggregate is created', () => {
     const idGenerator = new IdGeneratorMock();
     const category = Category.create(new CategoryId(idGenerator.generateId()), {
-        name: new CategoryName(''),
+        name: new CategoryName('category_name'),
         icon: new CategoryIcon('icon'),
     });
     world.category = category;

@@ -27,7 +27,7 @@ export class GetInstructorByIdQuery {
     return {
       id: instructor.id,
       name: instructor.name,
-      followers: instructor.followerCount,
+      followers: instructor.followers.length,
       userFollow: instructor.followers.includes(credentials.userId),
       location: `${instructor.city}, ${instructor.country}`,
       image: instructor.image,

@@ -7,11 +7,12 @@ import {
     CategoryName,
 } from 'apps/api/src/category/domain/value-objects';
 
-Given('the category aggregate is created', () => {
+Given('the category aggregate is created',
+    (categoryName: string, categoryIcon: string) => {
     const idGenerator = new IdGeneratorMock();
     const category = Category.create(new CategoryId(idGenerator.generateId()), {
-        name: new CategoryName('category_name'),
-        icon: new CategoryIcon('icon'),
+        name: new CategoryName(categoryName),
+        icon: new CategoryIcon(categoryIcon),
     });
     world.category = category;
 });

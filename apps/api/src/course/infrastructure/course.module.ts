@@ -21,6 +21,7 @@ import {
   GetCourseCountQuery,
   GetCourseProgressQuery,
   GetLastWatchedCoursesQuery,
+  GetRecommendedCoursesQuery,
   GetWatchingCoursesQuery,
 } from './queries';
 
@@ -52,6 +53,7 @@ import {
     GetCourseProgressQuery,
     GetLastWatchedCoursesQuery,
     GetWatchingCoursesQuery,
+    GetRecommendedCoursesQuery,
   ],
   controllers: [CourseController, ProgressController, QuestionController],
   exports: [MongooseModule],

@@ -188,6 +188,7 @@ export class MongoProgressProjector implements Projector {
         userId: user,
       },
       {
+        percent: 100,
         $set: {
           'lessons.$[].percent': 100,
         },

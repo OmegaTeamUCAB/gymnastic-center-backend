@@ -199,6 +199,7 @@ export class Course extends AggregateRoot<CourseId> {
   ): void {
     if (!this.isBeingWatchedBy(user))
       throw new CourseNotStartedByUserException();
+    const previouslyCompleted = this.isCompletedBy(user);
     this.apply(
       CourseLessonWatched.createEvent(
         this.id,
@@ -208,6 +209,16 @@ export class Course extends AggregateRoot<CourseId> {
         lastTime,
       ),
     );
+    const lessonProgress = this._progressHistory.find(
+      (progress) =>
+        progress.user.equals(user) && progress.lesson.equals(lesson),
+    );
+    if (
+      !previouslyCompleted &&
+      lessonProgress.isCompleted &&
+      this.isCompletedBy(user)
+    )
+      this.apply(CourseCompleted.createEvent(this.id, user));
   }
 
   addQuestion(
@@ -360,7 +371,6 @@ export class Course extends AggregateRoot<CourseId> {
 
   [`on${CourseLessonWatched.name}`](context: CourseLessonWatched) {
     const user = new UserId(context.user);
-    const previouslyCompleted = this.isCompletedBy(user);
     const lessonProgress = this._progressHistory.find(
       (progress) =>
         progress.user.equals(user) &&
@@ -372,12 +382,6 @@ export class Course extends AggregateRoot<CourseId> {
     lessonProgress.completionPercentage = new CompletionPercentage(
       context.completionPercentage,
     );
-    if (
-      !previouslyCompleted &&
-      lessonProgress.isCompleted &&
-      this.isCompletedBy(user)
-    )
-      this.apply(CourseCompleted.createEvent(this.id, user));
   }
 
   [`on${CourseCompleted.name}`](context: CourseCompleted) {}

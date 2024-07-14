@@ -67,9 +67,9 @@ Different software development practices were applied in our application:
   <a href="https://github.com/OmegaTeamUCAB/gymnastic-center-backend/tree/main" target="blank"><img src="./docs/Diagramas Omega Team - Arquitectura Hexagonal Back.svg" width="500" alt="App Logo" /></a>
 
 
-- **API URL:** [Gymnastic Centre Api](https://gymnastic-center-uo53v.ondigitalocean.app)
+- **API URL:** [Gymnastic Center Api](https://api-rswna.ondigitalocean.app)
 
-- **API Documentation:** [Api Documentation](https://gymnastic-center-uo53v.ondigitalocean.app/docs)
+- **API Documentation:** [Api Documentation](https://api-rswna.ondigitalocean.app/docs)
 
 ## Getting Started
 
